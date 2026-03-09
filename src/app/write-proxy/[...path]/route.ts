@@ -56,6 +56,11 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ path
   if (p === "test") {
     return NextResponse.json({ ok: true, msg: "write-proxy is working" });
   }
+  if (p === "debug") {
+    const cookie = req.headers.get("cookie") || "";
+    const g5cookies = cookie.split(";").map(c => c.trim()).filter(c => c.startsWith("G5API="));
+    return NextResponse.json({ cookieCount: g5cookies.length, cookies: g5cookies.map(c => c.substring(0, 30) + "..."), fullCookieLength: cookie.length });
+  }
   return proxyRequest(req, p);
 }
 
