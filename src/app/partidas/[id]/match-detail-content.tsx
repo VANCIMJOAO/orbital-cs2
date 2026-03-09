@@ -1,11 +1,11 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowLeft, Radio, Map, Users, Target, Skull, Crosshair, RefreshCw, Download, Ban, Flag, Trash2, Loader2 } from "lucide-react";
+import { ArrowLeft, Radio, Map, Users, Target, Skull, Crosshair, RefreshCw, Download, Ban, Flag, Trash2, Loader2, Pause, Play, RotateCcw, UserPlus, Archive, Terminal, Send } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { HudCard } from "@/components/hud-card";
-import { Match, PlayerStats, MapStats, Team, getStatusText, getStatusType, updateMatch, deleteMatch } from "@/lib/api";
+import { Match, PlayerStats, MapStats, Team, getStatusText, getStatusType, updateMatch, deleteMatch, pauseMatch, unpauseMatch, restartMatch, addPlayerToMatch, getMatchBackups, restoreMatchBackup, sendMatchRcon } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { useEffect, useState, useCallback } from "react";
 
@@ -335,6 +335,25 @@ function AdminActions({ match, isActive, team1, team2, adminAction, setAdminActi
   setAdminAction: (v: boolean) => void;
   onUpdate: () => Promise<void>;
 }) {
+  const [rconCmd, setRconCmd] = useState("");
+  const [rconResponse, setRconResponse] = useState("");
+  const [showRcon, setShowRcon] = useState(false);
+  const [showAddPlayer, setShowAddPlayer] = useState(false);
+  const [playerSteamId, setPlayerSteamId] = useState("");
+  const [playerNickname, setPlayerNickname] = useState("");
+  const [playerTeam, setPlayerTeam] = useState("team1");
+  const [backups, setBackups] = useState<string[]>([]);
+  const [showBackups, setShowBackups] = useState(false);
+
+  const isLive = !!match.start_time && !match.end_time && !match.cancelled;
+
+  const btnClass = "flex items-center gap-1.5 px-3 py-1.5 border transition-all font-[family-name:var(--font-jetbrains)] text-[0.65rem]";
+  const btnPurple = `${btnClass} bg-orbital-purple/10 border-orbital-purple/30 hover:border-orbital-purple/60 text-orbital-purple`;
+  const btnWarning = `${btnClass} bg-orbital-warning/10 border-orbital-warning/30 hover:border-orbital-warning/60 text-orbital-warning`;
+  const btnSuccess = `${btnClass} bg-orbital-success/10 border-orbital-success/30 hover:border-orbital-success/60 text-orbital-success`;
+  const btnDanger = `${btnClass} bg-orbital-danger/10 border-orbital-danger/30 hover:border-orbital-danger/60 text-orbital-danger`;
+  const inputClass = "bg-orbital-bg border border-orbital-border px-3 py-1.5 text-[0.65rem] font-[family-name:var(--font-jetbrains)] text-orbital-text focus:border-orbital-purple/60 outline-none";
+
   const handleCancel = async () => {
     if (!confirm(`Cancelar partida #${match.id}?`)) return;
     setAdminAction(true);
@@ -369,38 +388,204 @@ function AdminActions({ match, isActive, team1, team2, adminAction, setAdminActi
     } catch { alert("Erro ao deletar partida"); setAdminAction(false); }
   };
 
+  const handlePause = async () => {
+    setAdminAction(true);
+    try {
+      await pauseMatch(match.id);
+    } catch { alert("Erro ao pausar partida"); }
+    setAdminAction(false);
+  };
+
+  const handleUnpause = async () => {
+    setAdminAction(true);
+    try {
+      await unpauseMatch(match.id);
+    } catch { alert("Erro ao despausar partida"); }
+    setAdminAction(false);
+  };
+
+  const handleRestart = async () => {
+    if (!confirm("Reiniciar a partida atual?")) return;
+    setAdminAction(true);
+    try {
+      await restartMatch(match.id);
+      await onUpdate();
+    } catch { alert("Erro ao reiniciar partida"); }
+    setAdminAction(false);
+  };
+
+  const handleAddPlayer = async () => {
+    if (!playerSteamId || !playerNickname) { alert("Preencha Steam ID e Nickname"); return; }
+    setAdminAction(true);
+    try {
+      await addPlayerToMatch(match.id, playerSteamId, playerNickname, playerTeam);
+      setPlayerSteamId(""); setPlayerNickname("");
+      setShowAddPlayer(false);
+      alert("Jogador adicionado!");
+    } catch { alert("Erro ao adicionar jogador"); }
+    setAdminAction(false);
+  };
+
+  const handleLoadBackups = async () => {
+    setShowBackups(!showBackups);
+    if (!showBackups) {
+      try {
+        const b = await getMatchBackups(match.id);
+        setBackups(b);
+      } catch { setBackups([]); }
+    }
+  };
+
+  const handleRestoreBackup = async (file: string) => {
+    if (!confirm(`Restaurar backup "${file}"?`)) return;
+    setAdminAction(true);
+    try {
+      await restoreMatchBackup(match.id, file);
+      await onUpdate();
+    } catch { alert("Erro ao restaurar backup"); }
+    setAdminAction(false);
+  };
+
+  const handleRcon = async () => {
+    if (!rconCmd.trim()) return;
+    setAdminAction(true);
+    try {
+      const res = await sendMatchRcon(match.id, rconCmd);
+      setRconResponse(res.response || "OK");
+      setRconCmd("");
+    } catch { setRconResponse("Erro ao enviar comando"); }
+    setAdminAction(false);
+  };
+
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
-      <div className="bg-orbital-card border border-orbital-border p-4 mb-6">
-        <div className="flex items-center gap-2 mb-3">
+      <div className="bg-orbital-card border border-orbital-border p-4 mb-6 space-y-3">
+        <div className="flex items-center gap-2">
           <span className="font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-[0.15em] text-orbital-warning">ADMIN</span>
         </div>
-        <div className="flex flex-wrap gap-2">
-          {adminAction ? (
-            <Loader2 size={16} className="animate-spin text-orbital-text-dim" />
-          ) : (
-            <>
+
+        {adminAction ? (
+          <Loader2 size={16} className="animate-spin text-orbital-text-dim" />
+        ) : (
+          <>
+            {/* Ações principais */}
+            <div className="flex flex-wrap gap-2">
+              {isLive && (
+                <>
+                  <button onClick={handlePause} className={btnPurple}>
+                    <Pause size={12} /> Pausar
+                  </button>
+                  <button onClick={handleUnpause} className={btnPurple}>
+                    <Play size={12} /> Despausar
+                  </button>
+                </>
+              )}
               {isActive && (
                 <>
-                  <button onClick={handleCancel} className="flex items-center gap-1.5 px-3 py-1.5 bg-orbital-warning/10 border border-orbital-warning/30 hover:border-orbital-warning/60 transition-all font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-warning">
+                  <button onClick={handleCancel} className={btnWarning}>
                     <Ban size={12} /> Cancelar
                   </button>
-                  <button onClick={() => handleForfeit(match.team1_id)} className="flex items-center gap-1.5 px-3 py-1.5 bg-orbital-success/10 border border-orbital-success/30 hover:border-orbital-success/60 transition-all font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-success">
+                  <button onClick={() => handleForfeit(match.team1_id)} className={btnSuccess}>
                     <Flag size={12} /> W.O. {team1?.name || match.team1_string || "Time 1"}
                   </button>
-                  <button onClick={() => handleForfeit(match.team2_id)} className="flex items-center gap-1.5 px-3 py-1.5 bg-orbital-success/10 border border-orbital-success/30 hover:border-orbital-success/60 transition-all font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-success">
+                  <button onClick={() => handleForfeit(match.team2_id)} className={btnSuccess}>
                     <Flag size={12} /> W.O. {team2?.name || match.team2_string || "Time 2"}
                   </button>
                 </>
               )}
+              {isLive && (
+                <>
+                  <button onClick={handleRestart} className={btnWarning}>
+                    <RotateCcw size={12} /> Reiniciar
+                  </button>
+                  <button onClick={() => setShowAddPlayer(!showAddPlayer)} className={btnPurple}>
+                    <UserPlus size={12} /> Add Player
+                  </button>
+                  <button onClick={handleLoadBackups} className={btnPurple}>
+                    <Archive size={12} /> Backups
+                  </button>
+                </>
+              )}
+              {isActive && (
+                <button onClick={() => setShowRcon(!showRcon)} className={btnPurple}>
+                  <Terminal size={12} /> RCON
+                </button>
+              )}
               {(match.cancelled || match.end_time) && (
-                <button onClick={handleDelete} className="flex items-center gap-1.5 px-3 py-1.5 bg-orbital-danger/10 border border-orbital-danger/30 hover:border-orbital-danger/60 transition-all font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-danger">
+                <button onClick={handleDelete} className={btnDanger}>
                   <Trash2 size={12} /> Deletar
                 </button>
               )}
-            </>
-          )}
-        </div>
+            </div>
+
+            {/* Add Player Form */}
+            {showAddPlayer && (
+              <div className="flex flex-wrap items-end gap-2 pt-2 border-t border-orbital-border/50">
+                <div>
+                  <label className="block text-[0.55rem] text-orbital-text-dim font-[family-name:var(--font-jetbrains)] mb-1">STEAM ID</label>
+                  <input value={playerSteamId} onChange={e => setPlayerSteamId(e.target.value)} placeholder="76561198..." className={inputClass} />
+                </div>
+                <div>
+                  <label className="block text-[0.55rem] text-orbital-text-dim font-[family-name:var(--font-jetbrains)] mb-1">NICKNAME</label>
+                  <input value={playerNickname} onChange={e => setPlayerNickname(e.target.value)} placeholder="Player" className={inputClass} />
+                </div>
+                <div>
+                  <label className="block text-[0.55rem] text-orbital-text-dim font-[family-name:var(--font-jetbrains)] mb-1">TIME</label>
+                  <select value={playerTeam} onChange={e => setPlayerTeam(e.target.value)} className={inputClass}>
+                    <option value="team1">{team1?.name || "Time 1"}</option>
+                    <option value="team2">{team2?.name || "Time 2"}</option>
+                  </select>
+                </div>
+                <button onClick={handleAddPlayer} className={btnSuccess}>
+                  <Send size={12} /> Adicionar
+                </button>
+              </div>
+            )}
+
+            {/* Backups List */}
+            {showBackups && (
+              <div className="pt-2 border-t border-orbital-border/50">
+                {backups.length === 0 ? (
+                  <span className="text-[0.6rem] text-orbital-text-dim font-[family-name:var(--font-jetbrains)]">Nenhum backup encontrado</span>
+                ) : (
+                  <div className="space-y-1 max-h-40 overflow-y-auto">
+                    {backups.map((b, i) => (
+                      <div key={i} className="flex items-center justify-between gap-2 px-2 py-1 bg-orbital-bg/50 border border-orbital-border/30">
+                        <span className="text-[0.6rem] text-orbital-text font-[family-name:var(--font-jetbrains)] truncate">{b}</span>
+                        <button onClick={() => handleRestoreBackup(b)} className="text-[0.55rem] text-orbital-purple hover:text-orbital-text transition-colors font-[family-name:var(--font-jetbrains)]">
+                          Restaurar
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* RCON Console */}
+            {showRcon && (
+              <div className="pt-2 border-t border-orbital-border/50 space-y-2">
+                <div className="flex gap-2">
+                  <input
+                    value={rconCmd}
+                    onChange={e => setRconCmd(e.target.value)}
+                    onKeyDown={e => e.key === "Enter" && handleRcon()}
+                    placeholder="Comando RCON..."
+                    className={`${inputClass} flex-1`}
+                  />
+                  <button onClick={handleRcon} className={btnPurple}>
+                    <Send size={12} /> Enviar
+                  </button>
+                </div>
+                {rconResponse && (
+                  <pre className="text-[0.55rem] text-orbital-text-dim font-[family-name:var(--font-jetbrains)] bg-orbital-bg/50 border border-orbital-border/30 p-2 max-h-32 overflow-y-auto whitespace-pre-wrap">
+                    {rconResponse}
+                  </pre>
+                )}
+              </div>
+            )}
+          </>
+        )}
       </div>
     </motion.div>
   );

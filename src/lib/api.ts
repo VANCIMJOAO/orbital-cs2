@@ -439,6 +439,68 @@ export async function sendRconCommand(serverId: number, command: string): Promis
   return res.json();
 }
 
+// ── Match Admin Actions (RCON via G5API) ──
+export async function pauseMatch(matchId: number): Promise<void> {
+  const res = await fetch(`${API_WRITE_PROXY}/matches/${matchId}/pause`, {
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error(`Erro ao pausar partida: ${res.status}`);
+}
+
+export async function unpauseMatch(matchId: number): Promise<void> {
+  const res = await fetch(`${API_WRITE_PROXY}/matches/${matchId}/unpause`, {
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error(`Erro ao despausar partida: ${res.status}`);
+}
+
+export async function restartMatch(matchId: number): Promise<void> {
+  const res = await fetch(`${API_WRITE_PROXY}/matches/${matchId}/restart`, {
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error(`Erro ao reiniciar partida: ${res.status}`);
+}
+
+export async function addPlayerToMatch(matchId: number, steamId: string, nickname: string, teamId: string): Promise<void> {
+  const res = await fetch(`${API_WRITE_PROXY}/matches/${matchId}/adduser`, {
+    method: "PUT",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ steam_id: steamId, nickname, team_id: teamId }),
+  });
+  if (!res.ok) throw new Error(`Erro ao adicionar jogador: ${res.status}`);
+}
+
+export async function getMatchBackups(matchId: number): Promise<string[]> {
+  const res = await fetch(`${API_WRITE_PROXY}/matches/${matchId}/backup`, {
+    credentials: "include",
+  });
+  if (!res.ok) return [];
+  const data = await res.json();
+  return data.backups || data || [];
+}
+
+export async function restoreMatchBackup(matchId: number, backupFile: string): Promise<void> {
+  const res = await fetch(`${API_WRITE_PROXY}/matches/${matchId}/backup`, {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ backup_file: backupFile }),
+  });
+  if (!res.ok) throw new Error(`Erro ao restaurar backup: ${res.status}`);
+}
+
+export async function sendMatchRcon(matchId: number, command: string): Promise<{ response: string }> {
+  const res = await fetch(`${API_WRITE_PROXY}/matches/${matchId}/rcon`, {
+    method: "PUT",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ command }),
+  });
+  if (!res.ok) throw new Error(`Erro ao enviar RCON: ${res.status}`);
+  return res.json();
+}
+
 // ── Admin: Seasons ──
 export async function createSeason(season: { name: string; start_date: string; end_date?: string }): Promise<{ season: Season }> {
   const res = await fetch(`${API_WRITE_PROXY}/seasons`, {
