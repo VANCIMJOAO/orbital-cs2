@@ -311,15 +311,19 @@ export async function createTeam(team: { name: string; tag: string; flag: string
 }
 
 export async function updateTeam(team: { team_id: number; name?: string; tag?: string; flag?: string; logo?: string; public_team?: boolean; auth_name?: Record<string, string> }): Promise<void> {
-  // G5API PUT /teams espera "id" (não "team_id") no body
+  // G5API PUT /teams espera "id" no body
   const { team_id, ...rest } = team;
+  const payload = { id: team_id, ...rest };
   const res = await fetch(`${API_WRITE_PROXY}/teams`, {
     method: "PUT",
     credentials: "include",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify([{ id: team_id, ...rest }]),
+    body: JSON.stringify(payload),
   });
-  if (!res.ok) throw new Error(`Erro ao atualizar time: ${res.status}`);
+  if (!res.ok) {
+    const errBody = await res.text().catch(() => "");
+    throw new Error(`Erro ao atualizar time: ${res.status} ${errBody}`);
+  }
 }
 
 export async function deleteTeam(teamId: number): Promise<void> {

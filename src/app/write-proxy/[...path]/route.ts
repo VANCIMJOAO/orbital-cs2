@@ -28,6 +28,7 @@ async function proxyRequest(req: NextRequest, path: string) {
   }
 
   try {
+    console.log(`[write-proxy] ${req.method} ${url} body=${body?.substring(0, 200)}`);
     const res = await fetch(url, {
       method: req.method,
       headers,
@@ -39,6 +40,7 @@ async function proxyRequest(req: NextRequest, path: string) {
     }
 
     const responseBody = await res.text();
+    console.log(`[write-proxy] Response ${res.status}: ${responseBody.substring(0, 200)}`);
     return new NextResponse(responseBody, {
       status: res.status,
       headers: { "Content-Type": "application/json" },
