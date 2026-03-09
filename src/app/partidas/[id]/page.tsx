@@ -24,9 +24,11 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
 
     // API retorna chaves em lowercase: playerstats, mapstats
     const raw = statsRes as Record<string, unknown>;
-    const playerStats = Array.isArray(statsRes) ? statsRes : ((raw.playerstats || raw.playerStats || []) as typeof statsRes.playerStats);
+    const playerStatsRaw = Array.isArray(statsRes) ? statsRes : (raw.playerstats || raw.playerStats || []);
+    const playerStats = Array.isArray(playerStatsRaw) ? playerStatsRaw : [];
     const rawMap = mapStatsRes as Record<string, unknown>;
-    const mapStatsArr = Array.isArray(mapStatsRes) ? mapStatsRes : ((rawMap.mapstats || rawMap.mapStats || []) as typeof mapStatsRes.mapStats);
+    const mapStatsRaw = Array.isArray(mapStatsRes) ? mapStatsRes : (rawMap.mapstats || rawMap.mapStats || []);
+    const mapStatsArr = Array.isArray(mapStatsRaw) ? mapStatsRaw : [];
 
     return (
       <MatchDetailContent

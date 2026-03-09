@@ -45,9 +45,9 @@ export function MatchDetailContent({ match: initialMatch, playerStats: initialSt
       ]);
       if (matchRes.match) setMatch(matchRes.match);
       const stats = matchRes.playerstats || statsRes.playerstats || statsRes.playerStats || [];
-      if (stats.length > 0) setPlayerStats(stats);
+      if (Array.isArray(stats) && stats.length > 0) setPlayerStats(stats);
       const maps = mapRes.mapstats || mapRes.mapStats || [];
-      if (maps.length > 0) setMapStats(maps);
+      if (Array.isArray(maps) && maps.length > 0) setMapStats(maps);
       setLastUpdate(new Date());
     } catch {
       // silently fail
@@ -404,7 +404,7 @@ function AdminActions({ match, isActive, team1, team2, adminAction, setAdminActi
     setMenuOpen(false);
     setPanel(panel === p ? "none" : p);
     if (p === "backups" && panel !== "backups") {
-      getMatchBackups(match.id).then(setBackups).catch(() => setBackups([]));
+      getMatchBackups(match.id).then(b => setBackups(Array.isArray(b) ? b : [])).catch(() => setBackups([]));
     }
   };
 
