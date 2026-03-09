@@ -5,7 +5,7 @@ import { ArrowLeft, Radio, Map, Users, Target, Skull, Crosshair, RefreshCw, Down
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { HudCard } from "@/components/hud-card";
-import { Match, PlayerStats, MapStats, Team, getStatusText, getStatusType, updateMatch, deleteMatch, pauseMatch, unpauseMatch, restartMatch, addPlayerToMatch, getMatchBackups, restoreMatchBackup, sendMatchRcon } from "@/lib/api";
+import { Match, PlayerStats, MapStats, Team, Server, getStatusText, getStatusType, updateMatch, deleteMatch, pauseMatch, unpauseMatch, restartMatch, addPlayerToMatch, getMatchBackups, restoreMatchBackup, sendMatchRcon } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { useEffect, useState, useCallback } from "react";
 
@@ -15,9 +15,10 @@ interface Props {
   mapStats: MapStats[];
   team1: Team | null;
   team2: Team | null;
+  server: Server | null;
 }
 
-export function MatchDetailContent({ match: initialMatch, playerStats: initialStats, mapStats: initialMapStats, team1, team2 }: Props) {
+export function MatchDetailContent({ match: initialMatch, playerStats: initialStats, mapStats: initialMapStats, team1, team2, server }: Props) {
   const [match, setMatch] = useState(initialMatch);
   const [playerStats, setPlayerStats] = useState(initialStats || []);
   const [mapStats, setMapStats] = useState(initialMapStats || []);
@@ -152,6 +153,26 @@ export function MatchDetailContent({ match: initialMatch, playerStats: initialSt
               )}
             </div>
           </div>
+
+          {/* Connect buttons */}
+          {server && isActive && (
+            <div className="flex items-center justify-center gap-3 mt-5">
+              <a
+                href={`steam://connect/${server.ip_string}:${server.port}`}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-orbital-purple/20 border border-orbital-purple/40 hover:border-orbital-purple hover:bg-orbital-purple/30 transition-all font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-wider text-orbital-purple"
+              >
+                CONNECT
+              </a>
+              {server.gotv_port && (
+                <a
+                  href={`steam://connect/${server.ip_string}:${server.gotv_port}`}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-orbital-card border border-orbital-border hover:border-orbital-purple/40 transition-all font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-wider text-orbital-text-dim hover:text-orbital-text"
+                >
+                  GOTV
+                </a>
+              )}
+            </div>
+          )}
 
           {/* Live update info */}
           {isLive && (

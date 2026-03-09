@@ -344,6 +344,10 @@ export async function getServers(): Promise<{ servers: Server[] }> {
   return apiFetch("/servers");
 }
 
+export async function getServer(id: number): Promise<{ server: Server }> {
+  return apiFetch(`/servers/${id}`);
+}
+
 export async function getAvailableServers(): Promise<{ servers: Server[] }> {
   return apiFetch("/servers/available", true);
 }
@@ -473,7 +477,7 @@ export async function addPlayerToMatch(matchId: number, steamId: string, nicknam
     method: "PUT",
     credentials: "include",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ steam_id: steamId, nickname, team_id: teamId }),
+    body: JSON.stringify([{ steam_id: steamId, nickname, team_id: teamId }]),
   });
   if (!res.ok) throw new Error(`Erro ao adicionar jogador: ${res.status}`);
 }

@@ -1,4 +1,4 @@
-import { getMatch, getPlayerStats, getMapStats, getTeam } from "@/lib/api";
+import { getMatch, getPlayerStats, getMapStats, getTeam, getServer } from "@/lib/api";
 import { MatchDetailContent } from "./match-detail-content";
 
 export const revalidate = 5;
@@ -16,10 +16,11 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
 
     const match = matchRes.match;
 
-    // Buscar dados dos times
-    const [team1Res, team2Res] = await Promise.all([
+    // Buscar dados dos times e servidor
+    const [team1Res, team2Res, serverRes] = await Promise.all([
       getTeam(match.team1_id).catch(() => null),
       getTeam(match.team2_id).catch(() => null),
+      getServer(match.server_id).catch(() => null),
     ]);
 
     // API retorna chaves em lowercase: playerstats, mapstats
@@ -37,6 +38,7 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
         mapStats={mapStatsArr}
         team1={team1Res?.team || null}
         team2={team2Res?.team || null}
+        server={serverRes?.server || null}
       />
     );
   } catch {
