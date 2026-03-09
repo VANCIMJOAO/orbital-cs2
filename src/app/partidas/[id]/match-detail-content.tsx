@@ -57,13 +57,44 @@ export function MatchDetailContent({ match: initialMatch, playerStats: initialSt
     }
   }, [match.id]);
 
+  // SSE para updates em tempo real + polling como fallback
   useEffect(() => {
     if (!isLive) return;
 
-    // Polling a cada 10 segundos para partidas ao vivo
-    const interval = setInterval(fetchLiveData, 10000);
-    return () => clearInterval(interval);
-  }, [isLive, fetchLiveData]);
+    let sseActive = false;
+    const eventSource = new EventSource(`/api/matches/${match.id}/stream`);
+
+    eventSource.onmessage = (event) => {
+      sseActive = true;
+      try {
+        const data = JSON.parse(event.data);
+        if (data.match) setMatch(data.match);
+        if (data.playerstats && Array.isArray(data.playerstats) && data.playerstats.length > 0) setPlayerStats(data.playerstats);
+        if (data.mapstats && Array.isArray(data.mapstats) && data.mapstats.length > 0) setMapStats(data.mapstats);
+        setLastUpdate(new Date());
+      } catch {
+        // evento não-JSON, ignorar
+      }
+    };
+
+    eventSource.onerror = () => {
+      sseActive = false;
+    };
+
+    // Polling como fallback (30s se SSE ativo, 10s se não)
+    const interval = setInterval(() => {
+      if (!sseActive) fetchLiveData();
+    }, 10000);
+
+    // Polling lento de backup mesmo com SSE
+    const backupInterval = setInterval(fetchLiveData, 30000);
+
+    return () => {
+      eventSource.close();
+      clearInterval(interval);
+      clearInterval(backupInterval);
+    };
+  }, [isLive, fetchLiveData, match.id]);
 
   // Separar stats por time
   const team1Stats = playerStats.filter((s) => s.team_id === match.team1_id);

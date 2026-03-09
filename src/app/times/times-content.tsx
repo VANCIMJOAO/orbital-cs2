@@ -1,12 +1,19 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { Users, Shield, User } from "lucide-react";
+import { Users, Shield, User, Filter } from "lucide-react";
 import Link from "next/link";
 import { HudCard } from "@/components/hud-card";
 import { Team } from "@/lib/api";
+import { useAuth } from "@/lib/auth-context";
 
 export function TimesContent({ teams }: { teams: Team[] }) {
+  const [showMine, setShowMine] = useState(false);
+  const { user } = useAuth();
+
+  const filtered = showMine && user ? teams.filter(t => t.user_id === user.id) : teams;
+
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 pb-20">
       {/* Header */}
@@ -26,10 +33,38 @@ export function TimesContent({ teams }: { teams: Team[] }) {
         </p>
       </motion.div>
 
+      {/* Filters */}
+      {user && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="flex items-center gap-2 mb-6"
+        >
+          <Filter size={14} className="text-orbital-text-dim" />
+          <button
+            onClick={() => setShowMine(false)}
+            className={`px-3 py-1.5 font-[family-name:var(--font-orbitron)] text-[0.55rem] tracking-[0.15em] border transition-all ${
+              !showMine ? "bg-orbital-purple/10 border-orbital-purple/50 text-orbital-purple" : "bg-transparent border-orbital-border text-orbital-text-dim hover:border-orbital-border-light"
+            }`}
+          >
+            TODOS
+          </button>
+          <button
+            onClick={() => setShowMine(true)}
+            className={`px-3 py-1.5 font-[family-name:var(--font-orbitron)] text-[0.55rem] tracking-[0.15em] border transition-all ${
+              showMine ? "bg-orbital-purple/10 border-orbital-purple/50 text-orbital-purple" : "bg-transparent border-orbital-border text-orbital-text-dim hover:border-orbital-border-light"
+            }`}
+          >
+            MEUS TIMES
+          </button>
+        </motion.div>
+      )}
+
       {/* Team Grid */}
-      {teams.length > 0 ? (
+      {filtered.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {teams.map((team, i) => (
+          {filtered.map((team, i) => (
             <TeamCard key={team.id} team={team} delay={i * 0.08} />
           ))}
         </div>
@@ -37,7 +72,7 @@ export function TimesContent({ teams }: { teams: Team[] }) {
         <HudCard className="text-center py-12">
           <Shield size={32} className="text-orbital-border mx-auto mb-4" />
           <p className="font-[family-name:var(--font-jetbrains)] text-sm text-orbital-text-dim">
-            Nenhum time registrado
+            {showMine ? "Você não possui times" : "Nenhum time registrado"}
           </p>
         </HudCard>
       )}

@@ -128,6 +128,7 @@ export interface User {
   small_image: string;
   medium_image: string;
   large_image: string;
+  api_key?: string;
 }
 
 export interface Server {

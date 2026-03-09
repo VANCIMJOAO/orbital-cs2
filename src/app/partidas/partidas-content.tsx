@@ -5,21 +5,25 @@ import { motion } from "framer-motion";
 import { Swords, Filter } from "lucide-react";
 import { MatchCard } from "@/components/match-card";
 import { Match, getStatusType } from "@/lib/api";
+import { useAuth } from "@/lib/auth-context";
 
-type FilterType = "all" | "live" | "upcoming" | "finished";
+type FilterType = "all" | "live" | "upcoming" | "finished" | "mine";
 
 const filters: { value: FilterType; label: string }[] = [
   { value: "all", label: "TODAS" },
   { value: "live", label: "AO VIVO" },
   { value: "upcoming", label: "PENDENTES" },
   { value: "finished", label: "FINALIZADAS" },
+  { value: "mine", label: "MINHAS" },
 ];
 
 export function PartidasContent({ matches }: { matches: Match[] }) {
   const [filter, setFilter] = useState<FilterType>("all");
+  const { user } = useAuth();
 
   const filtered = matches.filter((m) => {
     if (filter === "all") return true;
+    if (filter === "mine") return user && m.user_id === user.id;
     return getStatusType(m) === filter;
   });
 

@@ -1,10 +1,11 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowLeft, Target, Skull, Crosshair, Zap, Award, TrendingUp, Shield, Flame, Swords, Map } from "lucide-react";
+import { ArrowLeft, Target, Skull, Crosshair, Zap, Award, TrendingUp, Shield, Flame, Swords, Map, Key, Eye, EyeOff, Copy, Check } from "lucide-react";
 import Link from "next/link";
 import { HudCard, StatBox } from "@/components/hud-card";
 import { Match, getStatusText, getStatusType } from "@/lib/api";
+import { useAuth } from "@/lib/auth-context";
 import { useEffect, useState } from "react";
 
 interface ProfileStats {
@@ -38,6 +39,10 @@ export function ProfileContent({ steamId }: { steamId: string }) {
   const [mapCounts, setMapCounts] = useState<{ map: string; count: number }[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const { user } = useAuth();
+  const isOwnProfile = user?.steam_id === steamId;
+  const [showApiKey, setShowApiKey] = useState(false);
+  const [apiKeyCopied, setApiKeyCopied] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
@@ -296,6 +301,40 @@ export function ProfileContent({ steamId }: { steamId: string }) {
           </div>
         </div>
       </HudCard>
+
+      {/* API Key (own profile only) */}
+      {isOwnProfile && user?.api_key && (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
+          <HudCard label="API KEY" className="mb-6">
+            <div className="flex items-center gap-3 py-1">
+              <Key size={14} className="text-orbital-purple shrink-0" />
+              <div className="flex-1 flex items-center gap-2 bg-[#0A0A0A] border border-orbital-border px-3 py-2 overflow-hidden">
+                <code className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text truncate flex-1">
+                  {showApiKey ? user.api_key : "••••••••••••••••••••••••••••••"}
+                </code>
+                <button
+                  onClick={() => setShowApiKey(!showApiKey)}
+                  className="text-orbital-text-dim hover:text-orbital-purple transition-colors shrink-0"
+                  title={showApiKey ? "Ocultar" : "Mostrar"}
+                >
+                  {showApiKey ? <EyeOff size={14} /> : <Eye size={14} />}
+                </button>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(user.api_key || "");
+                    setApiKeyCopied(true);
+                    setTimeout(() => setApiKeyCopied(false), 2000);
+                  }}
+                  className="text-orbital-text-dim hover:text-orbital-purple transition-colors shrink-0"
+                  title="Copiar"
+                >
+                  {apiKeyCopied ? <Check size={14} className="text-orbital-success" /> : <Copy size={14} />}
+                </button>
+              </div>
+            </div>
+          </HudCard>
+        </motion.div>
+      )}
 
       {/* Main Stats Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
