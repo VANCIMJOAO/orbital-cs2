@@ -345,8 +345,6 @@ function AdminActions({ match, isActive, team1, team2, adminAction, setAdminActi
   const [backups, setBackups] = useState<string[]>([]);
   const [showBackups, setShowBackups] = useState(false);
 
-  const isLive = !!match.start_time && !match.end_time && !match.cancelled;
-
   const btnClass = "flex items-center gap-1.5 px-3 py-1.5 border transition-all font-[family-name:var(--font-jetbrains)] text-[0.65rem]";
   const btnPurple = `${btnClass} bg-orbital-purple/10 border-orbital-purple/30 hover:border-orbital-purple/60 text-orbital-purple`;
   const btnWarning = `${btnClass} bg-orbital-warning/10 border-orbital-warning/30 hover:border-orbital-warning/60 text-orbital-warning`;
@@ -470,7 +468,7 @@ function AdminActions({ match, isActive, team1, team2, adminAction, setAdminActi
           <>
             {/* Ações principais */}
             <div className="flex flex-wrap gap-2">
-              {isLive && (
+              {isActive && (
                 <>
                   <button onClick={handlePause} className={btnPurple}>
                     <Pause size={12} /> Pausar
@@ -478,23 +476,6 @@ function AdminActions({ match, isActive, team1, team2, adminAction, setAdminActi
                   <button onClick={handleUnpause} className={btnPurple}>
                     <Play size={12} /> Despausar
                   </button>
-                </>
-              )}
-              {isActive && (
-                <>
-                  <button onClick={handleCancel} className={btnWarning}>
-                    <Ban size={12} /> Cancelar
-                  </button>
-                  <button onClick={() => handleForfeit(match.team1_id)} className={btnSuccess}>
-                    <Flag size={12} /> W.O. {team1?.name || match.team1_string || "Time 1"}
-                  </button>
-                  <button onClick={() => handleForfeit(match.team2_id)} className={btnSuccess}>
-                    <Flag size={12} /> W.O. {team2?.name || match.team2_string || "Time 2"}
-                  </button>
-                </>
-              )}
-              {isLive && (
-                <>
                   <button onClick={handleRestart} className={btnWarning}>
                     <RotateCcw size={12} /> Reiniciar
                   </button>
@@ -504,12 +485,19 @@ function AdminActions({ match, isActive, team1, team2, adminAction, setAdminActi
                   <button onClick={handleLoadBackups} className={btnPurple}>
                     <Archive size={12} /> Backups
                   </button>
+                  <button onClick={handleCancel} className={btnWarning}>
+                    <Ban size={12} /> Cancelar
+                  </button>
+                  <button onClick={() => handleForfeit(match.team1_id)} className={btnSuccess}>
+                    <Flag size={12} /> W.O. {team1?.name || match.team1_string || "Time 1"}
+                  </button>
+                  <button onClick={() => handleForfeit(match.team2_id)} className={btnSuccess}>
+                    <Flag size={12} /> W.O. {team2?.name || match.team2_string || "Time 2"}
+                  </button>
+                  <button onClick={() => setShowRcon(!showRcon)} className={btnPurple}>
+                    <Terminal size={12} /> RCON
+                  </button>
                 </>
-              )}
-              {isActive && (
-                <button onClick={() => setShowRcon(!showRcon)} className={btnPurple}>
-                  <Terminal size={12} /> RCON
-                </button>
               )}
               {(match.cancelled || match.end_time) && (
                 <button onClick={handleDelete} className={btnDanger}>
