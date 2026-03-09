@@ -1,0 +1,197 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-orbital-purple: #A855F7;
+  --color-orbital-purple-dim: #7C3AED;
+  --color-orbital-purple-bright: #C084FC;
+  --color-orbital-bg: #0A0A0A;
+  --color-orbital-card: #111111;
+  --color-orbital-border: #1A1A1A;
+  --color-orbital-border-light: #2A2A2A;
+  --color-orbital-text: #E2E8F0;
+  --color-orbital-text-dim: #94A3B8;
+  --color-orbital-success: #22C55E;
+  --color-orbital-danger: #EF4444;
+  --color-orbital-warning: #F59E0B;
+  --color-orbital-live: #EF4444;
+  --font-heading: var(--font-orbitron);
+  --font-mono: var(--font-jetbrains);
+  --font-body: var(--font-inter);
+}
+
+/* ===== BASE ===== */
+body {
+  background: #0A0A0A;
+  color: #E2E8F0;
+  font-family: var(--font-body), sans-serif;
+  overflow-x: hidden;
+}
+
+/* ===== SCANLINES OVERLAY ===== */
+.scanlines::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.08) 2px,
+    rgba(0, 0, 0, 0.08) 4px
+  );
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* ===== GRID BACKGROUND ===== */
+.grid-bg {
+  background-image:
+    linear-gradient(rgba(168, 85, 247, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(168, 85, 247, 0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+/* ===== CHAMFERED CORNERS ===== */
+.chamfered {
+  clip-path: polygon(
+    12px 0%, calc(100% - 12px) 0%,
+    100% 12px, 100% calc(100% - 12px),
+    calc(100% - 12px) 100%, 12px 100%,
+    0% calc(100% - 12px), 0% 12px
+  );
+}
+
+.chamfered-lg {
+  clip-path: polygon(
+    20px 0%, calc(100% - 20px) 0%,
+    100% 20px, 100% calc(100% - 20px),
+    calc(100% - 20px) 100%, 20px 100%,
+    0% calc(100% - 20px), 0% 20px
+  );
+}
+
+/* ===== HUD CORNER BRACKETS ===== */
+.hud-corners {
+  position: relative;
+}
+.hud-corners::before,
+.hud-corners::after {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  pointer-events: none;
+}
+.hud-corners::before {
+  top: 0;
+  left: 0;
+  border-top: 2px solid #A855F7;
+  border-left: 2px solid #A855F7;
+}
+.hud-corners::after {
+  bottom: 0;
+  right: 0;
+  border-bottom: 2px solid #A855F7;
+  border-right: 2px solid #A855F7;
+}
+
+/* ===== GLOW EFFECTS ===== */
+.glow-purple {
+  box-shadow: 0 0 30px rgba(168, 85, 247, 0.3);
+}
+.glow-purple-sm {
+  box-shadow: 0 0 15px rgba(168, 85, 247, 0.2);
+}
+.glow-purple-text {
+  text-shadow: 0 0 20px rgba(168, 85, 247, 0.5);
+}
+
+/* ===== PULSE LIVE INDICATOR ===== */
+@keyframes pulse-live {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.animate-pulse-live {
+  animation: pulse-live 1.5s ease-in-out infinite;
+}
+
+/* ===== GLITCH EFFECT ===== */
+@keyframes glitch {
+  0% { transform: translate(0); }
+  20% { transform: translate(-2px, 2px); }
+  40% { transform: translate(-2px, -2px); }
+  60% { transform: translate(2px, 2px); }
+  80% { transform: translate(2px, -2px); }
+  100% { transform: translate(0); }
+}
+.glitch-hover:hover {
+  animation: glitch 0.3s ease-in-out;
+}
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0A0A0A;
+}
+::-webkit-scrollbar-thumb {
+  background: #2A2A2A;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #A855F7;
+}
+
+/* ===== TECH BORDER ===== */
+.tech-border {
+  border: 1px solid #1A1A1A;
+  position: relative;
+}
+.tech-border::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 20%;
+  width: 60%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #A855F7, transparent);
+}
+
+/* ===== STATUS INDICATOR ===== */
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.status-live { background: #EF4444; animation: pulse-live 1.5s ease-in-out infinite; }
+.status-upcoming { background: #F59E0B; }
+.status-finished { background: #22C55E; }
+
+/* ===== DATA TABLE ===== */
+.data-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+.data-table th {
+  font-family: var(--font-heading);
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #A855F7;
+  padding: 12px 16px;
+  border-bottom: 1px solid #1A1A1A;
+  text-align: left;
+}
+.data-table td {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  padding: 12px 16px;
+  border-bottom: 1px solid #111111;
+  color: #E2E8F0;
+}
+.data-table tr:hover td {
+  background: rgba(168, 85, 247, 0.05);
+}
