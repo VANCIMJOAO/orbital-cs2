@@ -51,8 +51,8 @@ export default function AdminTimes() {
     setTag(team.tag);
     setFlag(team.flag || "BR");
     setIsPublic(team.public_team);
-    const entries = Object.entries(team.players || {});
-    setPlayers(entries.length > 0 ? entries.map(([steamId, name]) => ({ steamId, name })) : [{ steamId: "", name: "" }]);
+    const entries = Object.entries(team.auth_name || {});
+    setPlayers(entries.length > 0 ? entries.map(([steamId, val]) => ({ steamId, name: typeof val === "string" ? val : val.name })) : [{ steamId: "", name: "" }]);
     setShowForm(true);
     setFeedback(null);
   };
@@ -239,7 +239,7 @@ export default function AdminTimes() {
                   <span className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim">[{team.tag}]</span>
                   {team.flag && <span className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim">{team.flag}</span>}
                   <span className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim/50">
-                    {Object.keys(team.players || {}).length} jogadores
+                    {Object.keys(team.auth_name || {}).length} jogadores
                   </span>
                 </div>
               </div>

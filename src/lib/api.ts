@@ -49,7 +49,7 @@ export interface Team {
   flag: string;
   logo: string | null;
   public_team: boolean;
-  players: Record<string, string>;
+  auth_name: Record<string, { name: string; captain: number; coach: number } | string>;
 }
 
 export interface PlayerStats {
@@ -311,14 +311,17 @@ export async function createTeam(team: { name: string; tag: string; flag: string
 }
 
 export async function updateTeam(team: { team_id: number; name?: string; tag?: string; flag?: string; logo?: string; public_team?: boolean; auth_name?: Record<string, string> }): Promise<void> {
-  // G5API PUT /teams espera "id" no body
-  const { team_id, ...rest } = team;
-  const payload = { id: team_id, ...rest };
+  // G5API PUT /teams espera array com "id", e auth_name no formato { steamId: { name, captain, coach } }
+  const { team_id, auth_name, ...rest } = team;
+  const authNested: Record<string, { name: string; captain: number; coach: number }> | undefined = auth_name
+    ? Object.fromEntries(Object.entries(auth_name).map(([steamId, nick]) => [steamId, { name: nick, captain: 0, coach: 0 }]))
+    : undefined;
+  const payload = { id: team_id, ...rest, ...(authNested ? { auth_name: authNested } : {}) };
   const res = await fetch(`${API_WRITE_PROXY}/teams`, {
     method: "PUT",
     credentials: "include",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
+    body: JSON.stringify([payload]),
   });
   if (!res.ok) {
     const errBody = await res.text().catch(() => "");

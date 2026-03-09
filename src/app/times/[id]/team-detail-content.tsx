@@ -12,7 +12,7 @@ interface Props {
 }
 
 export function TeamDetailContent({ team, matches }: Props) {
-  const players = Object.entries(team.players || {});
+  const players = Object.entries(team.auth_name || {}).map(([steamId, val]) => [steamId, typeof val === "string" ? val : val.name] as [string, string]);
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 pb-20">

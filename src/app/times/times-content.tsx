@@ -46,7 +46,7 @@ export function TimesContent({ teams }: { teams: Team[] }) {
 }
 
 function TeamCard({ team, delay }: { team: Team; delay: number }) {
-  const players = team.players ? Object.entries(team.players) : [];
+  const players = team.auth_name ? Object.entries(team.auth_name).map(([steamId, val]) => [steamId, typeof val === "string" ? val : val.name] as [string, string]) : [];
 
   return (
     <motion.div
