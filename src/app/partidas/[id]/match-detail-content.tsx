@@ -26,9 +26,11 @@ export function MatchDetailContent({ match: initialMatch, playerStats: initialSt
   const { isAdmin } = useAuth();
   const router = useRouter();
   const statusType = getStatusType(match);
-  const statusText = getStatusText(match);
-  const isLive = statusType === "live";
-  const isActive = statusType === "live" || statusType === "upcoming";
+  // Detectar partida em andamento: tem mapstats ativas (sem end_time) mesmo que start_time seja null
+  const hasActiveMap = mapStats.some(m => m.start_time && !m.end_time);
+  const isLive = statusType === "live" || (statusType === "upcoming" && hasActiveMap);
+  const statusText = isLive ? "AO VIVO" : getStatusText(match);
+  const isActive = isLive || statusType === "upcoming";
 
   // Calcular score ao vivo a partir do mapstats (mais preciso que match.team1_score)
   const currentMap = mapStats.length > 0 ? mapStats[mapStats.length - 1] : null;
