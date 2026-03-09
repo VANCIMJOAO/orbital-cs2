@@ -353,12 +353,18 @@ function AdminActions({ match, isActive, team1, team2, adminAction, setAdminActi
     setAdminAction(false);
   };
 
-  const menuItem = (icon: React.ReactNode, label: string, onClick: () => void, color = "text-orbital-text") => (
+  const sectionLabel = (text: string) => (
+    <div className="px-3 pt-3 pb-1.5 first:pt-2">
+      <span className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.2em] text-orbital-purple/60 uppercase">{text}</span>
+    </div>
+  );
+
+  const menuItem = (icon: React.ReactNode, label: string, onClick: () => void, color = "text-orbital-text-dim hover:text-orbital-text") => (
     <button
       onClick={onClick}
-      className={`w-full flex items-center gap-3 px-4 py-2.5 hover:bg-orbital-purple/10 transition-colors font-[family-name:var(--font-jetbrains)] text-[0.7rem] ${color} text-left`}
+      className={`w-full flex items-center gap-2.5 px-3 py-2 hover:bg-white/[0.04] transition-colors font-[family-name:var(--font-jetbrains)] text-[0.65rem] ${color} text-left group`}
     >
-      {icon}
+      <span className="shrink-0 opacity-60 group-hover:opacity-100 transition-opacity">{icon}</span>
       {label}
     </button>
   );
@@ -453,26 +459,32 @@ function AdminActions({ match, isActive, team1, team2, adminAction, setAdminActi
         {menuOpen && (
           <>
             <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
-            <div className="absolute left-0 top-full mt-1 z-50 w-64 bg-orbital-card border border-orbital-border shadow-xl shadow-black/50 py-1">
+            <div className="absolute left-0 top-full mt-1 z-50 w-60 bg-[#111113] border border-orbital-border/60 shadow-2xl shadow-black/60 rounded-sm overflow-hidden">
               {isActive && (
                 <>
-                  {menuItem(<Pause size={14} />, "Pausar partida", handlePause)}
-                  {menuItem(<Play size={14} />, "Despausar partida", handleUnpause)}
-                  <div className="border-t border-orbital-border/30 my-1" />
-                  {menuItem(<UserPlus size={14} />, "Adicionar jogador", () => openPanel("addplayer"))}
-                  {menuItem(<Archive size={14} />, "Listar backups", () => openPanel("backups"))}
-                  <div className="border-t border-orbital-border/30 my-1" />
-                  {menuItem(<Ban size={14} />, "Cancelar partida", handleCancel, "text-orbital-warning")}
-                  {menuItem(<Flag size={14} />, `W.O. ${team1?.name || match.team1_string || "Time 1"}`, () => handleForfeit(match.team1_id))}
-                  {menuItem(<Flag size={14} />, `W.O. ${team2?.name || match.team2_string || "Time 2"}`, () => handleForfeit(match.team2_id))}
-                  <div className="border-t border-orbital-border/30 my-1" />
-                  {menuItem(<RotateCcw size={14} />, "Reiniciar partida", handleRestart, "text-orbital-warning")}
-                  {menuItem(<Terminal size={14} />, "Enviar comando RCON", () => openPanel("rcon"))}
+                  {sectionLabel("Controle")}
+                  {menuItem(<Pause size={13} />, "Pausar partida", handlePause)}
+                  {menuItem(<Play size={13} />, "Despausar partida", handleUnpause)}
+                  {menuItem(<RotateCcw size={13} />, "Reiniciar partida", handleRestart, "text-orange-400/70 hover:text-orange-400")}
+
+                  {sectionLabel("Gerenciar")}
+                  {menuItem(<UserPlus size={13} />, "Adicionar jogador", () => openPanel("addplayer"))}
+                  {menuItem(<Archive size={13} />, "Listar backups", () => openPanel("backups"))}
+                  {menuItem(<Terminal size={13} />, "Comando RCON", () => openPanel("rcon"))}
+
+                  {sectionLabel("Encerrar")}
+                  {menuItem(<Ban size={13} />, "Cancelar partida", handleCancel, "text-orange-400/70 hover:text-orange-400")}
+                  {menuItem(<Flag size={13} />, `W.O. ${(team1?.name || match.team1_string || "Time 1").substring(0, 18)}`, () => handleForfeit(match.team1_id))}
+                  {menuItem(<Flag size={13} />, `W.O. ${(team2?.name || match.team2_string || "Time 2").substring(0, 18)}`, () => handleForfeit(match.team2_id))}
                 </>
               )}
               {(match.cancelled || match.end_time) && (
-                menuItem(<Trash2 size={14} />, "Deletar partida", handleDelete, "text-orbital-danger")
+                <>
+                  {sectionLabel("Perigo")}
+                  {menuItem(<Trash2 size={13} />, "Deletar partida", handleDelete, "text-red-400/70 hover:text-red-400")}
+                </>
               )}
+              <div className="h-1.5" />
             </div>
           </>
         )}
