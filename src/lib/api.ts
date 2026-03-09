@@ -314,7 +314,7 @@ export async function updateTeam(team: { team_id: number; name?: string; tag?: s
   // G5API PUT /teams espera "id" no body
   const { team_id, ...rest } = team;
   const payload = { id: team_id, ...rest };
-  const res = await fetch(`${API_WRITE_PROXY}/teams`, {
+  const res = await fetch(`/api/teams`, {
     method: "PUT",
     credentials: "include",
     headers: { "Content-Type": "application/json" },
