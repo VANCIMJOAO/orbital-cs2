@@ -3,11 +3,28 @@
 import { motion } from "framer-motion";
 import { Trophy, Crosshair, Swords, Users, Activity, ChevronRight, MapPin, Calendar, DollarSign, Shield } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
 import { HudCard, StatBox } from "@/components/hud-card";
 import { MatchCard } from "@/components/match-card";
 import { Match } from "@/lib/api";
 import { Tournament, getTeamName } from "@/lib/tournament";
+
+// Map screenshot URLs (Steam CDN)
+const MAP_IMAGES: Record<string, string> = {
+  de_ancient: "https://cdn.cloudflare.steamstatic.com/apps/csgo/images/csgo_react/maps/de_ancient.png",
+  de_anubis: "https://cdn.cloudflare.steamstatic.com/apps/csgo/images/csgo_react/maps/de_anubis.png",
+  de_dust2: "https://cdn.cloudflare.steamstatic.com/apps/csgo/images/csgo_react/maps/de_dust2.png",
+  de_inferno: "https://cdn.cloudflare.steamstatic.com/apps/csgo/images/csgo_react/maps/de_inferno.png",
+  de_mirage: "https://cdn.cloudflare.steamstatic.com/apps/csgo/images/csgo_react/maps/de_mirage.png",
+  de_nuke: "https://cdn.cloudflare.steamstatic.com/apps/csgo/images/csgo_react/maps/de_nuke.png",
+  de_overpass: "https://cdn.cloudflare.steamstatic.com/apps/csgo/images/csgo_react/maps/de_overpass.png",
+  de_vertigo: "https://cdn.cloudflare.steamstatic.com/apps/csgo/images/csgo_react/maps/de_vertigo.png",
+  de_train: "https://cdn.cloudflare.steamstatic.com/apps/csgo/images/csgo_react/maps/de_train.png",
+};
+
+function TeamLogo({ logo, size = 32, className = "" }: { logo: string | null | undefined; size?: number; className?: string }) {
+  if (!logo) return <Shield size={size * 0.6} className="text-orbital-text-dim" />;
+  return <img src={logo} alt="" width={size} height={size} className={`object-contain ${className}`} />;
+}
 
 interface HomeContentProps {
   tournament: Tournament | null;
@@ -46,6 +63,15 @@ function TournamentHome({ tournament: t, liveMatches, recentMatches, teamsMap }:
   // Current/next match
   const liveMatch = t.matches.find(m => m.status === "live");
   const nextMatch = t.matches.find(m => m.status === "pending" && m.team1_id && m.team2_id);
+
+  // Filter matches: only those belonging to this tournament (by match_id stored in bracket)
+  const tournamentMatchIds = new Set(t.matches.filter(m => m.match_id).map(m => m.match_id!));
+  const tournamentTeamIds = new Set(t.teams.map(tm => tm.id));
+  const tournamentRecentMatches = recentMatches.filter(m =>
+    tournamentMatchIds.has(m.id) ||
+    (m.title && m.title.includes(t.name)) ||
+    (tournamentTeamIds.has(m.team1_id) && tournamentTeamIds.has(m.team2_id))
+  );
 
   // Format date
   const formatDate = (d: string | null | undefined) => {
@@ -173,11 +199,9 @@ function TournamentHome({ tournament: t, liveMatches, recentMatches, teamsMap }:
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4 flex-1 justify-end">
                       <span className="font-[family-name:var(--font-orbitron)] text-sm sm:text-base font-bold text-orbital-text text-right">{team1}</span>
-                      {team1Logo ? (
-                        <Image src={`/api/team-logo?url=${encodeURIComponent(team1Logo)}`} alt="" width={40} height={40} className="w-10 h-10 object-contain" />
-                      ) : (
-                        <div className="w-10 h-10 border border-orbital-border flex items-center justify-center"><Shield size={18} className="text-orbital-text-dim" /></div>
-                      )}
+                      <div className="w-10 h-10 border border-orbital-border flex items-center justify-center bg-[#0A0A0A] shrink-0">
+                        <TeamLogo logo={team1Logo} size={32} className="w-8 h-8" />
+                      </div>
                     </div>
                     <div className="px-6 text-center">
                       <div className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.2em] text-orbital-text-dim mb-1">{m.label}</div>
@@ -195,11 +219,9 @@ function TournamentHome({ tournament: t, liveMatches, recentMatches, teamsMap }:
                       )}
                     </div>
                     <div className="flex items-center gap-4 flex-1">
-                      {team2Logo ? (
-                        <Image src={`/api/team-logo?url=${encodeURIComponent(team2Logo)}`} alt="" width={40} height={40} className="w-10 h-10 object-contain" />
-                      ) : (
-                        <div className="w-10 h-10 border border-orbital-border flex items-center justify-center"><Shield size={18} className="text-orbital-text-dim" /></div>
-                      )}
+                      <div className="w-10 h-10 border border-orbital-border flex items-center justify-center bg-[#0A0A0A] shrink-0">
+                        <TeamLogo logo={team2Logo} size={32} className="w-8 h-8" />
+                      </div>
                       <span className="font-[family-name:var(--font-orbitron)] text-sm sm:text-base font-bold text-orbital-text">{team2}</span>
                     </div>
                   </div>
@@ -214,7 +236,7 @@ function TournamentHome({ tournament: t, liveMatches, recentMatches, teamsMap }:
       <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="mb-10">
         <SectionHeader icon={Swords} title="BRACKET" href={`/campeonato/${t.id}`} />
         <HudCard className="p-5">
-          <BracketPreview tournament={t} teamsMap={teamsMap} />
+          <BracketPreview tournament={t} />
           <div className="text-center mt-4">
             <Link href={`/campeonato/${t.id}`} className="inline-flex items-center gap-2 px-4 py-2 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 transition-all font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-wider text-orbital-purple">
               VER BRACKET COMPLETO <ChevronRight size={12} />
@@ -229,7 +251,6 @@ function TournamentHome({ tournament: t, liveMatches, recentMatches, teamsMap }:
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {t.teams.map((team, i) => {
             const logo = teamsMap?.[team.id]?.logo;
-            // Check elimination status
             const teamMatches = t.matches.filter(m => m.status === "finished" && (m.team1_id === team.id || m.team2_id === team.id));
             const losses = teamMatches.filter(m => m.winner_id !== null && m.winner_id !== team.id).length;
             const eliminated = losses >= 2;
@@ -248,11 +269,7 @@ function TournamentHome({ tournament: t, liveMatches, recentMatches, teamsMap }:
                 }`}
               >
                 <div className="w-12 h-12 mx-auto mb-2 border border-orbital-border flex items-center justify-center bg-[#0A0A0A]">
-                  {logo ? (
-                    <Image src={`/api/team-logo?url=${encodeURIComponent(logo)}`} alt="" width={32} height={32} className="w-8 h-8 object-contain" />
-                  ) : (
-                    <Shield size={20} className="text-orbital-text-dim" />
-                  )}
+                  <TeamLogo logo={logo} size={32} className="w-8 h-8" />
                 </div>
                 <div className="font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-wider text-orbital-text truncate">
                   {team.name}
@@ -284,8 +301,19 @@ function TournamentHome({ tournament: t, liveMatches, recentMatches, teamsMap }:
               transition={{ delay: 0.6 + i * 0.05 }}
               className="relative bg-orbital-card border border-orbital-border hover:border-orbital-purple/30 transition-all overflow-hidden group"
             >
-              <div className="aspect-[16/10] bg-gradient-to-br from-orbital-purple/10 to-transparent flex items-center justify-center">
-                <Crosshair size={20} className="text-orbital-purple/30 group-hover:text-orbital-purple/60 transition-colors" />
+              <div className="aspect-[16/10] relative bg-[#0A0A0A] overflow-hidden">
+                {MAP_IMAGES[map] ? (
+                  <img
+                    src={MAP_IMAGES[map]}
+                    alt={map}
+                    className="w-full h-full object-cover opacity-70 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Crosshair size={20} className="text-orbital-purple/30" />
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
               </div>
               <div className="p-2 text-center">
                 <span className="font-[family-name:var(--font-orbitron)] text-[0.55rem] tracking-wider text-orbital-text group-hover:text-orbital-purple transition-colors">
@@ -297,12 +325,12 @@ function TournamentHome({ tournament: t, liveMatches, recentMatches, teamsMap }:
         </div>
       </motion.section>
 
-      {/* Recent G5API Matches */}
-      {recentMatches.length > 0 && (
+      {/* Tournament Matches from G5API */}
+      {tournamentRecentMatches.length > 0 && (
         <section className="mb-10">
-          <SectionHeader icon={Swords} title="PARTIDAS RECENTES" href="/partidas" />
+          <SectionHeader icon={Swords} title="RESULTADOS" href="/partidas" />
           <div className="grid gap-3">
-            {recentMatches.slice(0, 3).map((match, i) => (
+            {tournamentRecentMatches.slice(0, 5).map((match, i) => (
               <MatchCard key={match.id} match={match} teamsMap={teamsMap} delay={i * 0.08} />
             ))}
           </div>
@@ -312,7 +340,7 @@ function TournamentHome({ tournament: t, liveMatches, recentMatches, teamsMap }:
       {/* Live G5API matches */}
       {liveMatches.length > 0 && (
         <section className="mb-10">
-          <SectionHeader icon={Activity} title="PARTIDAS AO VIVO (G5API)" accent="live" />
+          <SectionHeader icon={Activity} title="AO VIVO" accent="live" />
           <div className="grid gap-3">
             {liveMatches.map((match, i) => (
               <MatchCard key={match.id} match={match} teamsMap={teamsMap} delay={i * 0.1} />
@@ -334,7 +362,7 @@ function TournamentHome({ tournament: t, liveMatches, recentMatches, teamsMap }:
 }
 
 // ── Bracket Preview (simplified visual) ──
-function BracketPreview({ tournament: t, teamsMap }: { tournament: Tournament; teamsMap?: Record<number, { name: string; logo: string | null }> }) {
+function BracketPreview({ tournament: t }: { tournament: Tournament }) {
   const winnerQFs = t.matches.filter(m => m.bracket === "winner" && m.round === 1);
   const winnerSFs = t.matches.filter(m => m.bracket === "winner" && m.round === 2);
   const wf = t.matches.find(m => m.id === "WF");
@@ -367,29 +395,22 @@ function BracketPreview({ tournament: t, teamsMap }: { tournament: Tournament; t
   return (
     <div className="overflow-x-auto">
       <div className="min-w-[600px]">
-        {/* Header */}
         <div className="grid grid-cols-4 gap-4 mb-3">
           <div className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.2em] text-orbital-text-dim text-center">QUARTAS</div>
           <div className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.2em] text-orbital-text-dim text-center">SEMIFINAL</div>
           <div className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.2em] text-orbital-text-dim text-center">FINAL</div>
           <div className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.2em] text-orbital-purple text-center">GRAND FINAL</div>
         </div>
-
-        {/* Bracket grid */}
         <div className="grid grid-cols-4 gap-4 items-center">
-          {/* QFs */}
           <div className="space-y-2">
             {winnerQFs.map(m => <MatchSlot key={m.id} match={m} />)}
           </div>
-          {/* SFs */}
           <div className="space-y-6">
             {winnerSFs.map(m => <MatchSlot key={m.id} match={m} />)}
           </div>
-          {/* WF */}
           <div className="flex items-center justify-center">
             <MatchSlot match={wf} />
           </div>
-          {/* GF */}
           <div className="flex items-center justify-center">
             <div className={`border-2 px-3 py-2 ${gf?.status === "live" ? "border-orbital-live/50 bg-orbital-live/5" : gf?.status === "finished" ? "border-orbital-success/30 bg-orbital-success/5" : "border-orbital-purple/30 bg-orbital-purple/5"}`}>
               {gf ? (
@@ -417,26 +438,21 @@ function BracketPreview({ tournament: t, teamsMap }: { tournament: Tournament; t
 function DefaultHome({ liveMatches, recentMatches, upcomingMatches, totalMatches, teamCount, teamsMap }: Omit<HomeContentProps, "tournament">) {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-20">
-      {/* Hero Section */}
       <section className="py-16 sm:py-24 text-center relative">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-orbital-purple/5 blur-[120px] rounded-full pointer-events-none" />
-
         <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }} className="relative">
           <div className="flex items-center justify-center gap-3 mb-6">
             <div className="h-[1px] w-16 bg-gradient-to-r from-transparent to-orbital-purple/60" />
             <Crosshair className="text-orbital-purple" size={20} />
             <div className="h-[1px] w-16 bg-gradient-to-l from-transparent to-orbital-purple/60" />
           </div>
-
           <h1 className="font-[family-name:var(--font-orbitron)] text-4xl sm:text-6xl font-black tracking-wider mb-4">
             <span className="text-orbital-purple glow-purple-text">ORBITAL</span>{" "}
             <span className="text-orbital-text">ROXA</span>
           </h1>
-
           <p className="font-[family-name:var(--font-jetbrains)] text-sm text-orbital-text-dim tracking-widest uppercase mb-2">
             Counter-Strike 2 Tournament Platform
           </p>
-
           <div className="flex items-center justify-center gap-2 mt-4">
             <span className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim">SYS::ONLINE</span>
             <span className="status-dot status-live" />
@@ -444,7 +460,6 @@ function DefaultHome({ liveMatches, recentMatches, upcomingMatches, totalMatches
         </motion.div>
       </section>
 
-      {/* Stats Row */}
       <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.3 }} className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-12">
         <HudCard className="text-center" delay={0.1}><StatBox label="Partidas" value={totalMatches} /></HudCard>
         <HudCard className="text-center" delay={0.2}><StatBox label="Ao Vivo" value={liveMatches.length} /></HudCard>
