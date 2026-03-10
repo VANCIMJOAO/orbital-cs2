@@ -229,28 +229,53 @@ export default function AdminTimes() {
                       <div
                         role="button"
                         tabIndex={0}
-                        onClick={() => {
-                          if (uploadingLogo) return;
+                        onClick={(evt) => {
+                          console.log("[LOGO] 1. onClick disparou");
+                          console.log("[LOGO] 2. event target:", evt.target);
+                          console.log("[LOGO] 3. event currentTarget:", evt.currentTarget);
+                          console.log("[LOGO] 4. event type:", evt.type);
+                          console.log("[LOGO] 5. event isTrusted:", evt.isTrusted);
+                          console.log("[LOGO] 6. event defaultPrevented:", evt.defaultPrevented);
+                          console.log("[LOGO] 7. uploadingLogo:", uploadingLogo);
+                          if (uploadingLogo) {
+                            console.log("[LOGO] 8. ABORTANDO - uploadingLogo é true");
+                            return;
+                          }
+                          console.log("[LOGO] 8. Criando input element...");
                           const input = document.createElement("input");
                           input.type = "file";
                           input.accept = "image/png,image/jpeg,image/webp,image/gif,image/svg+xml";
+                          console.log("[LOGO] 9. Input criado:", input);
+                          console.log("[LOGO] 10. Input type:", input.type);
+                          console.log("[LOGO] 11. Input accept:", input.accept);
                           input.onchange = async () => {
+                            console.log("[LOGO] 12. onChange disparou! files:", input.files);
                             const file = input.files?.[0];
-                            if (!file) return;
+                            if (!file) {
+                              console.log("[LOGO] 13. Nenhum arquivo selecionado");
+                              return;
+                            }
+                            console.log("[LOGO] 13. Arquivo selecionado:", file.name, file.type, file.size);
                             setUploadingLogo(true);
                             try {
                               const formData = new FormData();
                               formData.append("file", file);
+                              console.log("[LOGO] 14. Enviando para /api/upload...");
                               const res = await fetch("/api/upload", { method: "POST", body: formData });
                               const data = await res.json();
+                              console.log("[LOGO] 15. Resposta:", res.status, data);
                               if (!res.ok) throw new Error(data.error || "Erro no upload");
                               setLogo(data.url);
+                              console.log("[LOGO] 16. Logo setado:", data.url);
                             } catch (err) {
+                              console.error("[LOGO] ERRO no upload:", err);
                               setFeedback({ type: "error", msg: err instanceof Error ? err.message : "Erro ao enviar logo" });
                             }
                             setUploadingLogo(false);
                           };
+                          console.log("[LOGO] 17. Chamando input.click()...");
                           input.click();
+                          console.log("[LOGO] 18. input.click() chamado com sucesso");
                         }}
                         className={`flex items-center gap-2 px-4 py-3 border border-dashed transition-all w-full justify-center ${
                           uploadingLogo ? "border-orbital-purple/50 bg-orbital-purple/5" : "border-orbital-border hover:border-orbital-purple/40 hover:bg-orbital-purple/5 cursor-pointer"
