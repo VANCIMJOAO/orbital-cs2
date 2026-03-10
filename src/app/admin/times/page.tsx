@@ -183,6 +183,32 @@ export default function AdminTimes() {
         )}
       </div>
 
+      {/* Hidden file input - outside AnimatePresence to avoid overflow-hidden issues */}
+      <input
+        ref={logoInputRef}
+        type="file"
+        accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml"
+        className="hidden"
+        disabled={uploadingLogo}
+        onChange={async (e) => {
+          const file = e.target.files?.[0];
+          if (!file) return;
+          setUploadingLogo(true);
+          try {
+            const formData = new FormData();
+            formData.append("file", file);
+            const res = await fetch("/api/upload", { method: "POST", body: formData });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || "Erro no upload");
+            setLogo(data.url);
+          } catch (err) {
+            setFeedback({ type: "error", msg: err instanceof Error ? err.message : "Erro ao enviar logo" });
+          }
+          setUploadingLogo(false);
+          e.target.value = "";
+        }}
+      />
+
       {/* Form */}
       <AnimatePresence>
         {showForm && (
@@ -226,49 +252,23 @@ export default function AdminTimes() {
                         </button>
                       </div>
                     ) : (
-                      <>
-                        <input
-                          ref={logoInputRef}
-                          type="file"
-                          accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml"
-                          className="hidden"
-                          disabled={uploadingLogo}
-                          onChange={async (e) => {
-                            const file = e.target.files?.[0];
-                            if (!file) return;
-                            setUploadingLogo(true);
-                            try {
-                              const formData = new FormData();
-                              formData.append("file", file);
-                              const res = await fetch("/api/upload", { method: "POST", body: formData });
-                              const data = await res.json();
-                              if (!res.ok) throw new Error(data.error || "Erro no upload");
-                              setLogo(data.url);
-                            } catch (err) {
-                              setFeedback({ type: "error", msg: err instanceof Error ? err.message : "Erro ao enviar logo" });
-                            }
-                            setUploadingLogo(false);
-                            e.target.value = "";
-                          }}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => logoInputRef.current?.click()}
-                          disabled={uploadingLogo}
-                          className={`flex items-center gap-2 px-4 py-3 border border-dashed transition-all w-full justify-center ${
-                            uploadingLogo ? "border-orbital-purple/50 bg-orbital-purple/5" : "border-orbital-border hover:border-orbital-purple/40 hover:bg-orbital-purple/5 cursor-pointer"
-                          }`}
-                        >
-                          {uploadingLogo ? (
-                            <Loader2 size={16} className="text-orbital-purple animate-spin" />
-                          ) : (
-                            <ImagePlus size={16} className="text-orbital-text-dim" />
-                          )}
-                          <span className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text-dim">
-                            {uploadingLogo ? "Enviando..." : "Clique para enviar logo"}
-                          </span>
-                        </button>
-                      </>
+                      <button
+                        type="button"
+                        onClick={() => logoInputRef.current?.click()}
+                        disabled={uploadingLogo}
+                        className={`flex items-center gap-2 px-4 py-3 border border-dashed transition-all w-full justify-center ${
+                          uploadingLogo ? "border-orbital-purple/50 bg-orbital-purple/5" : "border-orbital-border hover:border-orbital-purple/40 hover:bg-orbital-purple/5 cursor-pointer"
+                        }`}
+                      >
+                        {uploadingLogo ? (
+                          <Loader2 size={16} className="text-orbital-purple animate-spin" />
+                        ) : (
+                          <ImagePlus size={16} className="text-orbital-text-dim" />
+                        )}
+                        <span className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text-dim">
+                          {uploadingLogo ? "Enviando..." : "Clique para enviar logo"}
+                        </span>
+                      </button>
                     )}
                   </div>
                 </div>
