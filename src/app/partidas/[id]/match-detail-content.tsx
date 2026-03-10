@@ -653,6 +653,20 @@ function InfoItem({ label, value }: { label: string; value: string | number }) {
   );
 }
 
+// Calculate HLTV-style rating when not provided by API
+function calcRating(p: PlayerStats): number {
+  if (p.rating && p.rating > 0) return p.rating;
+  const rounds = p.roundsplayed || 1;
+  const AverageKPR = 0.679;
+  const AverageSPR = 0.317;
+  const AverageRMK = 1.277;
+  const KillRating = p.kills / rounds / AverageKPR;
+  const SurvivalRating = (rounds - p.deaths) / rounds / AverageSPR;
+  const killcount = (p.k1 || 0) + 4 * (p.k2 || 0) + 9 * (p.k3 || 0) + 16 * (p.k4 || 0) + 25 * (p.k5 || 0);
+  const RoundsWithMultipleKillsRating = killcount / rounds / AverageRMK;
+  return (KillRating + 0.7 * SurvivalRating + RoundsWithMultipleKillsRating) / 2.7;
+}
+
 // ── Player Stats Table (HLTV-inspired) ──
 function PlayerStatsTable({ teamName, teamLogo, stats, isWinner, delay }: {
   teamName: string;
@@ -661,7 +675,7 @@ function PlayerStatsTable({ teamName, teamLogo, stats, isWinner, delay }: {
   isWinner: boolean;
   delay: number;
 }) {
-  const sorted = [...stats].sort((a, b) => (b.rating || 0) - (a.rating || 0));
+  const sorted = [...stats].sort((a, b) => calcRating(b) - calcRating(a));
 
   return (
     <motion.div
@@ -716,7 +730,7 @@ function PlayerStatsTable({ teamName, teamLogo, stats, isWinner, delay }: {
                 const adr = player.roundsplayed > 0 ? Math.round(player.damage / player.roundsplayed) : 0;
                 const diff = player.kills - player.deaths;
                 const kast = player.kast || 0;
-                const rating = player.rating || 0;
+                const rating = calcRating(player);
 
                 return (
                   <tr key={player.id} className={`border-b border-orbital-border/20 transition-colors hover:bg-white/[0.02] ${

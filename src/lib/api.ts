@@ -76,6 +76,11 @@ export interface PlayerStats {
   kast: number;
   contribution_score: number;
   mvp: number;
+  k1: number;
+  k2: number;
+  k3: number;
+  k4: number;
+  k5: number;
   team_name?: string;
 }
 
