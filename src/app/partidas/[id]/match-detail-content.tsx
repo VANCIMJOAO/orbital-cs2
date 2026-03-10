@@ -1,13 +1,31 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowLeft, Radio, Map, Users, Target, Skull, Crosshair, RefreshCw, Download, Ban, Flag, Trash2, Loader2, Pause, Play, RotateCcw, UserPlus, Archive, Terminal, Send, ChevronDown, Settings } from "lucide-react";
+import { ArrowLeft, Radio, Map, Users, Target, Skull, Crosshair, RefreshCw, Download, Ban, Flag, Trash2, Loader2, Pause, Play, RotateCcw, UserPlus, Archive, Terminal, Send, ChevronDown, Settings, Shield, Clock, Calendar, Trophy } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { HudCard } from "@/components/hud-card";
 import { Match, PlayerStats, MapStats, Team, Server, VetoEntry, getStatusText, getStatusType, updateMatch, deleteMatch, pauseMatch, unpauseMatch, restartMatch, addPlayerToMatch, getMatchBackups, restoreMatchBackup, sendMatchRcon } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { useEffect, useState, useCallback } from "react";
+
+// Map screenshot URLs (GitHub: ghostcap-gaming/cs2-map-images)
+const MAP_IMAGES: Record<string, string> = {
+  de_ancient: "https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_ancient.png",
+  de_anubis: "https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_anubis.png",
+  de_dust2: "https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_dust2.png",
+  de_inferno: "https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_inferno.png",
+  de_mirage: "https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_mirage.png",
+  de_nuke: "https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_nuke.png",
+  de_overpass: "https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_overpass.png",
+  de_vertigo: "https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_vertigo.png",
+  de_train: "https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_train.png",
+};
+
+function TeamLogo({ logo, size = 48, className = "" }: { logo: string | null | undefined; size?: number; className?: string }) {
+  if (!logo) return <Shield size={size * 0.5} className="text-orbital-text-dim" />;
+  return <img src={logo} alt="" width={size} height={size} className={`object-contain ${className}`} />;
+}
 
 interface Props {
   match: Match;
@@ -25,21 +43,30 @@ export function MatchDetailContent({ match: initialMatch, playerStats: initialSt
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
   const [vetoes, setVetoes] = useState<VetoEntry[]>([]);
   const [adminAction, setAdminAction] = useState(false);
+  const [activeTab, setActiveTab] = useState<"all" | number>("all");
   const { isAdmin } = useAuth();
   const router = useRouter();
   const statusType = getStatusType(match);
-  // Detectar partida em andamento: tem mapstats ativas (sem end_time) mesmo que start_time seja null
   const hasActiveMap = mapStats.some(m => m.start_time && !m.end_time);
   const isLive = statusType === "live" || (statusType === "upcoming" && hasActiveMap);
   const statusText = isLive ? "AO VIVO" : getStatusText(match);
   const isActive = isLive || statusType === "upcoming";
+  const isFinished = statusType === "finished";
 
-  // Calcular score ao vivo a partir do mapstats (mais preciso que match.team1_score)
+  // Live score from mapstats
   const currentMap = mapStats.length > 0 ? mapStats[mapStats.length - 1] : null;
   const liveScore1 = currentMap ? currentMap.team1_score : match.team1_score;
   const liveScore2 = currentMap ? currentMap.team2_score : match.team2_score;
 
-  // Polling para atualizar dados ao vivo
+  // Map wins (for BO3)
+  const mapWins1 = mapStats.filter(ms => ms.end_time && ms.winner === match.team1_id).length;
+  const mapWins2 = mapStats.filter(ms => ms.end_time && ms.winner === match.team2_id).length;
+
+  // Use map wins for BO3+ overall score display, round score for current map
+  const isBO1 = (match.max_maps || match.num_maps || 1) <= 1;
+  const overallScore1 = isBO1 ? liveScore1 : mapWins1;
+  const overallScore2 = isBO1 ? liveScore2 : mapWins2;
+
   const fetchLiveData = useCallback(async () => {
     try {
       const [matchRes, statsRes, mapRes] = await Promise.all([
@@ -58,13 +85,11 @@ export function MatchDetailContent({ match: initialMatch, playerStats: initialSt
     }
   }, [match.id]);
 
-  // SSE para updates em tempo real + polling como fallback
+  // SSE + polling
   useEffect(() => {
     if (!isLive) return;
-
     let sseActive = false;
     const eventSource = new EventSource(`/api/matches/${match.id}/stream`);
-
     eventSource.onmessage = (event) => {
       sseActive = true;
       try {
@@ -73,28 +98,12 @@ export function MatchDetailContent({ match: initialMatch, playerStats: initialSt
         if (data.playerstats && Array.isArray(data.playerstats) && data.playerstats.length > 0) setPlayerStats(data.playerstats);
         if (data.mapstats && Array.isArray(data.mapstats) && data.mapstats.length > 0) setMapStats(data.mapstats);
         setLastUpdate(new Date());
-      } catch {
-        // evento não-JSON, ignorar
-      }
+      } catch { }
     };
-
-    eventSource.onerror = () => {
-      sseActive = false;
-    };
-
-    // Polling como fallback (30s se SSE ativo, 10s se não)
-    const interval = setInterval(() => {
-      if (!sseActive) fetchLiveData();
-    }, 10000);
-
-    // Polling lento de backup mesmo com SSE
+    eventSource.onerror = () => { sseActive = false; };
+    const interval = setInterval(() => { if (!sseActive) fetchLiveData(); }, 10000);
     const backupInterval = setInterval(fetchLiveData, 30000);
-
-    return () => {
-      eventSource.close();
-      clearInterval(interval);
-      clearInterval(backupInterval);
-    };
+    return () => { eventSource.close(); clearInterval(interval); clearInterval(backupInterval); };
   }, [isLive, fetchLiveData, match.id]);
 
   // Fetch vetoes
@@ -106,125 +115,176 @@ export function MatchDetailContent({ match: initialMatch, playerStats: initialSt
       .catch(() => {});
   }, [match.id]);
 
-  // Separar stats por time
-  const team1Stats = playerStats.filter((s) => s.team_id === match.team1_id);
-  const team2Stats = playerStats.filter((s) => s.team_id === match.team2_id);
+  // Stats per team (filtered by active tab / map)
+  const filteredStats = activeTab === "all"
+    ? playerStats
+    : playerStats.filter(s => s.map_id === activeTab);
+  const team1Stats = filteredStats.filter((s) => s.team_id === match.team1_id);
+  const team2Stats = filteredStats.filter((s) => s.team_id === match.team2_id);
+
+  // Format date
+  const matchDate = match.start_time
+    ? new Date(match.start_time).toLocaleDateString("pt-BR", { day: "numeric", month: "long", year: "numeric" })
+    : null;
+  const matchTime = match.start_time
+    ? new Date(match.start_time).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
+    : null;
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-20">
-      {/* Back */}
+      {/* Top bar */}
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-4 flex items-center justify-between">
         <Link href="/partidas" className="inline-flex items-center gap-2 text-orbital-text-dim hover:text-orbital-purple transition-colors font-[family-name:var(--font-jetbrains)] text-xs">
           <ArrowLeft size={14} />
           Voltar
         </Link>
-        {isLive && (
-          <button
-            onClick={fetchLiveData}
-            className="inline-flex items-center gap-2 text-orbital-text-dim hover:text-orbital-purple transition-colors font-[family-name:var(--font-jetbrains)] text-[0.6rem]"
-          >
-            <RefreshCw size={12} />
-            Atualizar
-          </button>
-        )}
-      </motion.div>
-
-      {/* Scoreboard Hero */}
-      <HudCard glow={isLive} className="mb-6" label={isLive ? "LIVE" : `PARTIDA #${match.id}`}>
-        <div className="py-4">
-          {/* Status */}
-          <div className="flex items-center justify-center gap-2 mb-6">
-            {isLive && <Radio size={14} className="text-orbital-live animate-pulse-live" />}
-            <span className={`font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-[0.2em] uppercase ${
-              isLive ? "text-orbital-live" : "text-orbital-text-dim"
-            }`}>
-              {statusText}
-            </span>
-            {isLive && currentMap && (
-              <span className="font-[family-name:var(--font-jetbrains)] text-[0.55rem] text-orbital-text-dim ml-2">
-                {currentMap.map_name.replace("de_", "").toUpperCase()}
-              </span>
-            )}
-          </div>
-
-          {/* Score */}
-          <div className="flex items-center justify-center gap-6 sm:gap-12">
-            <div className="flex-1 text-right">
-              <h2 className={`font-[family-name:var(--font-orbitron)] text-lg sm:text-2xl font-bold tracking-wider ${
-                match.winner === match.team1_id ? "text-orbital-success" : "text-orbital-text"
-              }`}>
-                {match.team1_string || team1?.name || `Time ${match.team1_id}`}
-              </h2>
-              {team1?.tag && (
-                <span className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim">
-                  [{team1.tag}]
-                </span>
-              )}
-            </div>
-
-            <div className="flex items-center gap-4">
-              <span className={`font-[family-name:var(--font-jetbrains)] text-4xl sm:text-5xl font-bold ${
-                match.winner === match.team1_id ? "text-orbital-success" : "text-orbital-text"
-              }`}>
-                {liveScore1}
-              </span>
-              <div className="flex flex-col items-center">
-                <span className="font-[family-name:var(--font-orbitron)] text-[0.5rem] text-orbital-purple tracking-widest">VS</span>
-                <span className="font-[family-name:var(--font-jetbrains)] text-[0.55rem] text-orbital-text-dim">
-                  BO{match.max_maps || match.num_maps || 1}
-                </span>
-              </div>
-              <span className={`font-[family-name:var(--font-jetbrains)] text-4xl sm:text-5xl font-bold ${
-                match.winner === match.team2_id ? "text-orbital-success" : "text-orbital-text"
-              }`}>
-                {liveScore2}
-              </span>
-            </div>
-
-            <div className="flex-1 text-left">
-              <h2 className={`font-[family-name:var(--font-orbitron)] text-lg sm:text-2xl font-bold tracking-wider ${
-                match.winner === match.team2_id ? "text-orbital-success" : "text-orbital-text"
-              }`}>
-                {match.team2_string || team2?.name || `Time ${match.team2_id}`}
-              </h2>
-              {team2?.tag && (
-                <span className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim">
-                  [{team2.tag}]
-                </span>
-              )}
-            </div>
-          </div>
-
-          {/* Connect buttons */}
-          {server && isActive && (
-            <div className="flex items-center justify-center gap-3 mt-5">
-              <a
-                href={`steam://connect/${server.ip_string}:${server.port}`}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-orbital-purple/20 border border-orbital-purple/40 hover:border-orbital-purple hover:bg-orbital-purple/30 transition-all font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-wider text-orbital-purple"
-              >
-                CONNECT
-              </a>
-              {server.gotv_port && (
-                <a
-                  href={`steam://connect/${server.ip_string}:${server.gotv_port}`}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-orbital-card border border-orbital-border hover:border-orbital-purple/40 transition-all font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-wider text-orbital-text-dim hover:text-orbital-text"
-                >
-                  GOTV
-                </a>
-              )}
-            </div>
-          )}
-
-          {/* Live update info */}
+        <div className="flex items-center gap-3">
           {isLive && (
-            <div className="text-center mt-4">
-              <span className="font-[family-name:var(--font-jetbrains)] text-[0.55rem] text-orbital-text-dim">
-                Atualizado: {lastUpdate.toLocaleTimeString("pt-BR")}
-              </span>
-            </div>
+            <span className="font-[family-name:var(--font-jetbrains)] text-[0.55rem] text-orbital-text-dim">
+              {lastUpdate.toLocaleTimeString("pt-BR")}
+            </span>
+          )}
+          {isLive && (
+            <button onClick={fetchLiveData} className="inline-flex items-center gap-1.5 text-orbital-text-dim hover:text-orbital-purple transition-colors font-[family-name:var(--font-jetbrains)] text-[0.6rem]">
+              <RefreshCw size={12} /> Atualizar
+            </button>
           )}
         </div>
-      </HudCard>
+      </motion.div>
+
+      {/* ═══ HERO SCOREBOARD (HLTV-inspired) ═══ */}
+      <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
+        <div className={`relative bg-orbital-card border overflow-hidden ${
+          isLive ? "border-orbital-live/30" : "border-orbital-border"
+        }`}>
+          {/* Top accent */}
+          <div className={`absolute top-0 left-0 right-0 h-[2px] ${
+            isLive ? "bg-orbital-live" : "bg-gradient-to-r from-transparent via-orbital-purple/40 to-transparent"
+          }`} />
+
+          <div className="relative py-8 px-6">
+            {/* Status + Date row */}
+            <div className="flex items-center justify-center gap-4 mb-6">
+              {matchDate && (
+                <span className="flex items-center gap-1.5 font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim">
+                  <Calendar size={11} className="text-orbital-purple/60" />
+                  {matchDate}
+                </span>
+              )}
+              {matchTime && (
+                <span className="flex items-center gap-1.5 font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim">
+                  <Clock size={11} className="text-orbital-purple/60" />
+                  {matchTime}
+                </span>
+              )}
+              {match.title && (
+                <span className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-purple/80">
+                  {match.title}
+                </span>
+              )}
+            </div>
+
+            {/* Score layout: Team1 | Score | Team2 */}
+            <div className="flex items-center justify-center gap-6 sm:gap-10">
+              {/* Team 1 */}
+              <div className="flex-1 flex flex-col items-end gap-2">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 border border-orbital-border flex items-center justify-center bg-[#0A0A0A]">
+                  <TeamLogo logo={team1?.logo} size={56} className="w-12 h-12 sm:w-14 sm:h-14" />
+                </div>
+                <h2 className={`font-[family-name:var(--font-orbitron)] text-sm sm:text-lg font-bold tracking-wider text-right ${
+                  match.winner === match.team1_id ? "text-orbital-success" : "text-orbital-text"
+                }`}>
+                  {match.team1_string || team1?.name || `Time ${match.team1_id}`}
+                </h2>
+                {match.winner === match.team1_id && (
+                  <span className="flex items-center gap-1 font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.15em] text-orbital-success">
+                    <Trophy size={10} /> VENCEDOR
+                  </span>
+                )}
+              </div>
+
+              {/* Score center */}
+              <div className="text-center min-w-[120px]">
+                <div className="flex items-center justify-center gap-3">
+                  <span className={`font-[family-name:var(--font-jetbrains)] text-5xl sm:text-6xl font-black ${
+                    match.winner === match.team1_id ? "text-orbital-success" : "text-orbital-text"
+                  }`}>
+                    {overallScore1}
+                  </span>
+                  <div className="flex flex-col items-center gap-1">
+                    {isLive && (
+                      <span className="flex items-center gap-1.5 px-2 py-0.5 bg-orbital-live/15 border border-orbital-live/30">
+                        <Radio size={10} className="text-orbital-live animate-pulse-live" />
+                        <span className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.15em] text-orbital-live">LIVE</span>
+                      </span>
+                    )}
+                    {!isLive && (
+                      <span className={`font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.15em] ${
+                        isFinished ? "text-orbital-text-dim" : "text-orbital-warning"
+                      }`}>
+                        {statusText}
+                      </span>
+                    )}
+                    <span className="font-[family-name:var(--font-jetbrains)] text-[0.55rem] text-orbital-text-dim">
+                      BO{match.max_maps || match.num_maps || 1}
+                    </span>
+                  </div>
+                  <span className={`font-[family-name:var(--font-jetbrains)] text-5xl sm:text-6xl font-black ${
+                    match.winner === match.team2_id ? "text-orbital-success" : "text-orbital-text"
+                  }`}>
+                    {overallScore2}
+                  </span>
+                </div>
+
+                {/* Current map round score (for BO3 when live) */}
+                {!isBO1 && currentMap && isLive && (
+                  <div className="mt-2 font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text-dim">
+                    <span className="text-orbital-purple">{currentMap.map_name.replace("de_", "").toUpperCase()}</span>
+                    {" "}{currentMap.team1_score} : {currentMap.team2_score}
+                  </div>
+                )}
+              </div>
+
+              {/* Team 2 */}
+              <div className="flex-1 flex flex-col items-start gap-2">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 border border-orbital-border flex items-center justify-center bg-[#0A0A0A]">
+                  <TeamLogo logo={team2?.logo} size={56} className="w-12 h-12 sm:w-14 sm:h-14" />
+                </div>
+                <h2 className={`font-[family-name:var(--font-orbitron)] text-sm sm:text-lg font-bold tracking-wider ${
+                  match.winner === match.team2_id ? "text-orbital-success" : "text-orbital-text"
+                }`}>
+                  {match.team2_string || team2?.name || `Time ${match.team2_id}`}
+                </h2>
+                {match.winner === match.team2_id && (
+                  <span className="flex items-center gap-1 font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.15em] text-orbital-success">
+                    <Trophy size={10} /> VENCEDOR
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Connect buttons */}
+            {server && isActive && (
+              <div className="flex items-center justify-center gap-3 mt-6">
+                <a
+                  href={`steam://connect/${server.ip_string}:${server.port}`}
+                  className="inline-flex items-center gap-2 px-5 py-2 bg-orbital-purple/20 border border-orbital-purple/40 hover:border-orbital-purple hover:bg-orbital-purple/30 transition-all font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-wider text-orbital-purple"
+                >
+                  CONNECT
+                </a>
+                {server.gotv_port && (
+                  <a
+                    href={`steam://connect/${server.ip_string}:${server.gotv_port}`}
+                    className="inline-flex items-center gap-2 px-5 py-2 bg-orbital-card border border-orbital-border hover:border-orbital-purple/40 transition-all font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-wider text-orbital-text-dim hover:text-orbital-text"
+                  >
+                    GOTV
+                  </a>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </motion.section>
 
       {/* Admin Actions */}
       {isAdmin && (
@@ -242,101 +302,191 @@ export function MatchDetailContent({ match: initialMatch, playerStats: initialSt
         />
       )}
 
-      {/* Map Stats */}
+      {/* ═══ MAPS SECTION (HLTV-style with images) ═══ */}
       {mapStats.length > 0 && (
-        <div className={`grid grid-cols-1 ${mapStats.length > 1 ? "sm:grid-cols-" + Math.min(mapStats.length, 3) : ""} gap-4 mb-6`}>
-          {mapStats.map((ms, i) => (
-            <HudCard key={ms.id} delay={i * 0.1} label={`MAPA ${ms.map_number + 1}`}>
-              <div className="text-center py-2">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <Map size={12} className="text-orbital-purple" />
-                  <span className="font-[family-name:var(--font-orbitron)] text-xs tracking-wider text-orbital-text">
-                    {ms.map_name.replace("de_", "").toUpperCase()}
-                  </span>
-                  {!ms.end_time && isLive && (
-                    <span className="status-dot status-live ml-1" />
+        <motion.section initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="mb-6">
+          <div className="flex items-center gap-3 mb-3">
+            <Map size={14} className="text-orbital-purple" />
+            <h3 className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.2em] text-orbital-purple">MAPAS</h3>
+            <div className="h-[1px] flex-1 bg-gradient-to-r from-orbital-purple/30 to-transparent" />
+          </div>
+          <div className={`grid gap-3 ${mapStats.length === 1 ? "grid-cols-1 max-w-md" : mapStats.length === 2 ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1 sm:grid-cols-3"}`}>
+            {mapStats.map((ms, i) => {
+              const isCurrentMap = !ms.end_time && isLive;
+              const mapImg = MAP_IMAGES[ms.map_name];
+              return (
+                <motion.div
+                  key={ms.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 + i * 0.08 }}
+                  className={`relative bg-orbital-card border overflow-hidden ${
+                    isCurrentMap ? "border-orbital-live/40" : ms.end_time ? "border-orbital-border" : "border-orbital-border/50"
+                  }`}
+                >
+                  {/* Map image background */}
+                  {mapImg && (
+                    <div className="relative h-20 overflow-hidden">
+                      <img src={mapImg} alt={ms.map_name} className="w-full h-full object-cover opacity-40" />
+                      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-orbital-card" />
+                      {isCurrentMap && (
+                        <div className="absolute top-2 right-2 flex items-center gap-1 px-1.5 py-0.5 bg-orbital-live/20 border border-orbital-live/40">
+                          <span className="w-1.5 h-1.5 rounded-full bg-orbital-live animate-pulse" />
+                          <span className="font-[family-name:var(--font-orbitron)] text-[0.4rem] tracking-wider text-orbital-live">LIVE</span>
+                        </div>
+                      )}
+                      <div className="absolute bottom-2 left-3 font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.15em] text-orbital-text-dim">
+                        MAPA {ms.map_number + 1}
+                      </div>
+                    </div>
                   )}
-                </div>
-                <div className="font-[family-name:var(--font-jetbrains)] text-xl font-bold">
-                  <span className={ms.winner === match.team1_id ? "text-orbital-success" : "text-orbital-text"}>
-                    {ms.team1_score}
-                  </span>
-                  <span className="text-orbital-text-dim mx-2">:</span>
-                  <span className={ms.winner === match.team2_id ? "text-orbital-success" : "text-orbital-text"}>
-                    {ms.team2_score}
-                  </span>
-                </div>
-                {ms.demoFile && ms.end_time && (
-                  <a
-                    href={`/api/demo/${ms.demoFile}`}
-                    download
-                    className="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 transition-all font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-purple"
-                  >
-                    <Download size={11} />
-                    DOWNLOAD DEMO
-                  </a>
-                )}
-              </div>
-            </HudCard>
-          ))}
-        </div>
+
+                  <div className="p-4">
+                    {/* Map name */}
+                    <div className="text-center mb-3">
+                      <span className="font-[family-name:var(--font-orbitron)] text-sm tracking-wider text-orbital-text">
+                        {ms.map_name.replace("de_", "").toUpperCase()}
+                      </span>
+                    </div>
+
+                    {/* Score */}
+                    <div className="flex items-center justify-center gap-4">
+                      <div className="text-right flex-1">
+                        <span className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim">
+                          {match.team1_string || team1?.name || "Time 1"}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className={`font-[family-name:var(--font-jetbrains)] text-2xl font-bold ${
+                          ms.end_time && ms.winner === match.team1_id ? "text-orbital-success" : "text-orbital-text"
+                        }`}>
+                          {ms.team1_score}
+                        </span>
+                        <span className="text-orbital-text-dim text-sm">:</span>
+                        <span className={`font-[family-name:var(--font-jetbrains)] text-2xl font-bold ${
+                          ms.end_time && ms.winner === match.team2_id ? "text-orbital-success" : "text-orbital-text"
+                        }`}>
+                          {ms.team2_score}
+                        </span>
+                      </div>
+                      <div className="text-left flex-1">
+                        <span className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim">
+                          {match.team2_string || team2?.name || "Time 2"}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Demo download */}
+                    {ms.demoFile && ms.end_time && (
+                      <div className="text-center mt-3">
+                        <a
+                          href={`/api/demo/${ms.demoFile}`}
+                          download
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 transition-all font-[family-name:var(--font-jetbrains)] text-[0.55rem] text-orbital-purple"
+                        >
+                          <Download size={10} /> DEMO
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </motion.section>
       )}
 
-      {/* Veto History */}
+      {/* ═══ VETO HISTORY ═══ */}
       {vetoes.length > 0 && (
-        <HudCard delay={0.15} label="VETO" className="mb-6">
-          <div className="flex flex-wrap gap-2 py-2">
-            {vetoes.map((v, i) => (
-              <div
-                key={v.id || i}
-                className={`flex items-center gap-2 px-3 py-2 border ${
-                  v.pick_or_ban === "ban"
-                    ? "bg-orbital-danger/5 border-orbital-danger/20"
-                    : "bg-orbital-success/5 border-orbital-success/20"
+        <motion.section initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="mb-6">
+          <div className="flex items-center gap-3 mb-3">
+            <Ban size={14} className="text-orbital-purple" />
+            <h3 className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.2em] text-orbital-purple">VETO</h3>
+            <div className="h-[1px] flex-1 bg-gradient-to-r from-orbital-purple/30 to-transparent" />
+          </div>
+          <div className="bg-orbital-card border border-orbital-border p-4">
+            <div className="space-y-1.5">
+              {vetoes.map((v, i) => (
+                <div key={v.id || i} className="flex items-center gap-3 py-1.5">
+                  <span className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim w-4 text-right">{i + 1}.</span>
+                  <span className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text min-w-[80px]">{v.team_name}</span>
+                  <span className={`font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.1em] px-2 py-0.5 border ${
+                    v.pick_or_ban === "ban"
+                      ? "text-orbital-danger bg-orbital-danger/5 border-orbital-danger/20"
+                      : "text-orbital-success bg-orbital-success/5 border-orbital-success/20"
+                  }`}>
+                    {v.pick_or_ban === "ban" ? "REMOVEU" : "ESCOLHEU"}
+                  </span>
+                  <span className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-text font-bold">
+                    {v.map.replace("de_", "").toUpperCase()}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </motion.section>
+      )}
+
+      {/* ═══ PLAYER STATS (HLTV-style with tabs) ═══ */}
+      {(team1Stats.length > 0 || team2Stats.length > 0) ? (
+        <motion.section initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+          <div className="flex items-center gap-3 mb-3">
+            <Crosshair size={14} className="text-orbital-purple" />
+            <h3 className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.2em] text-orbital-purple">ESTATÍSTICAS</h3>
+            <div className="h-[1px] flex-1 bg-gradient-to-r from-orbital-purple/30 to-transparent" />
+          </div>
+
+          {/* Map tabs (when multiple maps) */}
+          {mapStats.length > 1 && (
+            <div className="flex items-center gap-1 mb-4">
+              <button
+                onClick={() => setActiveTab("all")}
+                className={`px-3 py-1.5 font-[family-name:var(--font-orbitron)] text-[0.55rem] tracking-wider border transition-all ${
+                  activeTab === "all"
+                    ? "border-orbital-purple/50 bg-orbital-purple/10 text-orbital-purple"
+                    : "border-orbital-border text-orbital-text-dim hover:text-orbital-text hover:border-orbital-border/80"
                 }`}
               >
-                <span className={`font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.1em] ${
-                  v.pick_or_ban === "ban" ? "text-orbital-danger" : "text-orbital-success"
-                }`}>
-                  {v.pick_or_ban === "ban" ? "BAN" : "PICK"}
-                </span>
-                <span className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim">
-                  {v.team_name}
-                </span>
-                <span className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text font-bold">
-                  {v.map.replace("de_", "").toUpperCase()}
-                </span>
-              </div>
-            ))}
+                GERAL
+              </button>
+              {mapStats.map(ms => (
+                <button
+                  key={ms.id}
+                  onClick={() => setActiveTab(ms.id)}
+                  className={`px-3 py-1.5 font-[family-name:var(--font-orbitron)] text-[0.55rem] tracking-wider border transition-all ${
+                    activeTab === ms.id
+                      ? "border-orbital-purple/50 bg-orbital-purple/10 text-orbital-purple"
+                      : "border-orbital-border text-orbital-text-dim hover:text-orbital-text hover:border-orbital-border/80"
+                  }`}
+                >
+                  {ms.map_name.replace("de_", "").toUpperCase()}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <div className="space-y-5">
+            {team1Stats.length > 0 && (
+              <PlayerStatsTable
+                teamName={match.team1_string || team1?.name || "Time 1"}
+                teamLogo={team1?.logo || null}
+                stats={team1Stats}
+                isWinner={match.winner === match.team1_id}
+                delay={0.25}
+              />
+            )}
+            {team2Stats.length > 0 && (
+              <PlayerStatsTable
+                teamName={match.team2_string || team2?.name || "Time 2"}
+                teamLogo={team2?.logo || null}
+                stats={team2Stats}
+                isWinner={match.winner === match.team2_id}
+                delay={0.3}
+              />
+            )}
           </div>
-        </HudCard>
-      )}
-
-      {/* Player Stats */}
-      {(team1Stats.length > 0 || team2Stats.length > 0) && (
-        <div className="space-y-6">
-          {team1Stats.length > 0 && (
-            <PlayerStatsTable
-              teamName={match.team1_string || team1?.name || "Time 1"}
-              teamLogo={team1?.logo || null}
-              stats={team1Stats}
-              isWinner={match.winner === match.team1_id}
-              delay={0.2}
-            />
-          )}
-          {team2Stats.length > 0 && (
-            <PlayerStatsTable
-              teamName={match.team2_string || team2?.name || "Time 2"}
-              teamLogo={team2?.logo || null}
-              stats={team2Stats}
-              isWinner={match.winner === match.team2_id}
-              delay={0.3}
-            />
-          )}
-        </div>
-      )}
-
-      {playerStats.length === 0 && (
+        </motion.section>
+      ) : (
         <HudCard className="text-center py-8">
           <Users size={24} className="text-orbital-border mx-auto mb-3" />
           <p className="font-[family-name:var(--font-jetbrains)] text-sm text-orbital-text-dim">
@@ -348,6 +498,7 @@ export function MatchDetailContent({ match: initialMatch, playerStats: initialSt
   );
 }
 
+// ── Player Stats Table (HLTV-inspired) ──
 function PlayerStatsTable({ teamName, teamLogo, stats, isWinner, delay }: {
   teamName: string;
   teamLogo: string | null;
@@ -363,57 +514,94 @@ function PlayerStatsTable({ teamName, teamLogo, stats, isWinner, delay }: {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay }}
     >
-      <div className="bg-orbital-card border border-orbital-border overflow-hidden">
-        {/* Team header */}
-        <div className={`px-4 py-3 border-b border-orbital-border flex items-center gap-3 ${
-          isWinner ? "border-l-2 border-l-orbital-success" : ""
+      <div className={`bg-orbital-card border overflow-hidden ${
+        isWinner ? "border-orbital-success/20" : "border-orbital-border"
+      }`}>
+        {/* Team header bar */}
+        <div className={`px-4 py-3 flex items-center gap-3 ${
+          isWinner ? "bg-orbital-success/5 border-b border-orbital-success/15" : "bg-[#0d0d0d] border-b border-orbital-border"
         }`}>
           {teamLogo ? (
-            <img src={teamLogo} alt={teamName} className="w-5 h-5 object-contain" />
+            <img src={teamLogo} alt={teamName} className="w-6 h-6 object-contain" />
           ) : (
-            <Users size={14} className="text-orbital-purple" />
+            <Shield size={16} className="text-orbital-text-dim" />
           )}
-          <span className={`font-[family-name:var(--font-orbitron)] text-xs tracking-wider ${
+          <span className={`font-[family-name:var(--font-orbitron)] text-xs tracking-wider font-bold ${
             isWinner ? "text-orbital-success" : "text-orbital-text"
           }`}>
             {teamName}
-            {isWinner && " ★"}
           </span>
+          {isWinner && (
+            <Trophy size={12} className="text-orbital-success" />
+          )}
         </div>
 
         {/* Stats table */}
         <div className="overflow-x-auto">
-          <table className="data-table">
+          <table className="w-full">
             <thead>
-              <tr>
-                <th>Jogador</th>
-                <th><Target size={10} className="inline" /> K</th>
-                <th><Skull size={10} className="inline" /> D</th>
-                <th>A</th>
-                <th>ADR</th>
-                <th><Crosshair size={10} className="inline" /> HS%</th>
-                <th>Rating</th>
+              <tr className="border-b border-orbital-border/50">
+                <th className="text-left px-4 py-2.5 font-[family-name:var(--font-jetbrains)] text-[0.55rem] text-orbital-text-dim font-normal tracking-wider">Jogador</th>
+                <th className="text-center px-2 py-2.5 font-[family-name:var(--font-jetbrains)] text-[0.55rem] text-orbital-text-dim font-normal tracking-wider">K-D</th>
+                <th className="text-center px-2 py-2.5 font-[family-name:var(--font-jetbrains)] text-[0.55rem] text-orbital-text-dim font-normal tracking-wider">
+                  <span className="hidden sm:inline">+/-</span>
+                  <span className="sm:hidden">±</span>
+                </th>
+                <th className="text-center px-2 py-2.5 font-[family-name:var(--font-jetbrains)] text-[0.55rem] text-orbital-text-dim font-normal tracking-wider">ADR</th>
+                <th className="text-center px-2 py-2.5 font-[family-name:var(--font-jetbrains)] text-[0.55rem] text-orbital-text-dim font-normal tracking-wider hidden sm:table-cell">KAST</th>
+                <th className="text-center px-2 py-2.5 font-[family-name:var(--font-jetbrains)] text-[0.55rem] text-orbital-text-dim font-normal tracking-wider">
+                  <Crosshair size={10} className="inline" /> HS%
+                </th>
+                <th className="text-center px-3 py-2.5 font-[family-name:var(--font-jetbrains)] text-[0.55rem] text-orbital-text-dim font-normal tracking-wider">Rating</th>
               </tr>
             </thead>
             <tbody>
-              {sorted.map((player) => {
+              {sorted.map((player, idx) => {
                 const hsp = player.kills > 0 ? Math.round((player.headshot_kills / player.kills) * 100) : 0;
                 const adr = player.roundsplayed > 0 ? Math.round(player.damage / player.roundsplayed) : 0;
+                const diff = player.kills - player.deaths;
+                const kast = player.kast || 0;
+                const rating = player.rating || 0;
+
                 return (
-                  <tr key={player.id}>
-                    <td className="font-semibold">{player.name}</td>
-                    <td className="text-orbital-success">{player.kills}</td>
-                    <td className="text-orbital-danger">{player.deaths}</td>
-                    <td>{player.assists}</td>
-                    <td>{adr}</td>
-                    <td>{hsp}%</td>
-                    <td>
-                      <span className={`font-bold ${
-                        (player.rating || 0) >= 1.2 ? "text-orbital-success" :
-                        (player.rating || 0) >= 0.8 ? "text-orbital-text" :
-                        "text-orbital-danger"
+                  <tr key={player.id} className={`border-b border-orbital-border/20 transition-colors hover:bg-white/[0.02] ${
+                    idx === 0 ? "bg-orbital-purple/[0.03]" : ""
+                  }`}>
+                    <td className="px-4 py-2.5">
+                      <Link
+                        href={`/perfil/${player.steam_id}`}
+                        className="font-[family-name:var(--font-jetbrains)] text-[0.7rem] text-orbital-text hover:text-orbital-purple transition-colors font-medium"
+                      >
+                        {player.name}
+                      </Link>
+                    </td>
+                    <td className="text-center px-2 py-2.5 font-[family-name:var(--font-jetbrains)] text-[0.7rem] text-orbital-text">
+                      <span className="text-orbital-success">{player.kills}</span>
+                      <span className="text-orbital-text-dim">-</span>
+                      <span className="text-orbital-danger">{player.deaths}</span>
+                    </td>
+                    <td className={`text-center px-2 py-2.5 font-[family-name:var(--font-jetbrains)] text-[0.7rem] font-medium ${
+                      diff > 0 ? "text-orbital-success" : diff < 0 ? "text-orbital-danger" : "text-orbital-text-dim"
+                    }`}>
+                      {diff > 0 ? `+${diff}` : diff}
+                    </td>
+                    <td className="text-center px-2 py-2.5 font-[family-name:var(--font-jetbrains)] text-[0.7rem] text-orbital-text">
+                      {adr}
+                    </td>
+                    <td className="text-center px-2 py-2.5 font-[family-name:var(--font-jetbrains)] text-[0.7rem] text-orbital-text hidden sm:table-cell">
+                      {kast > 0 ? `${kast}%` : "-"}
+                    </td>
+                    <td className="text-center px-2 py-2.5 font-[family-name:var(--font-jetbrains)] text-[0.7rem] text-orbital-text">
+                      {hsp}%
+                    </td>
+                    <td className="text-center px-3 py-2.5">
+                      <span className={`font-[family-name:var(--font-jetbrains)] text-[0.75rem] font-bold px-2 py-0.5 ${
+                        rating >= 1.2 ? "text-orbital-success bg-orbital-success/10" :
+                        rating >= 1.0 ? "text-orbital-text" :
+                        rating >= 0.8 ? "text-orbital-warning" :
+                        "text-orbital-danger bg-orbital-danger/10"
                       }`}>
-                        {(player.rating || 0).toFixed(2)}
+                        {rating.toFixed(2)}
                       </span>
                     </td>
                   </tr>
@@ -427,6 +615,7 @@ function PlayerStatsTable({ teamName, teamLogo, stats, isWinner, delay }: {
   );
 }
 
+// ── Admin Actions (unchanged logic) ──
 function AdminActions({ match, isActive, team1, team2, adminAction, setAdminAction, onUpdate }: {
   match: Match;
   isActive: boolean;
@@ -450,7 +639,7 @@ function AdminActions({ match, isActive, team1, team2, adminAction, setAdminActi
   const runAction = async (fn: () => Promise<void>) => {
     setMenuOpen(false);
     setAdminAction(true);
-    try { await fn(); } catch { /* handled inside */ }
+    try { await fn(); } catch { }
     setAdminAction(false);
   };
 
@@ -544,7 +733,6 @@ function AdminActions({ match, isActive, team1, team2, adminAction, setAdminActi
 
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="mb-6">
-      {/* Dropdown button */}
       <div className="relative inline-block">
         <button
           onClick={() => setMenuOpen(!menuOpen)}
@@ -556,7 +744,6 @@ function AdminActions({ match, isActive, team1, team2, adminAction, setAdminActi
           <ChevronDown size={14} className={`transition-transform ${menuOpen ? "rotate-180" : ""}`} />
         </button>
 
-        {/* Dropdown menu */}
         {menuOpen && (
           <>
             <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
@@ -591,7 +778,6 @@ function AdminActions({ match, isActive, team1, team2, adminAction, setAdminActi
         )}
       </div>
 
-      {/* Panels */}
       {panel === "addplayer" && (
         <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mt-3 bg-orbital-card border border-orbital-border p-4 space-y-3">
           <div className="flex items-center justify-between">
