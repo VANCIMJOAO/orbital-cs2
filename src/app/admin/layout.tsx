@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-import { Shield, Swords, Users, Server, Calendar, ArrowLeft } from "lucide-react";
+import { Shield, Swords, Users, Server, Calendar, ArrowLeft, Trophy } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { ReactNode } from "react";
 
@@ -13,6 +13,7 @@ const adminLinks = [
   { href: "/admin/times", label: "TIMES", icon: Users },
   { href: "/admin/servidores", label: "SERVIDORES", icon: Server },
   { href: "/admin/seasons", label: "SEASONS", icon: Calendar },
+  { href: "/admin/campeonatos", label: "CAMPEONATOS", icon: Trophy },
 ];
 
 export default function AdminLayout({ children }: { children: ReactNode }) {

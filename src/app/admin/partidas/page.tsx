@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Loader2, Check, AlertCircle, Trash2, Ban, Flag, ChevronUp, Swords } from "lucide-react";
+import { Plus, Loader2, Check, AlertCircle, Trash2, Ban, Flag, ChevronUp, Swords, ArrowRight, ArrowLeft, Server as ServerIcon, Users as UsersIcon, Map as MapIcon, Settings } from "lucide-react";
 import { HudCard } from "@/components/hud-card";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -35,9 +35,24 @@ export default function AdminPartidas() {
   const [title, setTitle] = useState("");
   const [selectedMaps, setSelectedMaps] = useState<string[]>([]);
 
+  const [wizardStep, setWizardStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; msg: string } | null>(null);
   const [actionLoading, setActionLoading] = useState<number | null>(null);
+
+  const wizardSteps = [
+    { label: "SERVIDOR", icon: ServerIcon },
+    { label: "TIMES", icon: UsersIcon },
+    { label: "MAPAS", icon: MapIcon },
+    { label: "CONFIG", icon: Settings },
+  ];
+
+  const canAdvance = (step: number) => {
+    if (step === 0) return !!serverId;
+    if (step === 1) return !!team1Id && !!team2Id && team1Id !== team2Id;
+    if (step === 2) return !skipVeto || selectedMaps.length >= parseInt(numMaps);
+    return true;
+  };
 
   const safeFetch = async (url: string) => {
     const r = await fetch(url, { credentials: "include" });
@@ -186,7 +201,7 @@ export default function AdminPartidas() {
           PARTIDAS ({matches.length})
         </h2>
         <button
-          onClick={() => { setShowCreate(!showCreate); setFeedback(null); }}
+          onClick={() => { setShowCreate(!showCreate); setFeedback(null); setWizardStep(0); }}
           className="flex items-center gap-2 px-4 py-2 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 transition-all font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-wider text-orbital-purple"
         >
           {showCreate ? <ChevronUp size={14} /> : <Plus size={14} />}
@@ -194,7 +209,7 @@ export default function AdminPartidas() {
         </button>
       </div>
 
-      {/* Create Form */}
+      {/* Create Wizard */}
       <AnimatePresence>
         {showCreate && (
           <motion.div
@@ -204,114 +219,226 @@ export default function AdminPartidas() {
             className="overflow-hidden"
           >
             <HudCard label="CRIAR PARTIDA" className="mb-6">
-              <form onSubmit={handleCreate} className="space-y-6 py-2">
-                {/* Times */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className={labelClass}>TIME 1</label>
-                    <select value={team1Id} onChange={e => setTeam1Id(e.target.value)} className={inputClass}>
-                      <option value="">Selecionar time...</option>
-                      {teams.map(t => <option key={t.id} value={t.id}>{t.name} [{t.tag}]</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className={labelClass}>TIME 2</label>
-                    <select value={team2Id} onChange={e => setTeam2Id(e.target.value)} className={inputClass}>
-                      <option value="">Selecionar time...</option>
-                      {teams.map(t => <option key={t.id} value={t.id}>{t.name} [{t.tag}]</option>)}
-                    </select>
-                  </div>
-                </div>
-
-                {/* Servidor */}
-                <div>
-                  <label className={labelClass}>SERVIDOR</label>
-                  <select value={serverId} onChange={e => setServerId(e.target.value)} className={inputClass}>
-                    <option value="">Selecionar servidor...</option>
-                    {servers.map(s => <option key={s.id} value={s.id}>{s.display_name} ({s.ip_string}:{s.port})</option>)}
-                  </select>
-                </div>
-
-                {/* Config */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  <div>
-                    <label className={labelClass}>FORMATO</label>
-                    <select value={numMaps} onChange={e => setNumMaps(e.target.value)} className={inputClass}>
-                      <option value="1">BO1</option>
-                      <option value="3">BO3</option>
-                      <option value="5">BO5</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className={labelClass}>LADO</label>
-                    <select value={sideType} onChange={e => setSideType(e.target.value)} className={inputClass}>
-                      <option value="standard">Knife</option>
-                      <option value="always_knife">Sempre Knife</option>
-                      <option value="never_knife">Sem Knife</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className={labelClass}>JOGADORES</label>
-                    <select value={playersPerTeam} onChange={e => { setPlayersPerTeam(e.target.value); setMinReady(e.target.value); }} className={inputClass}>
-                      <option value="1">1v1</option>
-                      <option value="2">2v2</option>
-                      <option value="3">3v3</option>
-                      <option value="5">5v5</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className={labelClass}>SEASON</label>
-                    <select value={seasonId} onChange={e => setSeasonId(e.target.value)} className={inputClass}>
-                      <option value="">Nenhuma</option>
-                      {seasons.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                    </select>
-                  </div>
-                </div>
-
-                {/* Veto */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" checked={skipVeto} onChange={e => setSkipVeto(e.target.checked)} className="w-4 h-4 accent-orbital-purple" />
-                    <span className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text">Pular veto (escolher mapas manualmente)</span>
-                  </label>
-                  {!skipVeto && (
-                    <div>
-                      <label className={labelClass}>VETO PRIMEIRO</label>
-                      <select value={vetoFirst} onChange={e => setVetoFirst(e.target.value)} className={inputClass}>
-                        <option value="team1">Time 1</option>
-                        <option value="team2">Time 2</option>
-                      </select>
+              {/* Step Indicators */}
+              <div className="flex items-center justify-between mb-8 pt-2">
+                {wizardSteps.map((step, i) => {
+                  const StepIcon = step.icon;
+                  const isActive = i === wizardStep;
+                  const isDone = i < wizardStep;
+                  return (
+                    <div key={step.label} className="flex items-center flex-1">
+                      <button
+                        type="button"
+                        onClick={() => { if (isDone) setWizardStep(i); }}
+                        className={`flex items-center gap-2 px-3 py-2 border transition-all ${
+                          isActive
+                            ? "bg-orbital-purple/15 border-orbital-purple/50 text-orbital-purple"
+                            : isDone
+                              ? "bg-orbital-success/10 border-orbital-success/30 text-orbital-success cursor-pointer"
+                              : "bg-transparent border-orbital-border text-orbital-text-dim"
+                        }`}
+                      >
+                        {isDone ? <Check size={14} /> : <StepIcon size={14} />}
+                        <span className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.15em] hidden sm:inline">
+                          {step.label}
+                        </span>
+                      </button>
+                      {i < wizardSteps.length - 1 && (
+                        <div className={`flex-1 h-[1px] mx-1 ${i < wizardStep ? "bg-orbital-success/40" : "bg-orbital-border"}`} />
+                      )}
                     </div>
+                  );
+                })}
+              </div>
+
+              <form onSubmit={handleCreate}>
+                <AnimatePresence mode="wait">
+                  {/* Step 0: Servidor */}
+                  {wizardStep === 0 && (
+                    <motion.div key="step0" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
+                      <div>
+                        <label className={labelClass}>SERVIDOR</label>
+                        <p className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim/60 mb-3">
+                          Selecione o servidor CS2 onde a partida será jogada
+                        </p>
+                        <div className="grid gap-2">
+                          {servers.map(s => (
+                            <button
+                              key={s.id} type="button"
+                              onClick={() => setServerId(String(s.id))}
+                              className={`flex items-center gap-3 p-4 border text-left transition-all ${
+                                serverId === String(s.id)
+                                  ? "bg-orbital-purple/10 border-orbital-purple/50"
+                                  : "bg-[#0A0A0A] border-orbital-border hover:border-orbital-purple/30"
+                              }`}
+                            >
+                              <ServerIcon size={16} className={serverId === String(s.id) ? "text-orbital-purple" : "text-orbital-text-dim"} />
+                              <div>
+                                <div className="font-[family-name:var(--font-orbitron)] text-xs tracking-wider text-orbital-text">
+                                  {s.display_name}
+                                </div>
+                                <div className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim mt-0.5">
+                                  {s.ip_string}:{s.port}
+                                </div>
+                              </div>
+                              {serverId === String(s.id) && <Check size={14} className="text-orbital-purple ml-auto" />}
+                            </button>
+                          ))}
+                          {servers.length === 0 && (
+                            <p className="text-center text-orbital-text-dim font-[family-name:var(--font-jetbrains)] text-xs py-6">
+                              Nenhum servidor cadastrado. <Link href="/admin/servidores" className="text-orbital-purple hover:underline">Adicionar servidor</Link>
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </motion.div>
                   )}
-                </div>
 
-                {skipVeto && (
-                  <div>
-                    <label className={`${labelClass} mb-3`}>MAPAS</label>
-                    <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
-                      {CS2_MAPS.map(map => (
-                        <button
-                          key={map} type="button" onClick={() => toggleMap(map)}
-                          className={`px-3 py-2 border font-[family-name:var(--font-jetbrains)] text-xs transition-all ${
-                            selectedMaps.includes(map)
-                              ? "bg-orbital-purple/20 border-orbital-purple/50 text-orbital-purple"
-                              : "bg-[#0A0A0A] border-orbital-border text-orbital-text-dim hover:border-orbital-purple/30"
-                          }`}
-                        >
-                          {map.replace("de_", "").toUpperCase()}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                  {/* Step 1: Times */}
+                  {wizardStep === 1 && (
+                    <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className={labelClass}>TIME 1</label>
+                          <select value={team1Id} onChange={e => setTeam1Id(e.target.value)} className={inputClass}>
+                            <option value="">Selecionar time...</option>
+                            {teams.filter(t => String(t.id) !== team2Id).map(t => <option key={t.id} value={t.id}>{t.name} [{t.tag}]</option>)}
+                          </select>
+                        </div>
+                        <div>
+                          <label className={labelClass}>TIME 2</label>
+                          <select value={team2Id} onChange={e => setTeam2Id(e.target.value)} className={inputClass}>
+                            <option value="">Selecionar time...</option>
+                            {teams.filter(t => String(t.id) !== team1Id).map(t => <option key={t.id} value={t.id}>{t.name} [{t.tag}]</option>)}
+                          </select>
+                        </div>
+                      </div>
+                      {team1Id && team2Id && team1Id === team2Id && (
+                        <div className="flex items-center gap-2 px-4 py-3 border bg-orbital-danger/10 border-orbital-danger/30 text-orbital-danger font-[family-name:var(--font-jetbrains)] text-xs">
+                          <AlertCircle size={14} /> Selecione dois times diferentes.
+                        </div>
+                      )}
+                    </motion.div>
+                  )}
 
-                <div>
-                  <label className={labelClass}>TITULO (opcional)</label>
-                  <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="Ex: Grand Final - Season 1" className={`${inputClass} placeholder:text-orbital-text-dim/30`} />
-                </div>
+                  {/* Step 2: Mapas */}
+                  {wizardStep === 2 && (
+                    <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
+                      <div>
+                        <label className={labelClass}>FORMATO</label>
+                        <div className="flex gap-2">
+                          {[{ v: "1", l: "BO1" }, { v: "3", l: "BO3" }, { v: "5", l: "BO5" }].map(f => (
+                            <button
+                              key={f.v} type="button"
+                              onClick={() => setNumMaps(f.v)}
+                              className={`px-5 py-2.5 border font-[family-name:var(--font-orbitron)] text-xs tracking-wider transition-all ${
+                                numMaps === f.v
+                                  ? "bg-orbital-purple/15 border-orbital-purple/50 text-orbital-purple"
+                                  : "bg-[#0A0A0A] border-orbital-border text-orbital-text-dim hover:border-orbital-purple/30"
+                              }`}
+                            >
+                              {f.l}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
 
+                      <div>
+                        <label className="flex items-center gap-2 cursor-pointer mb-4">
+                          <input type="checkbox" checked={skipVeto} onChange={e => setSkipVeto(e.target.checked)} className="w-4 h-4 accent-orbital-purple" />
+                          <span className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text">Pular veto (escolher mapas manualmente)</span>
+                        </label>
+                      </div>
+
+                      {!skipVeto && (
+                        <div>
+                          <label className={labelClass}>VETO PRIMEIRO</label>
+                          <select value={vetoFirst} onChange={e => setVetoFirst(e.target.value)} className={inputClass}>
+                            <option value="team1">Time 1{team1Id ? ` - ${teams.find(t => String(t.id) === team1Id)?.name}` : ""}</option>
+                            <option value="team2">Time 2{team2Id ? ` - ${teams.find(t => String(t.id) === team2Id)?.name}` : ""}</option>
+                          </select>
+                        </div>
+                      )}
+
+                      {skipVeto && (
+                        <div>
+                          <label className={`${labelClass} mb-3`}>
+                            SELECIONAR MAPAS {selectedMaps.length > 0 && <span className="text-orbital-purple">({selectedMaps.length}/{numMaps})</span>}
+                          </label>
+                          <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                            {CS2_MAPS.map(map => (
+                              <button
+                                key={map} type="button" onClick={() => toggleMap(map)}
+                                className={`px-3 py-2.5 border font-[family-name:var(--font-jetbrains)] text-xs transition-all ${
+                                  selectedMaps.includes(map)
+                                    ? "bg-orbital-purple/20 border-orbital-purple/50 text-orbital-purple"
+                                    : "bg-[#0A0A0A] border-orbital-border text-orbital-text-dim hover:border-orbital-purple/30"
+                                }`}
+                              >
+                                {map.replace("de_", "").toUpperCase()}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </motion.div>
+                  )}
+
+                  {/* Step 3: Config */}
+                  {wizardStep === 3 && (
+                    <motion.div key="step3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                        <div>
+                          <label className={labelClass}>LADO</label>
+                          <select value={sideType} onChange={e => setSideType(e.target.value)} className={inputClass}>
+                            <option value="standard">Knife</option>
+                            <option value="always_knife">Sempre Knife</option>
+                            <option value="never_knife">Sem Knife</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className={labelClass}>JOGADORES</label>
+                          <select value={playersPerTeam} onChange={e => { setPlayersPerTeam(e.target.value); setMinReady(e.target.value); }} className={inputClass}>
+                            <option value="1">1v1</option>
+                            <option value="2">2v2</option>
+                            <option value="3">3v3</option>
+                            <option value="5">5v5</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className={labelClass}>SEASON</label>
+                          <select value={seasonId} onChange={e => setSeasonId(e.target.value)} className={inputClass}>
+                            <option value="">Nenhuma</option>
+                            {seasons.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                          </select>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className={labelClass}>TÍTULO (opcional)</label>
+                        <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="Ex: Grand Final - Season 1" className={`${inputClass} placeholder:text-orbital-text-dim/30`} />
+                      </div>
+
+                      {/* Summary */}
+                      <div className="bg-[#0A0A0A] border border-orbital-border p-4 space-y-2">
+                        <div className="font-[family-name:var(--font-orbitron)] text-[0.55rem] tracking-[0.2em] text-orbital-purple mb-3">RESUMO</div>
+                        <div className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text-dim space-y-1">
+                          <p><span className="text-orbital-text">Servidor:</span> {servers.find(s => String(s.id) === serverId)?.display_name || "—"}</p>
+                          <p><span className="text-orbital-text">Time 1:</span> {teams.find(t => String(t.id) === team1Id)?.name || "—"}</p>
+                          <p><span className="text-orbital-text">Time 2:</span> {teams.find(t => String(t.id) === team2Id)?.name || "—"}</p>
+                          <p><span className="text-orbital-text">Formato:</span> BO{numMaps}</p>
+                          <p><span className="text-orbital-text">Veto:</span> {skipVeto ? `Sem veto — ${selectedMaps.join(", ") || "nenhum mapa"}` : `Veto (${vetoFirst === "team1" ? "Time 1" : "Time 2"} primeiro)`}</p>
+                          <p><span className="text-orbital-text">Jogadores:</span> {playersPerTeam}v{playersPerTeam}</p>
+                          {title && <p><span className="text-orbital-text">Título:</span> {title}</p>}
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Feedback */}
                 {feedback && (
-                  <div className={`flex items-center gap-2 px-4 py-3 border font-[family-name:var(--font-jetbrains)] text-xs ${
+                  <div className={`flex items-center gap-2 px-4 py-3 border font-[family-name:var(--font-jetbrains)] text-xs mt-4 ${
                     feedback.type === "success" ? "bg-orbital-success/10 border-orbital-success/30 text-orbital-success" : "bg-orbital-danger/10 border-orbital-danger/30 text-orbital-danger"
                   }`}>
                     {feedback.type === "success" ? <Check size={14} /> : <AlertCircle size={14} />}
@@ -319,10 +446,37 @@ export default function AdminPartidas() {
                   </div>
                 )}
 
-                <button type="submit" disabled={submitting} className="flex items-center justify-center gap-2 w-full px-6 py-3 bg-orbital-purple/20 border border-orbital-purple/50 hover:bg-orbital-purple/30 hover:border-orbital-purple transition-all font-[family-name:var(--font-orbitron)] text-xs tracking-wider text-orbital-purple disabled:opacity-50 disabled:cursor-not-allowed">
-                  {submitting ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
-                  {submitting ? "CRIANDO..." : "CRIAR PARTIDA"}
-                </button>
+                {/* Navigation */}
+                <div className="flex items-center justify-between mt-6 pb-2">
+                  <button
+                    type="button"
+                    onClick={() => setWizardStep(s => s - 1)}
+                    disabled={wizardStep === 0}
+                    className="flex items-center gap-2 px-4 py-2.5 border border-orbital-border hover:border-orbital-purple/30 transition-all font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-wider text-orbital-text-dim disabled:opacity-30 disabled:cursor-not-allowed"
+                  >
+                    <ArrowLeft size={14} /> VOLTAR
+                  </button>
+
+                  {wizardStep < 3 ? (
+                    <button
+                      type="button"
+                      onClick={() => setWizardStep(s => s + 1)}
+                      disabled={!canAdvance(wizardStep)}
+                      className="flex items-center gap-2 px-5 py-2.5 bg-orbital-purple/15 border border-orbital-purple/40 hover:border-orbital-purple transition-all font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-wider text-orbital-purple disabled:opacity-30 disabled:cursor-not-allowed"
+                    >
+                      PRÓXIMO <ArrowRight size={14} />
+                    </button>
+                  ) : (
+                    <button
+                      type="submit"
+                      disabled={submitting}
+                      className="flex items-center gap-2 px-6 py-2.5 bg-orbital-purple/20 border border-orbital-purple/50 hover:bg-orbital-purple/30 hover:border-orbital-purple transition-all font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-wider text-orbital-purple disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {submitting ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
+                      {submitting ? "CRIANDO..." : "CRIAR PARTIDA"}
+                    </button>
+                  )}
+                </div>
               </form>
             </HudCard>
           </motion.div>

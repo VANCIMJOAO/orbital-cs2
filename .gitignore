@@ -36,6 +36,11 @@ yarn-error.log*
 # vercel
 .vercel
 
+# tournament data (runtime)
+/data
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+.vercel
