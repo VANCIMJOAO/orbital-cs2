@@ -183,8 +183,9 @@ export default function AdminTimes() {
         )}
       </div>
 
-      {/* File input - sr-only instead of hidden so .click() works in all browsers */}
+      {/* File input - using id + label[htmlFor] for guaranteed native dialog */}
       <input
+        id="logo-upload-input"
         ref={logoInputRef}
         type="file"
         accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml"
@@ -253,23 +254,10 @@ export default function AdminTimes() {
                         </button>
                       </div>
                     ) : (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          console.log("[LOGO DEBUG] Button clicked");
-                          console.log("[LOGO DEBUG] logoInputRef.current:", logoInputRef.current);
-                          console.log("[LOGO DEBUG] uploadingLogo:", uploadingLogo);
-                          if (logoInputRef.current) {
-                            console.log("[LOGO DEBUG] Calling .click() on input");
-                            logoInputRef.current.click();
-                            console.log("[LOGO DEBUG] .click() called");
-                          } else {
-                            console.log("[LOGO DEBUG] ERROR: ref is null!");
-                          }
-                        }}
-                        disabled={uploadingLogo}
+                      <label
+                        htmlFor="logo-upload-input"
                         className={`flex items-center gap-2 px-4 py-3 border border-dashed transition-all w-full justify-center ${
-                          uploadingLogo ? "border-orbital-purple/50 bg-orbital-purple/5" : "border-orbital-border hover:border-orbital-purple/40 hover:bg-orbital-purple/5 cursor-pointer"
+                          uploadingLogo ? "border-orbital-purple/50 bg-orbital-purple/5 pointer-events-none" : "border-orbital-border hover:border-orbital-purple/40 hover:bg-orbital-purple/5 cursor-pointer"
                         }`}
                       >
                         {uploadingLogo ? (
@@ -280,7 +268,7 @@ export default function AdminTimes() {
                         <span className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text-dim">
                           {uploadingLogo ? "Enviando..." : "Clique para enviar logo"}
                         </span>
-                      </button>
+                      </label>
                     )}
                   </div>
                 </div>
