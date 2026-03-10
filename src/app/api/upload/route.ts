@@ -30,7 +30,9 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ url: blob.url });
-  } catch {
-    return NextResponse.json({ error: "Erro ao fazer upload" }, { status: 500 });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Erro ao fazer upload";
+    console.error("[UPLOAD ERROR]", message);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
