@@ -64,14 +64,9 @@ function TournamentHome({ tournament: t, liveMatches, recentMatches, teamsMap }:
   const liveMatch = t.matches.find(m => m.status === "live");
   const nextMatch = t.matches.find(m => m.status === "pending" && m.team1_id && m.team2_id);
 
-  // Filter matches: only those belonging to this tournament (by match_id stored in bracket)
+  // Filter matches: ONLY those created by this tournament (by match_id stored in bracket)
   const tournamentMatchIds = new Set(t.matches.filter(m => m.match_id).map(m => m.match_id!));
-  const tournamentTeamIds = new Set(t.teams.map(tm => tm.id));
-  const tournamentRecentMatches = recentMatches.filter(m =>
-    tournamentMatchIds.has(m.id) ||
-    (m.title && m.title.includes(t.name)) ||
-    (tournamentTeamIds.has(m.team1_id) && tournamentTeamIds.has(m.team2_id))
-  );
+  const tournamentRecentMatches = recentMatches.filter(m => tournamentMatchIds.has(m.id));
 
   // Format date
   const formatDate = (d: string | null | undefined) => {
@@ -337,17 +332,20 @@ function TournamentHome({ tournament: t, liveMatches, recentMatches, teamsMap }:
         </section>
       )}
 
-      {/* Live G5API matches */}
-      {liveMatches.length > 0 && (
-        <section className="mb-10">
-          <SectionHeader icon={Activity} title="AO VIVO" accent="live" />
-          <div className="grid gap-3">
-            {liveMatches.map((match, i) => (
-              <MatchCard key={match.id} match={match} teamsMap={teamsMap} delay={i * 0.1} />
-            ))}
-          </div>
-        </section>
-      )}
+      {/* Live G5API matches (only tournament ones) */}
+      {(() => {
+        const tournamentLiveMatches = liveMatches.filter(m => tournamentMatchIds.has(m.id));
+        return tournamentLiveMatches.length > 0 ? (
+          <section className="mb-10">
+            <SectionHeader icon={Activity} title="AO VIVO" accent="live" />
+            <div className="grid gap-3">
+              {tournamentLiveMatches.map((match, i) => (
+                <MatchCard key={match.id} match={match} teamsMap={teamsMap} delay={i * 0.1} />
+              ))}
+            </div>
+          </section>
+        ) : null;
+      })()}
 
       {/* Quick Links */}
       <section>
