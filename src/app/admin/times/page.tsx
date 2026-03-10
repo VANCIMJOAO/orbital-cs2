@@ -183,12 +183,12 @@ export default function AdminTimes() {
         )}
       </div>
 
-      {/* Hidden file input - outside AnimatePresence to avoid overflow-hidden issues */}
+      {/* File input - sr-only instead of hidden so .click() works in all browsers */}
       <input
         ref={logoInputRef}
         type="file"
         accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml"
-        className="hidden"
+        className="sr-only"
         disabled={uploadingLogo}
         onChange={async (e) => {
           const file = e.target.files?.[0];
