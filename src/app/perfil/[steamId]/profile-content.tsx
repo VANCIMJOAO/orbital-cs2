@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowLeft, Target, Skull, Crosshair, Zap, Award, TrendingUp, Shield, Flame, Swords, Map, Key, Eye, EyeOff, Copy, Check } from "lucide-react";
+import { ArrowLeft, Target, Skull, Crosshair, Zap, Award, TrendingUp, Shield, Flame, Swords, Map, Key, Eye, EyeOff, Copy, Check, BarChart3 } from "lucide-react";
 import Link from "next/link";
 import { HudCard, StatBox } from "@/components/hud-card";
 import { Match, getStatusText, getStatusType } from "@/lib/api";
@@ -37,6 +37,7 @@ export function ProfileContent({ steamId }: { steamId: string }) {
   const [stats, setStats] = useState<ProfileStats | null>(null);
   const [recentMatches, setRecentMatches] = useState<Match[]>([]);
   const [mapCounts, setMapCounts] = useState<{ map: string; count: number }[]>([]);
+  const [mapPerformance, setMapPerformance] = useState<{ map: string; wins: number; total: number; avgRating: number; kills: number; deaths: number }[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const { user } = useAuth();
@@ -124,26 +125,60 @@ export function ProfileContent({ steamId }: { steamId: string }) {
             .sort((a: Match, b: Match) => b.id - a.id)
             .slice(0, 10);
 
-          // Buscar map stats para contar mapas jogados
+          // Buscar map stats para contar mapas jogados e performance por mapa
           const mapCount: Record<string, number> = {};
-          for (const m of playerMatches.slice(0, 5)) {
+          const mapPerf: Record<string, { wins: number; total: number; totalRating: number; kills: number; deaths: number }> = {};
+
+          for (const m of playerMatches.slice(0, 20)) {
             try {
-              const msRes = await fetch(`/api/mapstats/${m.id}`);
-              if (msRes.ok) {
-                const msData = await msRes.json();
-                const maps = msData.mapstats || msData.mapStats || [];
-                for (const ms of maps) {
-                  if (ms.map_name) {
-                    mapCount[ms.map_name] = (mapCount[ms.map_name] || 0) + 1;
+              const [msRes, psRes] = await Promise.all([
+                fetch(`/api/mapstats/${m.id}`).then(r => r.ok ? r.json() : null),
+                fetch(`/api/playerstats/match/${m.id}`).then(r => r.ok ? r.json() : null),
+              ]);
+              const maps = msRes?.mapstats || msRes?.mapStats || [];
+              const pStats = psRes?.playerstats || psRes?.playerStats || [];
+              const playerEntries = pStats.filter((p: { steam_id: string }) => p.steam_id === steamId);
+
+              for (const ms of maps) {
+                if (!ms.map_name) continue;
+                mapCount[ms.map_name] = (mapCount[ms.map_name] || 0) + 1;
+
+                if (!mapPerf[ms.map_name]) {
+                  mapPerf[ms.map_name] = { wins: 0, total: 0, totalRating: 0, kills: 0, deaths: 0 };
+                }
+                mapPerf[ms.map_name].total++;
+
+                // Check if player's team won this map
+                const playerEntry = playerEntries.find((p: { map_id: number }) => p.map_id === ms.id);
+                if (playerEntry) {
+                  if (ms.winner === playerEntry.team_id) {
+                    mapPerf[ms.map_name].wins++;
                   }
+                  mapPerf[ms.map_name].totalRating += playerEntry.rating || playerEntry.average_rating || 0;
+                  mapPerf[ms.map_name].kills += playerEntry.kills || 0;
+                  mapPerf[ms.map_name].deaths += playerEntry.deaths || 0;
                 }
               }
             } catch { /* skip */ }
           }
+
           setMapCounts(
             Object.entries(mapCount)
               .map(([map, count]) => ({ map, count }))
               .sort((a, b) => b.count - a.count)
+          );
+
+          setMapPerformance(
+            Object.entries(mapPerf)
+              .map(([map, d]) => ({
+                map,
+                wins: d.wins,
+                total: d.total,
+                avgRating: d.total > 0 ? d.totalRating / d.total : 0,
+                kills: d.kills,
+                deaths: d.deaths,
+              }))
+              .sort((a, b) => b.total - a.total)
           );
         }
       } catch { /* não crítico */ }
@@ -433,21 +468,64 @@ export function ProfileContent({ steamId }: { steamId: string }) {
         </HudCard>
       )}
 
-      {/* Maps Played */}
-      {mapCounts.length > 0 && (
-        <HudCard delay={0.5} label="MAPAS JOGADOS" className="mt-6">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 py-2">
-            {mapCounts.map(({ map, count }) => (
-              <div key={map} className="flex items-center gap-2 px-3 py-2 bg-[#0A0A0A] border border-orbital-border">
-                <Map size={12} className="text-orbital-purple shrink-0" />
-                <span className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text">
-                  {map.replace("de_", "").toUpperCase()}
-                </span>
-                <span className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text-dim ml-auto">
-                  {count}x
-                </span>
-              </div>
-            ))}
+      {/* Per-Map Performance */}
+      {mapPerformance.length > 0 && (
+        <HudCard delay={0.5} label="PERFORMANCE POR MAPA" className="mt-6">
+          <div className="space-y-3 py-2">
+            {mapPerformance.map(({ map, wins, total, avgRating, kills, deaths }) => {
+              const winRate = total > 0 ? Math.round((wins / total) * 100) : 0;
+              const kd = deaths > 0 ? (kills / deaths).toFixed(2) : kills.toFixed(2);
+              return (
+                <div key={map} className="bg-[#0A0A0A] border border-orbital-border p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <Map size={12} className="text-orbital-purple" />
+                      <span className="font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-wider text-orbital-text">
+                        {map.replace("de_", "").toUpperCase()}
+                      </span>
+                      <span className="font-[family-name:var(--font-jetbrains)] text-[0.55rem] text-orbital-text-dim">
+                        {total} {total === 1 ? "partida" : "partidas"}
+                      </span>
+                    </div>
+                    <span className={`font-[family-name:var(--font-jetbrains)] text-xs font-bold ${
+                      avgRating >= 1.2 ? "text-orbital-success" : avgRating >= 0.8 ? "text-orbital-text" : "text-orbital-danger"
+                    }`}>
+                      {avgRating.toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    {/* Win rate bar */}
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-[family-name:var(--font-jetbrains)] text-[0.55rem] text-orbital-text-dim">
+                          Win Rate
+                        </span>
+                        <span className={`font-[family-name:var(--font-jetbrains)] text-[0.55rem] font-bold ${
+                          winRate >= 60 ? "text-orbital-success" : winRate >= 40 ? "text-orbital-text" : "text-orbital-danger"
+                        }`}>
+                          {winRate}% ({wins}W / {total - wins}L)
+                        </span>
+                      </div>
+                      <div className="w-full h-1.5 bg-orbital-border">
+                        <div
+                          className={`h-full transition-all ${winRate >= 60 ? "bg-orbital-success" : winRate >= 40 ? "bg-orbital-purple" : "bg-orbital-danger"}`}
+                          style={{ width: `${winRate}%` }}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 shrink-0">
+                      <span className="font-[family-name:var(--font-jetbrains)] text-[0.55rem] text-orbital-text-dim">
+                        K/D: <span className="text-orbital-text font-bold">{kd}</span>
+                      </span>
+                      <span className="font-[family-name:var(--font-jetbrains)] text-[0.55rem] text-orbital-text-dim">
+                        <BarChart3 size={10} className="inline text-orbital-purple mr-0.5" />
+                        {kills}K / {deaths}D
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </HudCard>
       )}

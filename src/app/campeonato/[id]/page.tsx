@@ -27,6 +27,9 @@ export default function CampeonatoPage({ params }: { params: Promise<{ id: strin
   const [servers, setServers] = useState<Server[]>([]);
   const [selectedServer, setSelectedServer] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
+  const [sideType, setSideType] = useState("standard");
+  const [playersPerTeam, setPlayersPerTeam] = useState(5);
+  const [vetoFirst, setVetoFirst] = useState("team1");
 
   const fetchTournament = useCallback(async () => {
     try {
@@ -171,10 +174,10 @@ export default function CampeonatoPage({ params }: { params: Promise<{ id: strin
         num_maps: vetoMatch.num_maps,
         max_maps: vetoMatch.num_maps,
         skip_veto: true,
-        veto_first: "team1",
-        side_type: "standard",
-        players_per_team: tournament.players_per_team,
-        min_player_ready: tournament.players_per_team,
+        veto_first: vetoFirst,
+        side_type: sideType,
+        players_per_team: playersPerTeam,
+        min_player_ready: playersPerTeam,
         season_id: tournament.season_id || undefined,
         title: `${tournament.name} — ${vetoMatch.label}`,
         maplist,
@@ -329,6 +332,12 @@ export default function CampeonatoPage({ params }: { params: Promise<{ id: strin
             servers={servers}
             selectedServer={selectedServer}
             onSelectServer={setSelectedServer}
+            sideType={sideType}
+            onSideType={setSideType}
+            playersPerTeam={playersPerTeam}
+            onPlayersPerTeam={setPlayersPerTeam}
+            vetoFirst={vetoFirst}
+            onVetoFirst={setVetoFirst}
             onBan={handleVetoBan}
             onStartMatch={handleStartMatch}
             onClose={() => setVetoMatch(null)}
@@ -525,6 +534,12 @@ function VetoModal({
   servers,
   selectedServer,
   onSelectServer,
+  sideType,
+  onSideType,
+  playersPerTeam,
+  onPlayersPerTeam,
+  vetoFirst,
+  onVetoFirst,
   onBan,
   onStartMatch,
   onClose,
@@ -535,6 +550,12 @@ function VetoModal({
   servers: Server[];
   selectedServer: string;
   onSelectServer: (id: string) => void;
+  sideType: string;
+  onSideType: (v: string) => void;
+  playersPerTeam: number;
+  onPlayersPerTeam: (v: number) => void;
+  vetoFirst: string;
+  onVetoFirst: (v: string) => void;
   onBan: (map: string) => void;
   onStartMatch: () => void;
   onClose: () => void;
@@ -647,6 +668,51 @@ function VetoModal({
                     ? `Mapa: ${match.map?.replace("de_", "").toUpperCase()}`
                     : `Mapas: ${match.maps?.map(m => m.replace("de_", "").toUpperCase()).join(" / ")}`
                   }
+                </div>
+              </div>
+
+              {/* Match Config */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="block font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.15em] text-orbital-text-dim mb-1.5">
+                    SIDE TYPE
+                  </label>
+                  <select
+                    value={sideType}
+                    onChange={e => onSideType(e.target.value)}
+                    className="w-full bg-[#0A0A0A] border border-orbital-border text-orbital-text font-[family-name:var(--font-jetbrains)] text-xs px-3 py-2 focus:border-orbital-purple/50 focus:outline-none"
+                  >
+                    <option value="standard">Standard</option>
+                    <option value="always_knife">Knife Round</option>
+                    <option value="never_knife">Sem Knife</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.15em] text-orbital-text-dim mb-1.5">
+                    JOGADORES/TIME
+                  </label>
+                  <select
+                    value={playersPerTeam}
+                    onChange={e => onPlayersPerTeam(parseInt(e.target.value))}
+                    className="w-full bg-[#0A0A0A] border border-orbital-border text-orbital-text font-[family-name:var(--font-jetbrains)] text-xs px-3 py-2 focus:border-orbital-purple/50 focus:outline-none"
+                  >
+                    {[1, 2, 3, 4, 5].map(n => (
+                      <option key={n} value={n}>{n}v{n}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.15em] text-orbital-text-dim mb-1.5">
+                    VETO PRIMEIRO
+                  </label>
+                  <select
+                    value={vetoFirst}
+                    onChange={e => onVetoFirst(e.target.value)}
+                    className="w-full bg-[#0A0A0A] border border-orbital-border text-orbital-text font-[family-name:var(--font-jetbrains)] text-xs px-3 py-2 focus:border-orbital-purple/50 focus:outline-none"
+                  >
+                    <option value="team1">{getTeamName(tournament, match.team1_id)}</option>
+                    <option value="team2">{getTeamName(tournament, match.team2_id)}</option>
+                  </select>
                 </div>
               </div>
 

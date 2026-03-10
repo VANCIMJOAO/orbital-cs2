@@ -229,6 +229,18 @@ export async function getSeasons(): Promise<{ seasons: Season[] }> {
   return apiFetch("/seasons");
 }
 
+export interface VetoEntry {
+  id: number;
+  match_id: number;
+  team_name: string;
+  map: string;
+  pick_or_ban: string; // "ban" or "pick"
+}
+
+export async function getVetoes(matchId: number): Promise<{ vetoes: VetoEntry[] }> {
+  return apiFetch(`/vetoes/${matchId}`, true);
+}
+
 export function getSSEUrl(matchId: number): string {
   return `${getApiBase()}/matches/${matchId}/stream`;
 }

@@ -5,7 +5,7 @@ import { ArrowLeft, Radio, Map, Users, Target, Skull, Crosshair, RefreshCw, Down
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { HudCard } from "@/components/hud-card";
-import { Match, PlayerStats, MapStats, Team, Server, getStatusText, getStatusType, updateMatch, deleteMatch, pauseMatch, unpauseMatch, restartMatch, addPlayerToMatch, getMatchBackups, restoreMatchBackup, sendMatchRcon } from "@/lib/api";
+import { Match, PlayerStats, MapStats, Team, Server, VetoEntry, getStatusText, getStatusType, updateMatch, deleteMatch, pauseMatch, unpauseMatch, restartMatch, addPlayerToMatch, getMatchBackups, restoreMatchBackup, sendMatchRcon } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { useEffect, useState, useCallback } from "react";
 
@@ -23,6 +23,7 @@ export function MatchDetailContent({ match: initialMatch, playerStats: initialSt
   const [playerStats, setPlayerStats] = useState(initialStats || []);
   const [mapStats, setMapStats] = useState(initialMapStats || []);
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
+  const [vetoes, setVetoes] = useState<VetoEntry[]>([]);
   const [adminAction, setAdminAction] = useState(false);
   const { isAdmin } = useAuth();
   const router = useRouter();
@@ -95,6 +96,15 @@ export function MatchDetailContent({ match: initialMatch, playerStats: initialSt
       clearInterval(backupInterval);
     };
   }, [isLive, fetchLiveData, match.id]);
+
+  // Fetch vetoes
+  useEffect(() => {
+    if (!match.id) return;
+    fetch(`/api/vetoes/${match.id}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d?.vetoes) setVetoes(d.vetoes); })
+      .catch(() => {});
+  }, [match.id]);
 
   // Separar stats por time
   const team1Stats = playerStats.filter((s) => s.team_id === match.team1_id);
@@ -270,6 +280,36 @@ export function MatchDetailContent({ match: initialMatch, playerStats: initialSt
             </HudCard>
           ))}
         </div>
+      )}
+
+      {/* Veto History */}
+      {vetoes.length > 0 && (
+        <HudCard delay={0.15} label="VETO" className="mb-6">
+          <div className="flex flex-wrap gap-2 py-2">
+            {vetoes.map((v, i) => (
+              <div
+                key={v.id || i}
+                className={`flex items-center gap-2 px-3 py-2 border ${
+                  v.pick_or_ban === "ban"
+                    ? "bg-orbital-danger/5 border-orbital-danger/20"
+                    : "bg-orbital-success/5 border-orbital-success/20"
+                }`}
+              >
+                <span className={`font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.1em] ${
+                  v.pick_or_ban === "ban" ? "text-orbital-danger" : "text-orbital-success"
+                }`}>
+                  {v.pick_or_ban === "ban" ? "BAN" : "PICK"}
+                </span>
+                <span className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim">
+                  {v.team_name}
+                </span>
+                <span className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text font-bold">
+                  {v.map.replace("de_", "").toUpperCase()}
+                </span>
+              </div>
+            ))}
+          </div>
+        </HudCard>
       )}
 
       {/* Player Stats */}

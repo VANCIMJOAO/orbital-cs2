@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Trophy, Target, Skull, Crosshair, Medal, Filter } from "lucide-react";
+import { Trophy, Target, Skull, Crosshair, Medal, Filter, Download } from "lucide-react";
 import Link from "next/link";
 import { HudCard } from "@/components/hud-card";
 import { LeaderboardEntry, Season } from "@/lib/api";
@@ -37,6 +37,30 @@ export function LeaderboardContent() {
     fetchLeaderboard(value ? parseInt(value) : undefined);
   };
 
+  const exportCSV = () => {
+    const headers = ["Rank", "Jogador", "SteamID", "Kills", "Deaths", "K/D", "HS%", "Wins", "Rounds", "Rating"];
+    const rows = sorted.map((p, i) => [
+      i + 1,
+      p.name,
+      p.steamId,
+      p.kills,
+      p.deaths,
+      p.deaths > 0 ? (p.kills / p.deaths).toFixed(2) : p.kills.toFixed(2),
+      Math.round(p.hsp || 0) + "%",
+      p.wins,
+      p.trp,
+      (p.average_rating || 0).toFixed(2),
+    ]);
+    const csv = [headers, ...rows].map(r => r.join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `ranking${selectedSeason ? `_season_${selectedSeason}` : ""}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const sorted = [...leaderboard].sort((a, b) => (b.average_rating || 0) - (a.average_rating || 0));
 
   return (
@@ -55,22 +79,34 @@ export function LeaderboardContent() {
             </h1>
           </div>
 
-          {/* Season Filter */}
-          {seasons.length > 0 && (
-            <div className="flex items-center gap-2">
-              <Filter size={12} className="text-orbital-text-dim" />
-              <select
-                value={selectedSeason}
-                onChange={e => handleSeasonChange(e.target.value)}
-                className="bg-[#0A0A0A] border border-orbital-border text-orbital-text font-[family-name:var(--font-jetbrains)] text-xs px-3 py-1.5 focus:border-orbital-purple/50 focus:outline-none"
+          <div className="flex items-center gap-3">
+            {/* Season Filter */}
+            {seasons.length > 0 && (
+              <div className="flex items-center gap-2">
+                <Filter size={12} className="text-orbital-text-dim" />
+                <select
+                  value={selectedSeason}
+                  onChange={e => handleSeasonChange(e.target.value)}
+                  className="bg-[#0A0A0A] border border-orbital-border text-orbital-text font-[family-name:var(--font-jetbrains)] text-xs px-3 py-1.5 focus:border-orbital-purple/50 focus:outline-none"
+                >
+                  <option value="">Todas as seasons</option>
+                  {seasons.map(s => (
+                    <option key={s.id} value={s.id}>{s.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+            {/* CSV Export */}
+            {sorted.length > 0 && (
+              <button
+                onClick={exportCSV}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 transition-all font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-purple"
               >
-                <option value="">Todas as seasons</option>
-                {seasons.map(s => (
-                  <option key={s.id} value={s.id}>{s.name}</option>
-                ))}
-              </select>
-            </div>
-          )}
+                <Download size={11} />
+                CSV
+              </button>
+            )}
+          </div>
         </div>
         <p className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text-dim">
           {selectedSeason ? `Ranking da season selecionada` : "Classificação geral dos jogadores"}
