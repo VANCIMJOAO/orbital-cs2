@@ -50,19 +50,24 @@ export interface Tournament {
 
 const CS2_MAPS = [
   "de_ancient", "de_anubis", "de_dust2", "de_inferno",
-  "de_mirage", "de_nuke", "de_overpass", "de_vertigo",
-  "de_train",
+  "de_mirage", "de_nuke", "de_overpass",
 ];
 
 export function getDefaultMapPool(): string[] {
   return [...CS2_MAPS];
 }
 
-// Generate seeded bracket pairing (1v8, 2v7, 3v6, 4v5)
-function seedPairing(numTeams: number): [number, number][] {
+// Generate random bracket pairing (shuffle and pair sequentially)
+function randomPairing(numTeams: number): [number, number][] {
+  const indices = Array.from({ length: numTeams }, (_, i) => i);
+  // Fisher-Yates shuffle
+  for (let i = indices.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [indices[i], indices[j]] = [indices[j], indices[i]];
+  }
   const pairs: [number, number][] = [];
-  for (let i = 0; i < numTeams / 2; i++) {
-    pairs.push([i, numTeams - 1 - i]);
+  for (let i = 0; i < numTeams; i += 2) {
+    pairs.push([indices[i], indices[i + 1]]);
   }
   return pairs;
 }
@@ -73,7 +78,7 @@ export function generateDoubleEliminationBracket(teams: TournamentTeam[]): Brack
   }
 
   const matches: BracketMatch[] = [];
-  const pairs = seedPairing(8); // [0,7], [1,6], [2,5], [3,4]
+  const pairs = randomPairing(8);
 
   // === WINNER BRACKET ===
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Loader2, Check, AlertCircle, ChevronUp, Trophy, Trash2, Eye, ArrowRight, ArrowLeft, Users, GripVertical } from "lucide-react";
+import { Plus, Loader2, Check, AlertCircle, ChevronUp, Trophy, Trash2, Eye, ArrowRight, ArrowLeft, Users } from "lucide-react";
 import { HudCard } from "@/components/hud-card";
 import Link from "next/link";
 import { useEffect, useState, useCallback } from "react";
@@ -49,14 +49,6 @@ export default function AdminCampeonatos() {
     setSelectedTeams(prev =>
       prev.includes(teamId) ? prev.filter(id => id !== teamId) : prev.length < 8 ? [...prev, teamId] : prev
     );
-  };
-
-  const moveTeam = (index: number, direction: -1 | 1) => {
-    const newTeams = [...selectedTeams];
-    const newIndex = index + direction;
-    if (newIndex < 0 || newIndex >= newTeams.length) return;
-    [newTeams[index], newTeams[newIndex]] = [newTeams[newIndex], newTeams[index]];
-    setSelectedTeams(newTeams);
   };
 
   const toggleMap = (map: string) => {
@@ -245,29 +237,22 @@ export default function AdminCampeonatos() {
                         SELECIONAR 8 TIMES <span className="text-orbital-purple">({selectedTeams.length}/8)</span>
                       </label>
                       <p className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim/60 mb-3">
-                        A ordem define o seed (1-8). Arraste para reordenar.
+                        Selecione os 8 times participantes.
                       </p>
 
                       {/* Selected teams with seed order */}
                       {selectedTeams.length > 0 && (
                         <div className="mb-4 space-y-1">
                           <div className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.2em] text-orbital-purple mb-2">
-                            SEED ORDER
+                            TIMES SELECIONADOS
                           </div>
-                          {selectedTeams.map((teamId, i) => {
+                          {selectedTeams.map((teamId) => {
                             const team = teams.find(t => t.id === teamId);
                             if (!team) return null;
                             return (
                               <div key={teamId} className="flex items-center gap-2 px-3 py-2 bg-orbital-purple/5 border border-orbital-purple/20">
-                                <span className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-purple w-5 text-center">#{i + 1}</span>
                                 <span className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text flex-1">{team.name}</span>
                                 <div className="flex items-center gap-1">
-                                  <button type="button" onClick={() => moveTeam(i, -1)} disabled={i === 0} className="p-1 text-orbital-text-dim hover:text-orbital-purple disabled:opacity-20">
-                                    <GripVertical size={10} className="rotate-180" />
-                                  </button>
-                                  <button type="button" onClick={() => moveTeam(i, 1)} disabled={i === selectedTeams.length - 1} className="p-1 text-orbital-text-dim hover:text-orbital-purple disabled:opacity-20">
-                                    <GripVertical size={10} />
-                                  </button>
                                   <button type="button" onClick={() => toggleTeam(teamId)} className="p-1 text-orbital-text-dim hover:text-orbital-danger">
                                     <Trash2 size={10} />
                                   </button>
@@ -316,7 +301,7 @@ export default function AdminCampeonatos() {
                   <motion.div key="s2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
                     <div>
                       <label className={labelClass}>
-                        MAP POOL <span className="text-orbital-purple">({mapPool.length}/9)</span>
+                        MAP POOL <span className="text-orbital-purple">({mapPool.length}/{allMaps.length})</span>
                       </label>
                       <p className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim/60 mb-3">
                         Mínimo 7 mapas para BO1 (6 bans + 1 pick) e BO3 (6 ações + 1 decider)
@@ -353,23 +338,10 @@ export default function AdminCampeonatos() {
                       </div>
 
                       <div className="border-t border-orbital-border pt-3">
-                        <div className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.2em] text-orbital-text-dim mb-2">CHAVEAMENTO (SEED)</div>
-                        <div className="grid grid-cols-2 gap-2">
-                          {[
-                            [0, 7], [1, 6], [2, 5], [3, 4]
-                          ].map(([a, b], i) => {
-                            const teamA = teams.find(t => t.id === selectedTeams[a]);
-                            const teamB = teams.find(t => t.id === selectedTeams[b]);
-                            return (
-                              <div key={i} className="flex items-center gap-2 px-3 py-2 border border-orbital-border">
-                                <span className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-purple">QF{i + 1}</span>
-                                <span className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text truncate">
-                                  #{a + 1} {teamA?.name || "?"} <span className="text-orbital-text-dim">vs</span> #{b + 1} {teamB?.name || "?"}
-                                </span>
-                              </div>
-                            );
-                          })}
-                        </div>
+                        <div className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.2em] text-orbital-text-dim mb-2">CHAVEAMENTO</div>
+                        <p className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim">
+                          Os confrontos das quartas de final serão sorteados aleatoriamente ao criar o campeonato.
+                        </p>
                       </div>
                     </div>
                   </motion.div>
