@@ -321,16 +321,22 @@ function TournamentHome({ tournament: t, liveMatches, recentMatches, teamsMap }:
       </motion.section>
 
       {/* Tournament Matches from G5API */}
-      {tournamentRecentMatches.length > 0 && (
-        <section className="mb-10">
-          <SectionHeader icon={Swords} title="RESULTADOS" href="/partidas" />
+      <section className="mb-10">
+        <SectionHeader icon={Swords} title="RESULTADOS" href="/partidas" />
+        {tournamentRecentMatches.length > 0 ? (
           <div className="grid gap-3">
             {tournamentRecentMatches.slice(0, 5).map((match, i) => (
               <MatchCard key={match.id} match={match} teamsMap={teamsMap} delay={i * 0.08} />
             ))}
           </div>
-        </section>
-      )}
+        ) : (
+          <HudCard>
+            <p className="text-center text-orbital-text-dim font-[family-name:var(--font-jetbrains)] text-sm py-4">
+              Nenhuma partida finalizada ainda neste campeonato
+            </p>
+          </HudCard>
+        )}
+      </section>
 
       {/* Live G5API matches (only tournament ones) */}
       {(() => {
