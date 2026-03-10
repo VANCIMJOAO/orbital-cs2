@@ -14,7 +14,7 @@ interface Props {
   matches: Match[];
   playerStats: PlayerStats[];
   mapStats: MapStats[];
-  teamsMap: Record<number, string>;
+  teamsMap: Record<number, { name: string; logo: string | null }>;
 }
 
 export function TeamDetailContent({ team, matches, playerStats, mapStats, teamsMap }: Props) {
@@ -139,7 +139,8 @@ export function TeamDetailContent({ team, matches, playerStats, mapStats, teamsM
       .sort((a, b) => b.winRate - a.winRate);
   }, [mapStats, finishedMatches, team.id]);
 
-  const getTeamName = (id: number, fallback: string) => teamsMap[id] || fallback || `Time ${id}`;
+  const getTeamName = (id: number, fallback: string) => teamsMap[id]?.name || fallback || `Time ${id}`;
+  const getTeamLogo = (id: number) => teamsMap[id]?.logo || null;
 
   const tabs: { value: Tab; label: string }[] = [
     { value: "info", label: "Info" },
@@ -262,12 +263,17 @@ export function TeamDetailContent({ team, matches, playerStats, mapStats, teamsM
                   const won = m.winner === team.id;
                   const oppId = m.team1_id === team.id ? m.team2_id : m.team1_id;
                   const oppName = getTeamName(oppId, m.team1_id === team.id ? m.team2_string : m.team1_string);
+                  const oppLogo = getTeamLogo(oppId);
                   return (
                     <Link key={m.id} href={`/partidas/${m.id}`} className="flex flex-col items-center gap-1.5 group">
                       <div className={`w-12 h-12 border flex items-center justify-center ${
                         won ? "bg-orbital-success/10 border-orbital-success/30" : "bg-orbital-danger/10 border-orbital-danger/30"
                       }`}>
-                        <Shield size={18} className="text-orbital-text-dim group-hover:text-orbital-purple transition-colors" />
+                        {oppLogo ? (
+                          <img src={oppLogo} alt={oppName} className="w-8 h-8 object-contain group-hover:scale-110 transition-transform" />
+                        ) : (
+                          <Shield size={18} className="text-orbital-text-dim group-hover:text-orbital-purple transition-colors" />
+                        )}
                       </div>
                       <span className="font-[family-name:var(--font-jetbrains)] text-[0.55rem] text-orbital-text-dim truncate max-w-[60px] text-center">
                         {oppName}
@@ -539,12 +545,17 @@ export function TeamDetailContent({ team, matches, playerStats, mapStats, teamsM
                   const won = m.winner === team.id;
                   const oppId = m.team1_id === team.id ? m.team2_id : m.team1_id;
                   const oppName = getTeamName(oppId, m.team1_id === team.id ? m.team2_string : m.team1_string);
+                  const oppLogo = getTeamLogo(oppId);
                   return (
                     <Link key={m.id} href={`/partidas/${m.id}`} className="flex flex-col items-center gap-2 group">
                       <div className={`w-14 h-14 border-2 flex items-center justify-center transition-all ${
                         won ? "border-orbital-success/40 bg-orbital-success/5" : "border-orbital-danger/40 bg-orbital-danger/5"
                       } group-hover:border-orbital-purple/50`}>
-                        <Shield size={20} className="text-orbital-text-dim group-hover:text-orbital-purple transition-colors" />
+                        {oppLogo ? (
+                          <img src={oppLogo} alt={oppName} className="w-9 h-9 object-contain group-hover:scale-110 transition-transform" />
+                        ) : (
+                          <Shield size={20} className="text-orbital-text-dim group-hover:text-orbital-purple transition-colors" />
+                        )}
                       </div>
                       <span className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim max-w-[70px] text-center truncate">
                         {oppName}

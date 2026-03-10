@@ -1,4 +1,4 @@
-import { getTeam, getMatches, getPlayerStats, getMapStats, Team, Match, PlayerStats, MapStats } from "@/lib/api";
+import { getTeam, getTeams, getMatches, getPlayerStats, getMapStats, Team, Match, PlayerStats, MapStats } from "@/lib/api";
 import { TeamDetailContent } from "./team-detail-content";
 
 export const revalidate = 30;
@@ -8,13 +8,15 @@ export default async function TeamPage({ params }: { params: Promise<{ id: strin
   const teamId = parseInt(id);
 
   try {
-    const [teamRes, matchesRes] = await Promise.all([
+    const [teamRes, matchesRes, teamsRes] = await Promise.all([
       getTeam(teamId),
       getMatches().catch(() => ({ matches: [] })),
+      getTeams().catch(() => ({ teams: [] })),
     ]);
 
     const team = teamRes.team;
     const allMatches = matchesRes.matches || [];
+    const allTeams = teamsRes.teams || [];
 
     // Filter matches involving this team
     const teamMatches = allMatches
@@ -52,11 +54,15 @@ export default async function TeamPage({ params }: { params: Promise<{ id: strin
     const playerStats = allPlayerStats.flat();
     const mapStats = allMapStats.flat();
 
-    // Get all teams for name resolution
-    const teamsMap: Record<number, string> = {};
+    // Build teams map with name + logo from full team data
+    const teamsMap: Record<number, { name: string; logo: string | null }> = {};
+    allTeams.forEach((t: Team) => {
+      teamsMap[t.id] = { name: t.name, logo: t.logo };
+    });
+    // Fallback: fill from match strings for teams not in allTeams
     allMatches.forEach((m: Match) => {
-      if (m.team1_string) teamsMap[m.team1_id] = m.team1_string;
-      if (m.team2_string) teamsMap[m.team2_id] = m.team2_string;
+      if (!teamsMap[m.team1_id] && m.team1_string) teamsMap[m.team1_id] = { name: m.team1_string, logo: null };
+      if (!teamsMap[m.team2_id] && m.team2_string) teamsMap[m.team2_id] = { name: m.team2_string, logo: null };
     });
 
     return (

@@ -16,6 +16,7 @@ export default function AdminTimes() {
   const [name, setName] = useState("");
   const [tag, setTag] = useState("");
   const [flag, setFlag] = useState("BR");
+  const [logo, setLogo] = useState("");
   const [isPublic, setIsPublic] = useState(true);
   const [players, setPlayers] = useState<{ steamId: string; name: string }[]>([{ steamId: "", name: "" }]);
 
@@ -44,6 +45,7 @@ export default function AdminTimes() {
           name: t.name || t.team_name || "Imported Team",
           tag: t.tag || t.name?.substring(0, 4) || "IMP",
           flag: t.flag || "BR",
+          logo: t.logo || undefined,
           public_team: t.public_team ?? true,
           auth_name,
         });
@@ -73,6 +75,7 @@ export default function AdminTimes() {
     setName("");
     setTag("");
     setFlag("BR");
+    setLogo("");
     setIsPublic(true);
     setPlayers([{ steamId: "", name: "" }]);
     setEditing(null);
@@ -85,6 +88,7 @@ export default function AdminTimes() {
     setName(team.name);
     setTag(team.tag);
     setFlag(team.flag || "BR");
+    setLogo(team.logo || "");
     setIsPublic(team.public_team);
     const entries = Object.entries(team.auth_name || {});
     setPlayers(entries.length > 0 ? entries.map(([steamId, val]) => ({ steamId, name: typeof val === "string" ? val : val.name })) : [{ steamId: "", name: "" }]);
@@ -116,10 +120,10 @@ export default function AdminTimes() {
     setSubmitting(true);
     try {
       if (editing) {
-        await updateTeam({ team_id: editing.id, name, tag, flag, public_team: isPublic, auth_name });
+        await updateTeam({ team_id: editing.id, name, tag, flag, logo: logo || undefined, public_team: isPublic, auth_name });
         setFeedback({ type: "success", msg: `Time "${name}" atualizado!` });
       } else {
-        await createTeam({ name, tag, flag, public_team: isPublic, auth_name });
+        await createTeam({ name, tag, flag, logo: logo || undefined, public_team: isPublic, auth_name });
         setFeedback({ type: "success", msg: `Time "${name}" criado!` });
       }
       await fetchTeams();
@@ -203,6 +207,18 @@ export default function AdminTimes() {
                   </div>
                 </div>
 
+                <div>
+                  <label className="block font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-[0.15em] text-orbital-text-dim mb-2">LOGO (URL)</label>
+                  <div className="flex items-center gap-3">
+                    <input type="url" value={logo} onChange={e => setLogo(e.target.value)} placeholder="https://exemplo.com/logo.png" className="flex-1 bg-[#0A0A0A] border border-orbital-border text-orbital-text font-[family-name:var(--font-jetbrains)] text-sm px-3 py-2.5 focus:border-orbital-purple/50 focus:outline-none transition-colors placeholder:text-orbital-text-dim/30" />
+                    {logo && (
+                      <div className="w-10 h-10 bg-[#0A0A0A] border border-orbital-border flex items-center justify-center shrink-0">
+                        <img src={logo} alt="Preview" className="w-8 h-8 object-contain" onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                      </div>
+                    )}
+                  </div>
+                </div>
+
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" checked={isPublic} onChange={e => setIsPublic(e.target.checked)} className="w-4 h-4 accent-orbital-purple" />
                   <span className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text">Time público</span>
@@ -273,7 +289,11 @@ export default function AdminTimes() {
           >
             <div className="flex items-center gap-4">
               <div className="w-10 h-10 bg-orbital-purple/10 border border-orbital-purple/20 flex items-center justify-center">
-                <Users size={16} className="text-orbital-purple" />
+                {team.logo ? (
+                  <img src={team.logo} alt={team.name} className="w-7 h-7 object-contain" />
+                ) : (
+                  <Users size={16} className="text-orbital-purple" />
+                )}
               </div>
               <div>
                 <h3 className="font-[family-name:var(--font-orbitron)] text-xs font-bold text-orbital-text tracking-wider">
