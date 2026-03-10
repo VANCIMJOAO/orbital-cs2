@@ -12,8 +12,6 @@ export async function PUT(req: NextRequest) {
     }
 
     const connection = await mysql.createConnection(DATABASE_URL);
-    // Ensure logo column can hold full URLs
-    await connection.execute("ALTER TABLE team MODIFY COLUMN logo VARCHAR(512) DEFAULT NULL").catch(() => {});
     await connection.execute("UPDATE team SET logo = ? WHERE id = ?", [logoUrl || null, teamId]);
     await connection.end();
 

@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const PTERO_URL = "https://painel3.firegamesnetwork.com";
-const PTERO_SERVER_ID = "456ea1b7-a255-4b52-a9e3-bd9027e6be29";
-const PTERO_API_KEY = "ptlc_eKnDCS3B3jnkjAr3MXM5giKwtE2gArNACdgOMyoOGmr";
+const PTERO_URL = process.env.PTERO_URL || "";
+const PTERO_SERVER_ID = process.env.PTERO_SERVER_ID || "";
+const PTERO_API_KEY = process.env.PTERO_API_KEY || "";
 
 export async function GET(
   _req: NextRequest,

@@ -40,6 +40,51 @@ export default function CampeonatoPage({ params }: { params: Promise<{ id: strin
 
   useEffect(() => { fetchTournament(); }, [fetchTournament]);
 
+  // Auto-advance: poll live G5API matches for completion
+  useEffect(() => {
+    if (!tournament || tournament.status === "finished") return;
+
+    const liveMatches = tournament.matches.filter(m => m.status === "live" && m.match_id);
+    if (liveMatches.length === 0) return;
+
+    const checkAutoAdvance = async () => {
+      let changed = false;
+      let updated = { ...tournament, matches: tournament.matches.map(m => ({ ...m })) };
+
+      for (const bm of liveMatches) {
+        try {
+          const res = await fetch(`/api/matches/${bm.match_id}`);
+          const data = await res.json();
+          const g5match = data.match;
+
+          if (g5match && g5match.end_time && !bm.winner_id) {
+            // Match finished in G5API — determine winner
+            let winnerId = g5match.winner;
+            if (!winnerId && g5match.team1_score !== g5match.team2_score) {
+              winnerId = g5match.team1_score > g5match.team2_score ? g5match.team1_id : g5match.team2_id;
+            }
+            if (winnerId) {
+              // Map G5API team ID to tournament team ID
+              const tourTeam = updated.teams.find(t => t.id === winnerId);
+              if (tourTeam) {
+                updated = advanceBracket(updated, bm.id, tourTeam.id);
+                changed = true;
+              }
+            }
+          }
+        } catch { /* ignore */ }
+      }
+
+      if (changed) {
+        await saveTournament(updated);
+      }
+    };
+
+    const interval = setInterval(checkAutoAdvance, 10000);
+    checkAutoAdvance(); // run immediately
+    return () => clearInterval(interval);
+  }, [tournament]);
+
   useEffect(() => {
     if (isAdmin) {
       getServers().then(r => setServers(r.servers || [])).catch(() => {});

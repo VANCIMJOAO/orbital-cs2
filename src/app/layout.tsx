@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Orbitron, JetBrains_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/navbar";
+import { LiveToastProvider } from "@/components/live-toast";
 import { AuthProvider } from "@/lib/auth-context";
 
 const orbitron = Orbitron({
@@ -42,6 +43,7 @@ export default function RootLayout({
           <main className="min-h-screen pt-20">
             {children}
           </main>
+          <LiveToastProvider />
         </AuthProvider>
       </body>
     </html>

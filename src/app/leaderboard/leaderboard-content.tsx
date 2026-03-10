@@ -1,12 +1,42 @@
 "use client";
 
+import { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Trophy, Target, Skull, Crosshair, Medal } from "lucide-react";
+import { Trophy, Target, Skull, Crosshair, Medal, Filter } from "lucide-react";
 import Link from "next/link";
 import { HudCard } from "@/components/hud-card";
-import { LeaderboardEntry } from "@/lib/api";
+import { LeaderboardEntry, Season } from "@/lib/api";
 
-export function LeaderboardContent({ leaderboard }: { leaderboard: LeaderboardEntry[] }) {
+export function LeaderboardContent() {
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [seasons, setSeasons] = useState<Season[]>([]);
+  const [selectedSeason, setSelectedSeason] = useState<string>("");
+  const [loading, setLoading] = useState(true);
+
+  const fetchLeaderboard = useCallback(async (seasonId?: number) => {
+    setLoading(true);
+    try {
+      const query = seasonId ? `?season_id=${seasonId}` : "";
+      const res = await fetch(`/api/leaderboard/players${query}`);
+      const data = await res.json();
+      setLeaderboard(data.leaderboard || []);
+    } catch { /* */ }
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    fetchLeaderboard();
+    fetch("/api/seasons")
+      .then(r => r.json())
+      .then(d => setSeasons(d.seasons || []))
+      .catch(() => {});
+  }, [fetchLeaderboard]);
+
+  const handleSeasonChange = (value: string) => {
+    setSelectedSeason(value);
+    fetchLeaderboard(value ? parseInt(value) : undefined);
+  };
+
   const sorted = [...leaderboard].sort((a, b) => (b.average_rating || 0) - (a.average_rating || 0));
 
   return (
@@ -17,18 +47,41 @@ export function LeaderboardContent({ leaderboard }: { leaderboard: LeaderboardEn
         animate={{ opacity: 1, y: 0 }}
         className="py-8"
       >
-        <div className="flex items-center gap-3 mb-2">
-          <Trophy size={20} className="text-orbital-purple" />
-          <h1 className="font-[family-name:var(--font-orbitron)] text-xl font-bold tracking-wider text-orbital-text">
-            RANKING
-          </h1>
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-3">
+            <Trophy size={20} className="text-orbital-purple" />
+            <h1 className="font-[family-name:var(--font-orbitron)] text-xl font-bold tracking-wider text-orbital-text">
+              RANKING
+            </h1>
+          </div>
+
+          {/* Season Filter */}
+          {seasons.length > 0 && (
+            <div className="flex items-center gap-2">
+              <Filter size={12} className="text-orbital-text-dim" />
+              <select
+                value={selectedSeason}
+                onChange={e => handleSeasonChange(e.target.value)}
+                className="bg-[#0A0A0A] border border-orbital-border text-orbital-text font-[family-name:var(--font-jetbrains)] text-xs px-3 py-1.5 focus:border-orbital-purple/50 focus:outline-none"
+              >
+                <option value="">Todas as seasons</option>
+                {seasons.map(s => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
         <p className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text-dim">
-          Classificação geral dos jogadores
+          {selectedSeason ? `Ranking da season selecionada` : "Classificação geral dos jogadores"}
         </p>
       </motion.div>
 
-      {sorted.length > 0 ? (
+      {loading ? (
+        <div className="flex items-center justify-center py-20">
+          <div className="w-8 h-8 border-2 border-orbital-purple border-t-transparent rounded-full animate-spin" />
+        </div>
+      ) : sorted.length > 0 ? (
         <>
           {/* Top 3 Podium */}
           {sorted.length >= 3 && (
@@ -67,7 +120,7 @@ export function LeaderboardContent({ leaderboard }: { leaderboard: LeaderboardEn
                 <tbody>
                   {sorted.map((player, i) => {
                     const kd = (player.deaths || 0) > 0 ? ((player.kills || 0) / player.deaths).toFixed(2) : (player.kills || 0).toFixed(2);
-                    const rating = player.average_rating || player.average_rating || 0;
+                    const rating = player.average_rating || 0;
                     return (
                       <tr key={player.steamId}>
                         <td>
@@ -121,7 +174,7 @@ export function LeaderboardContent({ leaderboard }: { leaderboard: LeaderboardEn
 }
 
 function PodiumCard({ player, rank, delay }: { player: LeaderboardEntry; rank: number; delay: number }) {
-  const rating = player.average_rating || player.average_rating || 0;
+  const rating = player.average_rating || 0;
   const isFirst = rank === 1;
 
   return (

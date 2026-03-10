@@ -120,7 +120,7 @@ export function ProfileContent({ steamId }: { steamId: string }) {
           // Filtrar partidas deste jogador (precisa verificar player stats)
           // Por ora, buscar mapstats do jogador para saber quais mapas jogou
           const playerMatches = allMatches
-            .filter((m: Match) => m.team1_string?.includes(steamId) || m.team2_string?.includes(steamId) || true)
+            .filter((m: Match) => m.team1_string?.includes(steamId) || m.team2_string?.includes(steamId))
             .sort((a: Match, b: Match) => b.id - a.id)
             .slice(0, 10);
 

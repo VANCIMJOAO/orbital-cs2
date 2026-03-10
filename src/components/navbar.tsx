@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Crosshair, Swords, Users, Trophy, Menu, X, LogIn, LogOut, User, Shield, ChevronDown } from "lucide-react";
+import { Crosshair, Swords, Users, Trophy, Award, Film, Menu, X, LogIn, LogOut, User, Shield, ChevronDown } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
 
@@ -13,6 +13,8 @@ const navLinks = [
   { href: "/partidas", label: "PARTIDAS", icon: Swords },
   { href: "/times", label: "TIMES", icon: Users },
   { href: "/leaderboard", label: "RANKING", icon: Trophy },
+  { href: "/campeonatos", label: "CAMPEONATOS", icon: Award },
+  { href: "/demos", label: "DEMOS", icon: Film },
 ];
 
 export function Navbar() {
@@ -91,7 +93,7 @@ export function Navbar() {
                 ADMIN
                 {pathname.startsWith("/admin") && (
                   <motion.div
-                    layoutId="nav-indicator"
+                    layoutId="nav-indicator-admin"
                     className="absolute bottom-0 left-2 right-2 h-[2px] bg-orbital-purple"
                     style={{ boxShadow: "0 0 10px rgba(168,85,247,0.5)" }}
                     transition={{ type: "spring", stiffness: 500, damping: 30 }}
