@@ -189,7 +189,7 @@ export function MatchDetailContent({ match: initialMatch, playerStats: initialSt
                   {matchTime}
                 </span>
               )}
-              {match.title && (
+              {match.title && !tournamentName && (
                 <span className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-purple/80">
                   {match.title}
                 </span>
