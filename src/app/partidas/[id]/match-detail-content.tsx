@@ -160,12 +160,20 @@ export function MatchDetailContent({ match: initialMatch, playerStats: initialSt
         <div className={`relative bg-orbital-card border overflow-hidden ${
           isLive ? "border-orbital-live/30" : "border-orbital-border"
         }`}>
+          {/* Map image background (BO1 only) */}
+          {isBO1 && currentMap && MAP_IMAGES[currentMap.map_name] && (
+            <div className="absolute inset-0">
+              <img src={MAP_IMAGES[currentMap.map_name]} alt={currentMap.map_name} className="w-full h-full object-cover opacity-15" />
+              <div className="absolute inset-0 bg-gradient-to-b from-orbital-card/60 via-orbital-card/80 to-orbital-card" />
+            </div>
+          )}
+
           {/* Top accent */}
-          <div className={`absolute top-0 left-0 right-0 h-[2px] ${
+          <div className={`absolute top-0 left-0 right-0 h-[2px] z-10 ${
             isLive ? "bg-orbital-live" : "bg-gradient-to-r from-transparent via-orbital-purple/40 to-transparent"
           }`} />
 
-          <div className="relative py-8 px-6">
+          <div className="relative py-8 px-6 z-10">
             {/* Tournament + bracket label */}
             {(tournamentName || bracketMatch?.label) && (
               <div className="text-center mb-3">
@@ -275,9 +283,20 @@ export function MatchDetailContent({ match: initialMatch, playerStats: initialSt
               </div>
             </div>
 
+            {/* Map name badge (BO1 integrated) */}
+            {isBO1 && currentMap && (
+              <div className="flex items-center justify-center gap-3 mt-5">
+                <div className="h-[1px] flex-1 max-w-[80px] bg-gradient-to-r from-transparent to-orbital-purple/30" />
+                <span className="font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-[0.2em] text-orbital-purple/80">
+                  {currentMap.map_name.replace("de_", "").toUpperCase()}
+                </span>
+                <div className="h-[1px] flex-1 max-w-[80px] bg-gradient-to-l from-transparent to-orbital-purple/30" />
+              </div>
+            )}
+
             {/* Connect buttons */}
             {server && isActive && (
-              <div className="flex items-center justify-center gap-3 mt-6">
+              <div className="flex items-center justify-center gap-3 mt-4">
                 <a
                   href={`steam://connect/${server.ip_string}:${server.port}`}
                   className="inline-flex items-center gap-2 px-5 py-2 bg-orbital-purple/20 border border-orbital-purple/40 hover:border-orbital-purple hover:bg-orbital-purple/30 transition-all font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-wider text-orbital-purple"
@@ -292,6 +311,19 @@ export function MatchDetailContent({ match: initialMatch, playerStats: initialSt
                     GOTV
                   </a>
                 )}
+              </div>
+            )}
+
+            {/* Demo download (BO1 integrated) */}
+            {isBO1 && currentMap?.demoFile && currentMap.end_time && (
+              <div className="text-center mt-3">
+                <a
+                  href={`/api/demo/${currentMap.demoFile}`}
+                  download
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 transition-all font-[family-name:var(--font-jetbrains)] text-[0.55rem] text-orbital-purple"
+                >
+                  <Download size={10} /> DOWNLOAD DEMO
+                </a>
               </div>
             )}
           </div>
@@ -364,8 +396,8 @@ export function MatchDetailContent({ match: initialMatch, playerStats: initialSt
         </motion.section>
       )}
 
-      {/* ═══ MAPS SECTION (HLTV-style with images) ═══ */}
-      {mapStats.length > 0 && (
+      {/* ═══ MAPS SECTION (HLTV-style with images) — only for BO3+ ═══ */}
+      {mapStats.length > 0 && !isBO1 && (
         <motion.section initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="mb-6">
           <div className="flex items-center gap-3 mb-3">
             <Map size={14} className="text-orbital-purple" />
