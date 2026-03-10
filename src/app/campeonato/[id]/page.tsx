@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useCallback, use } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Trophy, Swords, X, Check, ArrowLeft, Loader2, Shield, Play } from "lucide-react";
+import { Trophy, Swords, X, Check, ArrowLeft, Loader2, Shield, Play, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { HudCard } from "@/components/hud-card";
 import { useAuth } from "@/lib/auth-context";
@@ -21,6 +22,7 @@ import {
 export default function CampeonatoPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const { isAdmin } = useAuth();
+  const router = useRouter();
   const [tournament, setTournament] = useState<Tournament | null>(null);
   const [loading, setLoading] = useState(true);
   const [vetoMatch, setVetoMatch] = useState<BracketMatch | null>(null);
@@ -213,6 +215,18 @@ export default function CampeonatoPage({ params }: { params: Promise<{ id: strin
     setMatchError(null);
   };
 
+  const handleDeleteTournament = async () => {
+    if (!tournament) return;
+    if (!confirm(`Deletar campeonato "${tournament.name}"? Esta ação é irreversível.`)) return;
+
+    await fetch("/api/tournaments", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: tournament.id }),
+    });
+    router.push("/admin/campeonatos");
+  };
+
   const handleSetWinner = async (matchId: string, winnerId: number) => {
     if (!tournament) return;
     const teamName = getTeamName(tournament, winnerId);
@@ -263,6 +277,15 @@ export default function CampeonatoPage({ params }: { params: Promise<{ id: strin
           }`}>
             {tournament.status === "active" ? "AO VIVO" : tournament.status === "finished" ? "FINALIZADO" : "PENDENTE"}
           </span>
+          {isAdmin && (
+            <button
+              onClick={handleDeleteTournament}
+              className="ml-auto p-2 text-orbital-text-dim hover:text-orbital-danger transition-colors"
+              title="Deletar campeonato"
+            >
+              <Trash2 size={16} />
+            </button>
+          )}
         </div>
         <p className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text-dim">
           Eliminação Dupla — {tournament.teams.length} times — {tournament.matches.filter(m => m.status === "finished").length}/{tournament.matches.length} partidas
