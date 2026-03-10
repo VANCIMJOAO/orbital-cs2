@@ -8,17 +8,17 @@ import { MatchCard } from "@/components/match-card";
 import { Match } from "@/lib/api";
 import { Tournament, getTeamName } from "@/lib/tournament";
 
-// Map screenshot URLs (Steam CDN)
+// Map screenshot URLs (GitHub: ghostcap-gaming/cs2-map-images)
 const MAP_IMAGES: Record<string, string> = {
-  de_ancient: "https://cdn.cloudflare.steamstatic.com/apps/csgo/images/csgo_react/maps/de_ancient.png",
-  de_anubis: "https://cdn.cloudflare.steamstatic.com/apps/csgo/images/csgo_react/maps/de_anubis.png",
-  de_dust2: "https://cdn.cloudflare.steamstatic.com/apps/csgo/images/csgo_react/maps/de_dust2.png",
-  de_inferno: "https://cdn.cloudflare.steamstatic.com/apps/csgo/images/csgo_react/maps/de_inferno.png",
-  de_mirage: "https://cdn.cloudflare.steamstatic.com/apps/csgo/images/csgo_react/maps/de_mirage.png",
-  de_nuke: "https://cdn.cloudflare.steamstatic.com/apps/csgo/images/csgo_react/maps/de_nuke.png",
-  de_overpass: "https://cdn.cloudflare.steamstatic.com/apps/csgo/images/csgo_react/maps/de_overpass.png",
-  de_vertigo: "https://cdn.cloudflare.steamstatic.com/apps/csgo/images/csgo_react/maps/de_vertigo.png",
-  de_train: "https://cdn.cloudflare.steamstatic.com/apps/csgo/images/csgo_react/maps/de_train.png",
+  de_ancient: "https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_ancient.png",
+  de_anubis: "https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_anubis.png",
+  de_dust2: "https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_dust2.png",
+  de_inferno: "https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_inferno.png",
+  de_mirage: "https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_mirage.png",
+  de_nuke: "https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_nuke.png",
+  de_overpass: "https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_overpass.png",
+  de_vertigo: "https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_vertigo.png",
+  de_train: "https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_train.png",
 };
 
 function TeamLogo({ logo, size = 32, className = "" }: { logo: string | null | undefined; size?: number; className?: string }) {
