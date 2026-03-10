@@ -226,18 +226,16 @@ export default function AdminTimes() {
                         </button>
                       </div>
                     ) : (
-                      <label
-                        className={`flex items-center gap-2 px-4 py-3 border border-dashed transition-all w-full justify-center ${
-                          uploadingLogo ? "border-orbital-purple/50 bg-orbital-purple/5 pointer-events-none" : "border-orbital-border hover:border-orbital-purple/40 hover:bg-orbital-purple/5 cursor-pointer"
-                        }`}
-                      >
-                        <input
-                          type="file"
-                          accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml"
-                          className="hidden"
-                          disabled={uploadingLogo}
-                          onChange={async (e) => {
-                            const file = e.target.files?.[0];
+                      <div
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => {
+                          if (uploadingLogo) return;
+                          const input = document.createElement("input");
+                          input.type = "file";
+                          input.accept = "image/png,image/jpeg,image/webp,image/gif,image/svg+xml";
+                          input.onchange = async () => {
+                            const file = input.files?.[0];
                             if (!file) return;
                             setUploadingLogo(true);
                             try {
@@ -251,9 +249,13 @@ export default function AdminTimes() {
                               setFeedback({ type: "error", msg: err instanceof Error ? err.message : "Erro ao enviar logo" });
                             }
                             setUploadingLogo(false);
-                            e.target.value = "";
-                          }}
-                        />
+                          };
+                          input.click();
+                        }}
+                        className={`flex items-center gap-2 px-4 py-3 border border-dashed transition-all w-full justify-center ${
+                          uploadingLogo ? "border-orbital-purple/50 bg-orbital-purple/5" : "border-orbital-border hover:border-orbital-purple/40 hover:bg-orbital-purple/5 cursor-pointer"
+                        }`}
+                      >
                         {uploadingLogo ? (
                           <Loader2 size={16} className="text-orbital-purple animate-spin" />
                         ) : (
@@ -262,7 +264,7 @@ export default function AdminTimes() {
                         <span className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text-dim">
                           {uploadingLogo ? "Enviando..." : "Clique para enviar logo"}
                         </span>
-                      </label>
+                      </div>
                     )}
                   </div>
                 </div>
