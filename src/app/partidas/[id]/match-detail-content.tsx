@@ -149,6 +149,22 @@ export function MatchDetailContent({ match: initialMatch, playerStats: initialSt
 
   useEffect(() => { fetchAllstarClips(); }, [fetchAllstarClips]);
 
+  // Poll Allstar for pending clips every 30s
+  useEffect(() => {
+    const hasPending = allstarClips.some(c => c.status === "pending" || c.status === "submitted");
+    if (!hasPending) return;
+    const poll = async () => {
+      await fetch("/api/allstar/poll", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ matchId: match.id }),
+      }).catch(() => {});
+      await fetchAllstarClips();
+    };
+    const interval = setInterval(poll, 30000);
+    return () => clearInterval(interval);
+  }, [allstarClips, match.id, fetchAllstarClips]);
+
   const submitToAllstar = async (mapNumber: number, demoFile: string) => {
     setAllstarSubmitting(true);
     try {
