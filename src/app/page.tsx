@@ -22,8 +22,15 @@ export default async function HomePage() {
     teams = (apiData[1] as { teams: Team[] }).teams || [];
   }
 
-  const teamsMap: Record<number, { name: string; logo: string | null }> = {};
-  teams.forEach((t) => { teamsMap[t.id] = { name: t.name, logo: t.logo }; });
+  const teamsMap: Record<number, { name: string; logo: string | null; players?: { name: string; steamId: string; captain: number }[] }> = {};
+  teams.forEach((t) => {
+    const players = t.auth_name ? Object.entries(t.auth_name).map(([steamId, val]) => ({
+      steamId,
+      name: typeof val === "string" ? val : val.name,
+      captain: typeof val === "string" ? 0 : (val.captain || 0),
+    })) : [];
+    teamsMap[t.id] = { name: t.name, logo: t.logo, players };
+  });
 
   const liveMatches = matches.filter((m) => getStatusType(m) === "live");
   const recentMatches = matches

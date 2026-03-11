@@ -35,7 +35,7 @@ interface HomeContentProps {
   upcomingMatches: Match[];
   totalMatches: number;
   teamCount: number;
-  teamsMap?: Record<number, { name: string; logo: string | null }>;
+  teamsMap?: Record<number, { name: string; logo: string | null; players?: { name: string; steamId: string; captain: number }[] }>;
   mapScoresMap?: MapScoresMap;
 }
 
@@ -52,7 +52,7 @@ function TournamentHome({ tournament: t, liveMatches, recentMatches, teamsMap, m
   tournament: Tournament;
   liveMatches: Match[];
   recentMatches: Match[];
-  teamsMap?: Record<number, { name: string; logo: string | null }>;
+  teamsMap?: Record<number, { name: string; logo: string | null; players?: { name: string; steamId: string; captain: number }[] }>;
   mapScoresMap?: MapScoresMap;
 }) {
   const finished = t.matches.filter(m => m.status === "finished").length;
@@ -250,6 +250,7 @@ function TournamentHome({ tournament: t, liveMatches, recentMatches, teamsMap, m
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {t.teams.map((team, i) => {
             const logo = teamsMap?.[team.id]?.logo;
+            const players = teamsMap?.[team.id]?.players || [];
             const teamMatches = t.matches.filter(m => m.status === "finished" && (m.team1_id === team.id || m.team2_id === team.id));
             const losses = teamMatches.filter(m => m.winner_id !== null && m.winner_id !== team.id).length;
             const eliminated = losses >= 2;
@@ -261,7 +262,7 @@ function TournamentHome({ tournament: t, liveMatches, recentMatches, teamsMap, m
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 + i * 0.05 }}
-                className={`bg-orbital-card border p-4 text-center transition-all ${
+                className={`relative bg-orbital-card border p-4 text-center transition-all group ${
                   isChampion ? "border-orbital-success/40 bg-orbital-success/5" :
                   eliminated ? "border-orbital-border opacity-50" :
                   "border-orbital-border hover:border-orbital-purple/30"
@@ -281,6 +282,27 @@ function TournamentHome({ tournament: t, liveMatches, recentMatches, teamsMap, m
                 )}
                 {eliminated && !isChampion && (
                   <div className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.15em] text-orbital-danger mt-1">ELIMINADO</div>
+                )}
+
+                {/* Players tooltip on hover */}
+                {players.length > 0 && (
+                  <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1 z-50 w-44 bg-[#0D0D0D] border border-orbital-purple/30 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 pointer-events-none">
+                    <div className="px-3 py-1.5 border-b border-orbital-border/30 bg-orbital-purple/10">
+                      <span className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.15em] text-orbital-purple">LINEUP</span>
+                    </div>
+                    <div className="py-1">
+                      {players.map((p) => (
+                        <div key={p.steamId} className="flex items-center gap-2 px-3 py-1">
+                          <span className={`font-[family-name:var(--font-jetbrains)] text-[0.55rem] ${p.captain ? "text-orbital-purple" : "text-orbital-text"}`}>
+                            {p.name}
+                          </span>
+                          {p.captain === 1 && (
+                            <span className="text-[0.4rem] text-orbital-purple font-[family-name:var(--font-orbitron)]">C</span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 )}
               </motion.div>
             );
