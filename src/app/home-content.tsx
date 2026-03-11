@@ -235,7 +235,7 @@ function TournamentHome({ tournament: t, liveMatches, recentMatches, teamsMap, m
       <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="mb-10">
         <SectionHeader icon={Swords} title="BRACKET" href={`/campeonato/${t.id}`} />
         <HudCard className="p-5">
-          <BracketPreview tournament={t} />
+          <BracketPreview tournament={t} mapScoresMap={mapScoresMap} />
           <div className="text-center mt-4">
             <Link href={`/campeonato/${t.id}`} className="inline-flex items-center gap-2 px-4 py-2 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 transition-all font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-wider text-orbital-purple">
               VER BRACKET COMPLETO <ChevronRight size={12} />
@@ -370,20 +370,27 @@ function TournamentHome({ tournament: t, liveMatches, recentMatches, teamsMap, m
 }
 
 // ── Bracket Preview (with connectors) ──
-function BracketPreview({ tournament: t }: { tournament: Tournament }) {
+function BracketPreview({ tournament: t, mapScoresMap }: { tournament: Tournament; mapScoresMap?: MapScoresMap }) {
   const winnerQFs = t.matches.filter(m => m.bracket === "winner" && m.round === 1);
   const winnerSFs = t.matches.filter(m => m.bracket === "winner" && m.round === 2);
   const wf = t.matches.find(m => m.id === "WF");
   const gf = t.matches.find(m => m.id === "GF");
 
-  const TeamRow = ({ name, isWinner, isLive }: { name: string; isWinner: boolean; isLive?: boolean }) => (
+  const TeamRow = ({ name, score, isWinner, isLive }: { name: string; score?: number; isWinner: boolean; isLive?: boolean }) => (
     <div className={`flex items-center justify-between px-2.5 py-1 ${isWinner ? "bg-orbital-purple/10" : ""}`}>
       <span className={`truncate text-[0.6rem] font-[family-name:var(--font-jetbrains)] ${
         isWinner ? "text-orbital-purple font-bold" : "text-orbital-text-dim"
       }`}>
         {name}
       </span>
-      {isLive && <span className="flex items-center gap-1 text-orbital-live text-[0.45rem] font-[family-name:var(--font-orbitron)]"><span className="status-dot status-live" /> LIVE</span>}
+      <div className="flex items-center gap-1.5">
+        {isLive && <span className="flex items-center gap-1 text-orbital-live text-[0.45rem] font-[family-name:var(--font-orbitron)]"><span className="status-dot status-live" /> LIVE</span>}
+        {score !== undefined && (
+          <span className={`font-[family-name:var(--font-jetbrains)] text-[0.6rem] font-bold ${
+            isWinner ? "text-orbital-purple" : "text-orbital-text-dim"
+          }`}>{score}</span>
+        )}
+      </div>
     </div>
   );
 
@@ -408,9 +415,18 @@ function BracketPreview({ tournament: t }: { tournament: Tournament }) {
             <span className="font-[family-name:var(--font-orbitron)] text-[0.4rem] tracking-[0.2em] text-orbital-purple">GRAND FINAL</span>
           </div>
         )}
-        <TeamRow name={team1} isWinner={isDone && match.winner_id === match.team1_id} isLive={isLive} />
-        <div className="h-px bg-orbital-border/30" />
-        <TeamRow name={team2} isWinner={isDone && match.winner_id === match.team2_id} />
+        {(() => {
+          const scores = match.match_id ? mapScoresMap?.[match.match_id] : undefined;
+          const t1Score = scores?.[0]?.team1_score;
+          const t2Score = scores?.[0]?.team2_score;
+          return (
+            <>
+              <TeamRow name={team1} score={t1Score} isWinner={isDone && match.winner_id === match.team1_id} isLive={isLive} />
+              <div className="h-px bg-orbital-border/30" />
+              <TeamRow name={team2} score={t2Score} isWinner={isDone && match.winner_id === match.team2_id} />
+            </>
+          );
+        })()}
       </div>
     );
   };
