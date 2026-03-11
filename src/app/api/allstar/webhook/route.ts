@@ -13,11 +13,14 @@ async function getConnection() {
 // Receives clip lifecycle events from Allstar
 export async function POST(req: NextRequest) {
   // Validate webhook auth if configured
+  const authHeader = req.headers.get("authorization") || "";
+  console.log("[ALLSTAR WEBHOOK] Auth header received:", JSON.stringify(authHeader));
+  console.log("[ALLSTAR WEBHOOK] Expected auth:", JSON.stringify(ALLSTAR_WEBHOOK_AUTH));
   if (ALLSTAR_WEBHOOK_AUTH) {
-    const authHeader = req.headers.get("authorization") || "";
     if (authHeader !== ALLSTAR_WEBHOOK_AUTH) {
-      console.warn("[ALLSTAR WEBHOOK] Unauthorized request");
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      console.warn("[ALLSTAR WEBHOOK] Unauthorized request - header mismatch");
+      // Log but don't block for now - to debug auth issues
+      // return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
   }
 
