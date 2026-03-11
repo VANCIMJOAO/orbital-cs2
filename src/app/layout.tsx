@@ -4,6 +4,7 @@ import "./globals.css";
 import { Navbar } from "@/components/navbar";
 import { LiveToastProvider } from "@/components/live-toast";
 import { AuthProvider } from "@/lib/auth-context";
+import { Analytics } from "@vercel/analytics/react";
 
 const orbitron = Orbitron({
   variable: "--font-orbitron",
@@ -44,6 +45,7 @@ export default function RootLayout({
             {children}
           </main>
           <LiveToastProvider />
+          <Analytics />
         </AuthProvider>
       </body>
     </html>
