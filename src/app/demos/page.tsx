@@ -45,7 +45,7 @@ export default function DemosPage() {
             try {
               const res = await fetch(`/api/mapstats/${match.id}`);
               const data = await res.json();
-              const mapStats: MapStats[] = data.mapStats || [];
+              const mapStats: MapStats[] = data.mapstats || data.mapStats || [];
               return mapStats
                 .filter(ms => ms.demoFile)
                 .map(ms => ({
