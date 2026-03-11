@@ -266,46 +266,46 @@ function TournamentHome({ tournament: t, liveMatches, recentMatches, teamsMap, m
                 transition={{ delay: 0.5 + i * 0.05 }}
                 className={`group [perspective:600px] ${eliminated ? "opacity-50" : ""}`}
               >
-                <div className="relative w-full h-[180px] transition-transform duration-500 [transform-style:preserve-3d] group-hover:[transform:rotateY(180deg)]">
+                <div className="relative w-full h-[220px] transition-transform duration-500 [transform-style:preserve-3d] group-hover:[transform:rotateY(180deg)]">
                   {/* Front */}
-                  <div className={`absolute inset-0 [backface-visibility:hidden] bg-orbital-card border ${borderClass} ${isChampion ? "bg-orbital-success/5" : ""} p-4 flex flex-col items-center justify-center`}>
-                    <div className="w-12 h-12 mb-2 border border-orbital-border flex items-center justify-center bg-[#0A0A0A]">
-                      <TeamLogo logo={logo} size={32} className="w-8 h-8" />
+                  <div className={`absolute inset-0 [backface-visibility:hidden] bg-orbital-card border ${borderClass} ${isChampion ? "bg-orbital-success/5" : ""} p-5 flex flex-col items-center justify-center`}>
+                    <div className="w-14 h-14 mb-3 border border-orbital-border flex items-center justify-center bg-[#0A0A0A]">
+                      <TeamLogo logo={logo} size={40} className="w-10 h-10" />
                     </div>
-                    <div className="font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-wider text-orbital-text truncate max-w-full">
+                    <div className="font-[family-name:var(--font-orbitron)] text-xs tracking-wider text-orbital-text truncate max-w-full">
                       {team.name}
                     </div>
-                    <div className="font-[family-name:var(--font-jetbrains)] text-[0.55rem] text-orbital-text-dim mt-0.5">
+                    <div className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim mt-1">
                       [{team.tag}]
                     </div>
                     {isChampion && (
-                      <div className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.15em] text-orbital-success mt-1">CAMPEÃO</div>
+                      <div className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.15em] text-orbital-success mt-2">CAMPEÃO</div>
                     )}
                     {eliminated && !isChampion && (
-                      <div className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.15em] text-orbital-danger mt-1">ELIMINADO</div>
+                      <div className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.15em] text-orbital-danger mt-2">ELIMINADO</div>
                     )}
                   </div>
 
                   {/* Back */}
                   <div className={`absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] bg-[#0D0D0D] border border-orbital-purple/30 flex flex-col`}>
-                    <div className="px-3 py-1.5 border-b border-orbital-purple/20 bg-orbital-purple/10 flex items-center justify-between">
-                      <span className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.15em] text-orbital-purple">LINEUP</span>
-                      <span className="font-[family-name:var(--font-jetbrains)] text-[0.45rem] text-orbital-text-dim">{team.tag}</span>
+                    <div className="px-4 py-2 border-b border-orbital-purple/20 bg-orbital-purple/10 flex items-center justify-between">
+                      <span className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.15em] text-orbital-purple">LINEUP</span>
+                      <span className="font-[family-name:var(--font-jetbrains)] text-[0.5rem] text-orbital-text-dim">{team.tag}</span>
                     </div>
-                    <div className="flex-1 flex flex-col justify-center py-1">
+                    <div className="flex-1 flex flex-col justify-center py-2 gap-1">
                       {players.map((p) => (
-                        <div key={p.steamId} className="flex items-center gap-2 px-3 py-0.5">
-                          <img src="https://www.hltv.org/img/static/flags/30x20/BR.gif" alt="BR" className="w-4 h-3 object-contain" />
-                          <span className={`font-[family-name:var(--font-jetbrains)] text-[0.55rem] ${p.captain ? "text-orbital-purple font-bold" : "text-orbital-text"}`}>
+                        <div key={p.steamId} className="flex items-center gap-2.5 px-4 py-1">
+                          <img src="https://www.hltv.org/img/static/flags/30x20/BR.gif" alt="BR" className="w-5 h-3.5 object-contain" />
+                          <span className={`font-[family-name:var(--font-jetbrains)] text-xs ${p.captain ? "text-orbital-purple font-bold" : "text-orbital-text"}`}>
                             {p.name}
                           </span>
                           {p.captain === 1 && (
-                            <span className="text-[0.4rem] text-orbital-purple font-[family-name:var(--font-orbitron)] ml-auto">CAP</span>
+                            <span className="text-[0.45rem] text-orbital-purple font-[family-name:var(--font-orbitron)] ml-auto">CAP</span>
                           )}
                         </div>
                       ))}
                       {players.length === 0 && (
-                        <div className="text-center text-orbital-text-dim font-[family-name:var(--font-jetbrains)] text-[0.55rem]">
+                        <div className="text-center text-orbital-text-dim font-[family-name:var(--font-jetbrains)] text-xs">
                           Sem jogadores
                         </div>
                       )}
