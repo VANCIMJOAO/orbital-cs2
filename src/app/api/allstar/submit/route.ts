@@ -4,13 +4,10 @@ import mysql from "mysql2/promise";
 const DATABASE_URL = process.env.DATABASE_URL || "";
 const ALLSTAR_API_KEY = process.env.ALLSTAR_SERVER_API_KEY || "ffd47a65-70b1-4a8c-8293-2191dfa8a3ab";
 const ALLSTAR_API_URL = "https://prt.allstar.gg";
-const G5API_URL = process.env.G5API_URL || process.env.NEXT_PUBLIC_G5API_URL || "https://g5api-production-998f.up.railway.app";
 
 // Webhook URL: where Allstar sends clip events back to us
-// In production, this should be your public domain
-const WEBHOOK_BASE = process.env.NEXT_PUBLIC_SITE_URL || process.env.VERCEL_URL
-  ? `https://${process.env.VERCEL_URL}`
-  : "http://localhost:3001";
+const WEBHOOK_BASE = process.env.NEXT_PUBLIC_SITE_URL
+  || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3001");
 
 async function getConnection() {
   const connection = await mysql.createConnection(DATABASE_URL);
@@ -53,7 +50,10 @@ export async function POST(req: NextRequest) {
     }
 
     // Build the public demo URL that Allstar can download
-    const demoUrl = `${G5API_URL}/demo/${encodeURIComponent(demoFile)}`;
+    // Allstar expects .dem files, not .zip - use our proxy endpoint that extracts .dem from .zip
+    const demFileName = demoFile.replace(/\.zip$/, ".dem");
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || WEBHOOK_BASE;
+    const demoUrl = `${siteUrl}/api/allstar/demo/${encodeURIComponent(demFileName)}`;
     const webhookUrl = `${WEBHOOK_BASE}/api/allstar/webhook`;
 
     // Map use case to Allstar endpoint
