@@ -648,7 +648,7 @@ export function MatchDetailContent({ match: initialMatch, playerStats: initialSt
         <div className="bg-orbital-card border border-orbital-border overflow-hidden">
           <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
             <iframe
-              src="https://player.twitch.tv/?channel=orbitalcuplives&parent=orbital-cs2.vercel.app&parent=localhost"
+              src="https://player.twitch.tv/?channel=orbitalcuplives&parent=www.orbitalroxa.com.br&parent=orbitalroxa.com.br&parent=orbital-cs2.vercel.app&parent=localhost"
               className="absolute inset-0 w-full h-full"
               allowFullScreen
             />
