@@ -400,9 +400,10 @@ function BracketPreview({ tournament: t, mapScoresMap }: { tournament: Tournamen
     const team2 = getTeamName(t, match.team2_id);
     const isLive = match.status === "live";
     const isDone = match.status === "finished";
+    const hasLink = match.match_id != null;
 
-    return (
-      <div className={`border overflow-hidden ${
+    const content = (
+      <div className={`border overflow-hidden ${hasLink ? "cursor-pointer hover:border-orbital-purple/40 transition-colors" : ""} ${
         isGrandFinal ? "border-2 " : ""
       }${
         isLive ? "border-orbital-live/40 bg-orbital-live/5" :
@@ -429,6 +430,11 @@ function BracketPreview({ tournament: t, mapScoresMap }: { tournament: Tournamen
         })()}
       </div>
     );
+
+    if (hasLink) {
+      return <Link href={`/partidas/${match.match_id}`}>{content}</Link>;
+    }
+    return content;
   };
 
   return (
