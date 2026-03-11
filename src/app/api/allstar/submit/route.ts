@@ -85,14 +85,26 @@ export async function POST(req: NextRequest) {
       }),
     });
 
-    const allstarData = await allstarRes.json();
+    // 201 = new clip created (has body with requestId), 204 = duplicate/accepted (no body)
+    let allstarData: { requestId?: string; message?: string } = {};
+    if (allstarRes.status !== 204) {
+      allstarData = await allstarRes.json().catch(() => ({}));
+    }
     console.log("[ALLSTAR SUBMIT] Response:", allstarRes.status, JSON.stringify(allstarData));
 
-    if (!allstarRes.ok) {
+    if (!allstarRes.ok && allstarRes.status !== 204) {
       return NextResponse.json(
         { error: allstarData.message || "Allstar API error", details: allstarData },
         { status: allstarRes.status }
       );
+    }
+
+    if (allstarRes.status === 204) {
+      return NextResponse.json({
+        message: "Demo already submitted to Allstar (duplicate)",
+        demoUrl,
+        webhookUrl,
+      });
     }
 
     const requestId = allstarData.requestId;
