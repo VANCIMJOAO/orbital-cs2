@@ -33,6 +33,14 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "steamcdn-a.akamaihd.net",
       },
+      {
+        protocol: "https",
+        hostname: "media.allstar.gg",
+      },
+      {
+        protocol: "https",
+        hostname: "allstar.gg",
+      },
     ],
   },
   async rewrites() {
