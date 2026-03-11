@@ -4,16 +4,14 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Crosshair, Swords, Users, Trophy, Award, Film, Menu, X, LogIn, LogOut, User, Shield, ChevronDown } from "lucide-react";
+import { Crosshair, Swords, Trophy, Film, Menu, X, LogIn, LogOut, User, Shield, ChevronDown } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
 
 const navLinks = [
   { href: "/", label: "HOME", icon: Crosshair },
   { href: "/partidas", label: "PARTIDAS", icon: Swords },
-  { href: "/times", label: "TIMES", icon: Users },
   { href: "/leaderboard", label: "RANKING", icon: Trophy },
-  { href: "/campeonatos", label: "CAMPEONATOS", icon: Award },
   { href: "/demos", label: "DEMOS", icon: Film },
 ];
 
