@@ -294,15 +294,15 @@ function TournamentHome({ tournament: t, liveMatches, recentMatches, teamsMap, m
                     </div>
                     <div className="flex-1 flex flex-col justify-center py-2 gap-1">
                       {players.map((p) => (
-                        <div key={p.steamId} className="flex items-center gap-2.5 px-4 py-1">
+                        <Link key={p.steamId} href={`/perfil/${p.steamId}`} className="flex items-center gap-2.5 px-4 py-1 hover:bg-orbital-purple/10 transition-colors">
                           <img src="https://www.hltv.org/img/static/flags/30x20/BR.gif" alt="BR" className="w-5 h-3.5 object-contain" />
-                          <span className={`font-[family-name:var(--font-jetbrains)] text-xs ${p.captain ? "text-orbital-purple font-bold" : "text-orbital-text"}`}>
+                          <span className={`font-[family-name:var(--font-jetbrains)] text-xs ${p.captain ? "text-orbital-purple font-bold" : "text-orbital-text hover:text-orbital-purple"} transition-colors`}>
                             {p.name}
                           </span>
                           {p.captain === 1 && (
                             <span className="text-[0.45rem] text-orbital-purple font-[family-name:var(--font-orbitron)] ml-auto">CAP</span>
                           )}
-                        </div>
+                        </Link>
                       ))}
                       {players.length === 0 && (
                         <div className="text-center text-orbital-text-dim font-[family-name:var(--font-jetbrains)] text-xs">
