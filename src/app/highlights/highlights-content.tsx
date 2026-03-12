@@ -104,6 +104,7 @@ export function HighlightsContent() {
               {/* Video with auto-generated thumbnail (ignore server thumb — it's the same generic intro for all clips) */}
               <VideoPlayer
                 src={`${G5API_URL}/highlights-files/${clip.video_file}`}
+                clipId={clip.id}
               />
 
               {/* Info bar */}
@@ -150,34 +151,46 @@ export function HighlightsContent() {
   );
 }
 
-// Video player that seeks to 8s for a unique thumbnail frame per clip
-function VideoPlayer({ src }: { src: string }) {
+// Video player with unique thumbnail per clip
+function VideoPlayer({ src, clipId }: { src: string; clipId: number }) {
   const [playing, setPlaying] = useState(false);
   const [thumbReady, setThumbReady] = useState(false);
-  const thumbVideoRef = useRef<HTMLVideoElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
-  // Seek the thumbnail video to 8s once it has enough data
+  // Each clip gets a slightly different seek time so thumbnails are unique
+  const seekTime = 12 + (clipId % 5);
+
   useEffect(() => {
     if (playing) return;
-    const video = thumbVideoRef.current;
+    const video = videoRef.current;
     if (!video) return;
 
-    const handleCanPlay = () => {
-      video.currentTime = Math.min(12, video.duration * 0.4);
+    let cancelled = false;
+
+    const onLoadedData = () => {
+      if (cancelled) return;
+      video.currentTime = Math.min(seekTime, video.duration * 0.5);
     };
-    const handleSeeked = () => {
-      video.pause();
+
+    const onSeeked = () => {
+      if (cancelled) return;
       setThumbReady(true);
     };
 
-    video.addEventListener("loadedmetadata", handleCanPlay);
-    video.addEventListener("seeked", handleSeeked);
+    // Try to trigger seek if video already has data
+    if (video.readyState >= 2) {
+      video.currentTime = Math.min(seekTime, video.duration * 0.5);
+    }
+
+    video.addEventListener("loadeddata", onLoadedData);
+    video.addEventListener("seeked", onSeeked);
 
     return () => {
-      video.removeEventListener("loadedmetadata", handleCanPlay);
-      video.removeEventListener("seeked", handleSeeked);
+      cancelled = true;
+      video.removeEventListener("loadeddata", onLoadedData);
+      video.removeEventListener("seeked", onSeeked);
     };
-  }, [playing, src]);
+  }, [playing, src, seekTime]);
 
   if (playing) {
     return (
@@ -196,14 +209,14 @@ function VideoPlayer({ src }: { src: string }) {
       onClick={() => setPlaying(true)}
       className="relative w-full aspect-video bg-black group/play cursor-pointer overflow-hidden"
     >
-      {/* Hidden video that loads and seeks to 8s for a unique frame */}
       <video
-        ref={thumbVideoRef}
+        ref={videoRef}
         muted
         playsInline
         preload="auto"
+        crossOrigin="anonymous"
         className={`w-full h-full object-cover pointer-events-none ${thumbReady ? "" : "opacity-0"}`}
-        src={src}
+        src={`${src}#t=${seekTime}`}
       />
       {!thumbReady && (
         <div className="absolute inset-0 flex items-center justify-center">
