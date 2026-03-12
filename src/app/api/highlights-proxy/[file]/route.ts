@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const G5API_URL = process.env.NEXT_PUBLIC_G5API_URL || process.env.G5API_URL || "http://localhost:3301";
+const G5API_URL = process.env.NEXT_PUBLIC_G5API_URL || process.env.G5API_URL || "https://g5api-production-998f.up.railway.app";
 
 // GET /api/highlights-proxy/[file]
 // Proxies highlight video/thumbnail files from G5API
