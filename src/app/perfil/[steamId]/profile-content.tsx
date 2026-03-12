@@ -477,11 +477,11 @@ export function ProfileContent({ steamId }: { steamId: string }) {
                   const st = getStatusType(match);
                   const stText = getStatusText(match);
                   return (
-                    <tr key={match.id}>
+                    <tr key={match.id} onClick={() => window.location.href = `/partidas/${match.id}`} className="cursor-pointer hover:bg-orbital-purple/5 transition-colors">
                       <td>
-                        <Link href={`/partidas/${match.id}`} className="text-orbital-purple hover:underline">
+                        <span className="text-orbital-purple">
                           {match.id}
-                        </Link>
+                        </span>
                       </td>
                       <td>{match.team1_string || `Time ${match.team1_id}`}</td>
                       <td className="text-center font-bold">
