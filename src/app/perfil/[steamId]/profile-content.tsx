@@ -389,7 +389,7 @@ export function ProfileContent({ steamId }: { steamId: string }) {
               </h1>
               {steamId === "76561198023055702" && (
                 <>
-                  <span className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.1em] px-2 py-0.5 bg-orbital-purple/20 border border-orbital-purple/50 text-orbital-purple">
+                  <span className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.1em] px-2 py-0.5 bg-red-500/20 border border-red-500/50 text-red-400">
                     CRIADOR
                   </span>
                   <span className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.1em] px-2 py-0.5 bg-yellow-500/20 border border-yellow-500/50 text-yellow-400">
