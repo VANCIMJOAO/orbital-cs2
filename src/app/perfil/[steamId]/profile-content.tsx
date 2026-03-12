@@ -383,9 +383,21 @@ export function ProfileContent({ steamId }: { steamId: string }) {
 
           {/* Info */}
           <div className="text-center sm:text-left flex-1">
-            <h1 className="font-[family-name:var(--font-orbitron)] text-xl sm:text-2xl font-bold text-orbital-text tracking-wider">
-              {stats.name}
-            </h1>
+            <div className="flex items-center gap-2 justify-center sm:justify-start flex-wrap">
+              <h1 className="font-[family-name:var(--font-orbitron)] text-xl sm:text-2xl font-bold text-orbital-text tracking-wider">
+                {stats.name}
+              </h1>
+              {steamId === "76561198023055702" && (
+                <>
+                  <span className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.1em] px-2 py-0.5 bg-orbital-purple/20 border border-orbital-purple/50 text-orbital-purple">
+                    CRIADOR
+                  </span>
+                  <span className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.1em] px-2 py-0.5 bg-yellow-500/20 border border-yellow-500/50 text-yellow-400">
+                    ADMIN
+                  </span>
+                </>
+              )}
+            </div>
             <p className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text-dim mt-1">
               {steamId}
             </p>
