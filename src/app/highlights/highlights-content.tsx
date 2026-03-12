@@ -151,15 +151,38 @@ export function HighlightsContent() {
   );
 }
 
-// Video player with thumbnail preview at 8s mark (skips intro)
+// Video player that seeks to 8s for a unique thumbnail frame per clip
 function VideoPlayer({ src, thumbnailSrc }: { src: string; thumbnailSrc?: string }) {
   const [playing, setPlaying] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const [thumbReady, setThumbReady] = useState(false);
+  const thumbVideoRef = useRef<HTMLVideoElement>(null);
+
+  // Seek the thumbnail video to 8s once it has enough data
+  useEffect(() => {
+    if (playing || thumbnailSrc) return;
+    const video = thumbVideoRef.current;
+    if (!video) return;
+
+    const handleCanPlay = () => {
+      video.currentTime = Math.min(8, video.duration * 0.4);
+    };
+    const handleSeeked = () => {
+      video.pause();
+      setThumbReady(true);
+    };
+
+    video.addEventListener("loadedmetadata", handleCanPlay);
+    video.addEventListener("seeked", handleSeeked);
+
+    return () => {
+      video.removeEventListener("loadedmetadata", handleCanPlay);
+      video.removeEventListener("seeked", handleSeeked);
+    };
+  }, [playing, thumbnailSrc, src]);
 
   if (playing) {
     return (
       <video
-        ref={videoRef}
         controls
         autoPlay
         className="w-full aspect-video bg-black"
@@ -169,22 +192,31 @@ function VideoPlayer({ src, thumbnailSrc }: { src: string; thumbnailSrc?: string
     );
   }
 
-  // Use a hidden video element with #t=8 to show a frame at 8 seconds
-  // This bypasses CORS issues since the browser renders the frame natively
   return (
     <div
       onClick={() => setPlaying(true)}
       className="relative w-full aspect-video bg-black group/play cursor-pointer overflow-hidden"
     >
-      {/* Native video thumbnail — browser seeks to #t=8 and shows that frame */}
-      <video
-        preload="metadata"
-        muted
-        playsInline
-        className="w-full h-full object-cover pointer-events-none"
-        src={thumbnailSrc ? undefined : `${src}#t=8`}
-        poster={thumbnailSrc}
-      />
+      {thumbnailSrc ? (
+        <img src={thumbnailSrc} alt="" className="w-full h-full object-cover" />
+      ) : (
+        <>
+          {/* Hidden video that loads and seeks to 8s for a unique frame */}
+          <video
+            ref={thumbVideoRef}
+            muted
+            playsInline
+            preload="auto"
+            className={`w-full h-full object-cover pointer-events-none ${thumbReady ? "" : "opacity-0"}`}
+            src={src}
+          />
+          {!thumbReady && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Loader2 size={20} className="text-orbital-purple/40 animate-spin" />
+            </div>
+          )}
+        </>
+      )}
       {/* Play overlay */}
       <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover/play:bg-black/10 transition-colors">
         <div className="w-12 h-12 rounded-full bg-orbital-purple/80 flex items-center justify-center group-hover/play:bg-orbital-purple group-hover/play:scale-110 transition-all shadow-[0_0_20px_rgba(168,85,247,0.4)]">
