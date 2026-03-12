@@ -17,9 +17,24 @@ const filters: { value: FilterType; label: string }[] = [
   { value: "mine", label: "MINHAS" },
 ];
 
-export function PartidasContent({ matches, teamsMap }: { matches: Match[]; teamsMap?: Record<number, { name: string; logo: string | null }> }) {
+type MapScoresMap = Record<number, { team1_score: number; team2_score: number; map_name: string }[]>;
+
+export function PartidasContent({ matches, teamsMap, mapScoresMap }: {
+  matches: Match[];
+  teamsMap?: Record<number, { name: string; logo: string | null }>;
+  mapScoresMap?: MapScoresMap;
+}) {
   const [filter, setFilter] = useState<FilterType>("all");
   const { user } = useAuth();
+
+  // Count per filter
+  const counts: Record<FilterType, number> = {
+    all: matches.length,
+    live: matches.filter(m => getStatusType(m) === "live").length,
+    upcoming: matches.filter(m => getStatusType(m) === "upcoming").length,
+    finished: matches.filter(m => getStatusType(m) === "finished").length,
+    mine: user ? matches.filter(m => m.user_id === user.id).length : 0,
+  };
 
   const filtered = matches.filter((m) => {
     if (filter === "all") return true;
@@ -54,29 +69,39 @@ export function PartidasContent({ matches, teamsMap }: { matches: Match[]; teams
         className="flex items-center gap-2 mb-6 overflow-x-auto pb-2"
       >
         <Filter size={14} className="text-orbital-text-dim flex-shrink-0" />
-        {filters.map((f) => (
-          <button
-            key={f.value}
-            onClick={() => setFilter(f.value)}
-            className={`
-              px-3 py-1.5 font-[family-name:var(--font-orbitron)] text-[0.55rem] tracking-[0.15em]
-              border transition-all whitespace-nowrap
-              ${filter === f.value
-                ? "bg-orbital-purple/10 border-orbital-purple/50 text-orbital-purple"
-                : "bg-transparent border-orbital-border text-orbital-text-dim hover:border-orbital-border-light"
-              }
-            `}
-          >
-            {f.label}
-          </button>
-        ))}
+        {filters.map((f) => {
+          const count = counts[f.value];
+          return (
+            <button
+              key={f.value}
+              onClick={() => setFilter(f.value)}
+              className={`
+                flex items-center gap-1.5 px-3 py-1.5 font-[family-name:var(--font-orbitron)] text-[0.55rem] tracking-[0.15em]
+                border transition-all whitespace-nowrap
+                ${filter === f.value
+                  ? "bg-orbital-purple/10 border-orbital-purple/50 text-orbital-purple"
+                  : "bg-transparent border-orbital-border text-orbital-text-dim hover:border-orbital-border-light"
+                }
+              `}
+            >
+              {f.label}
+              {count > 0 && (
+                <span className={`font-[family-name:var(--font-jetbrains)] text-[0.5rem] ${
+                  filter === f.value ? "text-orbital-purple/70" : "text-orbital-text-dim/50"
+                }`}>
+                  {count}
+                </span>
+              )}
+            </button>
+          );
+        })}
       </motion.div>
 
       {/* Match List */}
       {filtered.length > 0 ? (
         <div className="grid gap-3">
           {filtered.map((match, i) => (
-            <MatchCard key={match.id} match={match} teamsMap={teamsMap} delay={i * 0.05} />
+            <MatchCard key={match.id} match={match} teamsMap={teamsMap} mapScores={mapScoresMap?.[match.id]} delay={i * 0.05} />
           ))}
         </div>
       ) : (

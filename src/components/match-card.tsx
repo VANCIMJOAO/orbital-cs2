@@ -128,6 +128,11 @@ export function MatchCard({ match, delay = 0, teamsMap, mapScores }: MatchCardPr
               <span className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim">
                 BO{match.max_maps || match.num_maps || 1}
               </span>
+              {(match.end_time || match.start_time) && (
+                <span className="font-[family-name:var(--font-jetbrains)] text-[0.55rem] text-orbital-text-dim/60">
+                  {new Date(match.end_time || match.start_time!).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" })}
+                </span>
+              )}
               <span className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim">
                 #{match.id}
               </span>
