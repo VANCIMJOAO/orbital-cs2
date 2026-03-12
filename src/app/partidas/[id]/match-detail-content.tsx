@@ -1308,17 +1308,17 @@ function PlayerStatsTable({ teamName, teamLogo, stats, isWinner, delay }: {
                       {diff > 0 ? `+${diff}` : diff}
                     </td>
                     <td className="px-2 py-2.5">
-                      <div className="relative flex items-center justify-center">
-                        <div className="absolute inset-y-1 left-0 right-0 bg-orbital-border/10 rounded-sm overflow-hidden">
-                          <div className="h-full bg-orbital-purple/10 transition-all" style={{ width: `${adrPercent}%` }} />
+                      <div className="relative flex items-center justify-center h-6">
+                        <div className="absolute inset-0 bg-white/[0.03] rounded-sm overflow-hidden">
+                          <div className={`h-full rounded-sm transition-all ${adr >= 80 ? "bg-orbital-success/25" : adr >= 50 ? "bg-orbital-purple/25" : "bg-orbital-danger/20"}`} style={{ width: `${adrPercent}%` }} />
                         </div>
                         <span className="relative font-[family-name:var(--font-jetbrains)] text-[0.7rem] text-orbital-text">{adr}</span>
                       </div>
                     </td>
                     <td className="px-2 py-2.5">
-                      <div className="relative flex items-center justify-center">
-                        <div className="absolute inset-y-1 left-0 right-0 bg-orbital-border/10 rounded-sm overflow-hidden">
-                          <div className="h-full bg-orbital-purple/10 transition-all" style={{ width: `${hspPercent}%` }} />
+                      <div className="relative flex items-center justify-center h-6">
+                        <div className="absolute inset-0 bg-white/[0.03] rounded-sm overflow-hidden">
+                          <div className={`h-full rounded-sm transition-all ${hsp >= 60 ? "bg-orbital-success/25" : hsp >= 30 ? "bg-orbital-purple/25" : "bg-orbital-danger/20"}`} style={{ width: `${hspPercent}%` }} />
                         </div>
                         <span className="relative font-[family-name:var(--font-jetbrains)] text-[0.7rem] text-orbital-text">{hsp}%</span>
                       </div>
