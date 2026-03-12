@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Sparkles, Loader2, Swords, Play } from "lucide-react";
 import Link from "next/link";
@@ -151,57 +151,10 @@ export function HighlightsContent() {
   );
 }
 
-// Video player that auto-generates a thumbnail from the video itself
+// Video player with thumbnail preview at 8s mark (skips intro)
 function VideoPlayer({ src, thumbnailSrc }: { src: string; thumbnailSrc?: string }) {
-  const [thumbUrl, setThumbUrl] = useState<string | null>(null);
   const [playing, setPlaying] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
-
-  // Generate thumbnail by seeking to 2s and capturing a canvas frame
-  useEffect(() => {
-    // If server has a custom thumbnail, skip auto-generation
-    if (thumbnailSrc) return;
-
-    const video = document.createElement("video");
-    video.crossOrigin = "anonymous";
-    video.preload = "metadata";
-    video.muted = true;
-    video.src = src;
-
-    const handleSeeked = () => {
-      try {
-        const canvas = document.createElement("canvas");
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        const ctx = canvas.getContext("2d");
-        if (ctx) {
-          ctx.drawImage(video, 0, 0);
-          setThumbUrl(canvas.toDataURL("image/jpeg", 0.7));
-        }
-      } catch {
-        // CORS or other error — no thumbnail
-      }
-      video.remove();
-    };
-
-    const handleLoaded = () => {
-      // Seek past the intro (usually ~4-5s) to capture actual gameplay
-      // Use 40% of duration or 8 seconds, whichever is less
-      video.currentTime = Math.min(8, video.duration * 0.4);
-    };
-
-    video.addEventListener("loadedmetadata", handleLoaded);
-    video.addEventListener("seeked", handleSeeked);
-    video.load();
-
-    return () => {
-      video.removeEventListener("loadedmetadata", handleLoaded);
-      video.removeEventListener("seeked", handleSeeked);
-      video.remove();
-    };
-  }, [src, thumbnailSrc]);
-
-  const poster = thumbnailSrc || thumbUrl || undefined;
 
   if (playing) {
     return (
@@ -216,24 +169,28 @@ function VideoPlayer({ src, thumbnailSrc }: { src: string; thumbnailSrc?: string
     );
   }
 
+  // Use a hidden video element with #t=8 to show a frame at 8 seconds
+  // This bypasses CORS issues since the browser renders the frame natively
   return (
-    <button
+    <div
       onClick={() => setPlaying(true)}
       className="relative w-full aspect-video bg-black group/play cursor-pointer overflow-hidden"
     >
-      {poster ? (
-        <img src={poster} alt="" className="w-full h-full object-cover" />
-      ) : (
-        <div className="w-full h-full flex items-center justify-center">
-          <Loader2 size={20} className="text-orbital-purple/40 animate-spin" />
-        </div>
-      )}
+      {/* Native video thumbnail — browser seeks to #t=8 and shows that frame */}
+      <video
+        preload="metadata"
+        muted
+        playsInline
+        className="w-full h-full object-cover pointer-events-none"
+        src={thumbnailSrc ? undefined : `${src}#t=8`}
+        poster={thumbnailSrc}
+      />
       {/* Play overlay */}
       <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover/play:bg-black/10 transition-colors">
         <div className="w-12 h-12 rounded-full bg-orbital-purple/80 flex items-center justify-center group-hover/play:bg-orbital-purple group-hover/play:scale-110 transition-all shadow-[0_0_20px_rgba(168,85,247,0.4)]">
           <Play size={20} className="text-white ml-0.5" fill="white" />
         </div>
       </div>
-    </button>
+    </div>
   );
 }
