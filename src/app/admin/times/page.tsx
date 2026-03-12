@@ -123,7 +123,13 @@ export default function AdminTimes() {
     try {
       let teamId: number;
       if (editing) {
-        await updateTeam({ team_id: editing.id, name, tag, flag, public_team: isPublic, auth_name });
+        const prev_auth_name: Record<string, string> = {};
+        if (editing.auth_name) {
+          Object.entries(editing.auth_name).forEach(([steamId, val]) => {
+            prev_auth_name[steamId] = typeof val === "string" ? val : val.name;
+          });
+        }
+        await updateTeam({ team_id: editing.id, name, tag, flag, public_team: isPublic, auth_name, prev_auth_name });
         teamId = editing.id;
         setFeedback({ type: "success", msg: `Time "${name}" atualizado!` });
       } else {
