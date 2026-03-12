@@ -28,19 +28,24 @@ function TeamLogo({ logo, size = 48, className = "" }: { logo: string | null | u
   return <img src={logo} alt="" width={size} height={size} className={`object-contain ${className}`} />;
 }
 
-interface AllstarClip {
+interface HighlightClip {
   id: number;
   match_id: number;
   map_number: number;
-  request_id: string | null;
-  clip_id: string | null;
-  clip_url: string | null;
-  clip_title: string | null;
-  clip_thumbnail: string | null;
+  rank: number;
+  player_name: string | null;
   steam_id: string | null;
-  status: "pending" | "submitted" | "processed" | "error";
+  kills_count: number;
+  score: number;
+  description: string | null;
+  round_number: number | null;
+  tick_start: number | null;
+  tick_end: number | null;
+  video_file: string | null;
+  thumbnail_file: string | null;
+  duration_s: number | null;
+  status: "pending" | "extracting" | "recording" | "processing" | "ready" | "error";
   error_message: string | null;
-  use_case: string;
 }
 
 interface Props {
@@ -66,9 +71,9 @@ export function MatchDetailContent({ match: initialMatch, playerStats: initialSt
   const [bombEvents, setBombEvents] = useState<BombEvent[]>([]);
   const [gameLogExpanded, setGameLogExpanded] = useState(true);
   const [gameLogMapFilter, setGameLogMapFilter] = useState<"all" | number>("all");
-  const [allstarClips, setAllstarClips] = useState<AllstarClip[]>([]);
-  const [allstarLoading, setAllstarLoading] = useState(false);
-  const [allstarSubmitting, setAllstarSubmitting] = useState(false);
+  const [highlightClips, setHighlightClips] = useState<HighlightClip[]>([]);
+  const [highlightsLoading, setHighlightsLoading] = useState(false);
+  const [highlightsTriggering, setHighlightsTriggering] = useState(false);
   const { isAdmin } = useAuth();
   const router = useRouter();
   const statusType = getStatusType(match);
@@ -159,53 +164,45 @@ export function MatchDetailContent({ match: initialMatch, playerStats: initialSt
     return () => clearInterval(interval);
   }, [isLive, fetchGameLog]);
 
-  // Fetch Allstar clips
-  const fetchAllstarClips = useCallback(async () => {
+  // Fetch highlight clips
+  const fetchHighlightClips = useCallback(async () => {
     try {
-      setAllstarLoading(true);
-      const res = await fetch(`/api/allstar/clips?matchId=${match.id}`);
+      setHighlightsLoading(true);
+      const res = await fetch(`/api/highlights/clips?matchId=${match.id}`);
       const data = await res.json();
-      if (data.clips) setAllstarClips(data.clips);
+      if (data.clips) setHighlightClips(data.clips);
     } catch { /* ignore */ }
-    setAllstarLoading(false);
+    setHighlightsLoading(false);
   }, [match.id]);
 
-  useEffect(() => { fetchAllstarClips(); }, [fetchAllstarClips]);
+  useEffect(() => { fetchHighlightClips(); }, [fetchHighlightClips]);
 
-  // Poll Allstar for pending clips every 30s
+  // Poll for in-progress highlights every 15s
   useEffect(() => {
-    const hasPending = allstarClips.some(c => c.status === "pending" || c.status === "submitted");
+    const hasPending = highlightClips.some(c => c.status !== "ready" && c.status !== "error");
     if (!hasPending) return;
-    const poll = async () => {
-      await fetch("/api/allstar/poll", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ matchId: match.id }),
-      }).catch(() => {});
-      await fetchAllstarClips();
-    };
-    const interval = setInterval(poll, 30000);
+    const interval = setInterval(fetchHighlightClips, 15000);
     return () => clearInterval(interval);
-  }, [allstarClips, match.id, fetchAllstarClips]);
+  }, [highlightClips, fetchHighlightClips]);
 
-  const submitToAllstar = async (mapNumber: number, demoFile: string) => {
-    setAllstarSubmitting(true);
+  const triggerHighlights = async (mapNumber?: number) => {
+    setHighlightsTriggering(true);
     try {
-      const res = await fetch("/api/allstar/submit", {
+      const res = await fetch("/api/highlights/trigger", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ matchId: match.id, mapNumber, demoFile }),
+        body: JSON.stringify({ matchId: match.id, mapNumber }),
       });
-      const data = await res.json();
       if (res.ok) {
-        await fetchAllstarClips();
+        await fetchHighlightClips();
       } else {
-        alert(data.error || "Erro ao enviar para Allstar");
+        const data = await res.json();
+        alert(data.error || "Erro ao gerar highlights");
       }
     } catch {
-      alert("Erro de conexão com Allstar");
+      alert("Erro de conexão");
     }
-    setAllstarSubmitting(false);
+    setHighlightsTriggering(false);
   };
 
   // Stats per team (filtered by active tab / map)
@@ -761,7 +758,7 @@ export function MatchDetailContent({ match: initialMatch, playerStats: initialSt
         </HudCard>
       ) : null}
 
-      {/* ═══ ALLSTAR HIGHLIGHTS ═══ */}
+      {/* ═══ HIGHLIGHTS ═══ */}
       {isFinished && mapStats.some(ms => ms.demoFile) && (
         <motion.section
           initial={{ opacity: 0, y: 15 }}
@@ -773,90 +770,136 @@ export function MatchDetailContent({ match: initialMatch, playerStats: initialSt
             <Film size={14} className="text-orbital-purple" />
             <h3 className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.2em] text-orbital-purple">HIGHLIGHTS</h3>
             <div className="h-[1px] flex-1 bg-gradient-to-r from-orbital-purple/30 to-transparent" />
+            {highlightClips.some(c => c.status !== "ready" && c.status !== "error") && (
+              <button onClick={fetchHighlightClips} className="text-orbital-purple hover:text-orbital-text transition-colors">
+                <RefreshCw size={12} />
+              </button>
+            )}
           </div>
 
-          {allstarLoading ? (
+          {highlightsLoading ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 size={20} className="text-orbital-purple animate-spin" />
             </div>
           ) : (
             <div className="space-y-3">
-              {/* Processed clips — show iframe */}
-              {allstarClips.filter(c => c.status === "processed" && c.clip_id).map(clip => (
+              {/* Ready clips — show video player */}
+              {highlightClips.filter(c => c.status === "ready" && c.video_file).map(clip => (
                 <div key={clip.id} className="bg-orbital-card border border-orbital-border overflow-hidden">
                   <div className="p-3 border-b border-orbital-border flex items-center justify-between">
-                    <span className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text">
-                      {clip.clip_title || "Play of the Game"}
-                    </span>
-                    <span className="font-[family-name:var(--font-jetbrains)] text-[0.5rem] text-orbital-success bg-orbital-success/10 px-2 py-0.5">
-                      PRONTO
-                    </span>
+                    <div className="flex items-center gap-3">
+                      <span className="font-[family-name:var(--font-orbitron)] text-[0.55rem] text-orbital-purple">
+                        #{clip.rank}
+                      </span>
+                      <span className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text">
+                        {clip.player_name || "Highlight"}
+                      </span>
+                      {clip.kills_count >= 2 && (
+                        <span className="font-[family-name:var(--font-orbitron)] text-[0.5rem] text-orbital-purple bg-orbital-purple/10 px-2 py-0.5">
+                          {clip.kills_count >= 5 ? "ACE" : `${clip.kills_count}K`}
+                        </span>
+                      )}
+                      {clip.score > 0 && (
+                        <span className="font-[family-name:var(--font-jetbrains)] text-[0.5rem] text-orbital-text-dim">
+                          {clip.score}pts
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {clip.round_number && (
+                        <span className="font-[family-name:var(--font-jetbrains)] text-[0.5rem] text-orbital-text-dim">
+                          Round {clip.round_number}
+                        </span>
+                      )}
+                      <span className="font-[family-name:var(--font-jetbrains)] text-[0.5rem] text-orbital-success bg-orbital-success/10 px-2 py-0.5">
+                        PRONTO
+                      </span>
+                    </div>
                   </div>
-                  <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
-                    <iframe
-                      src={`https://allstar.gg/iframe?clip=${clip.clip_id}&known=true&platform=ORBITALROXA&useCase=${clip.use_case}&autoplay=false&location=matchResults`}
-                      allow="clipboard-write"
-                      allowFullScreen
-                      className="absolute inset-0 w-full h-full"
-                    />
-                  </div>
+                  {clip.description && (
+                    <div className="px-3 py-1.5 border-b border-orbital-border/50">
+                      <p className="font-[family-name:var(--font-jetbrains)] text-[0.55rem] text-orbital-text-dim">
+                        {clip.description}
+                      </p>
+                    </div>
+                  )}
+                  <video
+                    controls
+                    preload="metadata"
+                    poster={clip.thumbnail_file ? `/api/highlights-proxy/${clip.thumbnail_file}` : undefined}
+                    className="w-full aspect-video bg-black"
+                  >
+                    <source src={`/api/highlights-proxy/${clip.video_file}`} type="video/mp4" />
+                  </video>
                 </div>
               ))}
 
-              {/* Pending/submitted clips — show status */}
-              {allstarClips.filter(c => c.status === "pending" || c.status === "submitted").map(clip => (
-                <HudCard key={clip.id} className="flex items-center justify-between p-4">
-                  <div className="flex items-center gap-3">
-                    <Loader2 size={14} className="text-orbital-purple animate-spin" />
-                    <span className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim">
-                      {clip.status === "pending" ? "Enviando demo para Allstar..." : "Processando highlight..."}
+              {/* In-progress clips — show granular status */}
+              {highlightClips.filter(c => ["pending", "extracting", "recording", "processing"].includes(c.status)).map(clip => {
+                const statusLabels: Record<string, string> = {
+                  pending: "Aguardando worker local...",
+                  extracting: "Analisando demo...",
+                  recording: "Gravando clip no CS2...",
+                  processing: "Aplicando efeitos visuais...",
+                };
+                return (
+                  <HudCard key={clip.id} className="flex items-center justify-between p-4">
+                    <div className="flex items-center gap-3">
+                      <Loader2 size={14} className="text-orbital-purple animate-spin" />
+                      <div>
+                        <span className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim block">
+                          {statusLabels[clip.status] || "Processando..."}
+                        </span>
+                        {clip.player_name && (
+                          <span className="font-[family-name:var(--font-jetbrains)] text-[0.55rem] text-orbital-purple">
+                            #{clip.rank} {clip.player_name} {clip.kills_count >= 2 ? `(${clip.kills_count}K)` : ""}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <span className="font-[family-name:var(--font-orbitron)] text-[0.5rem] text-orbital-purple/50">
+                      {clip.status.toUpperCase()}
                     </span>
-                  </div>
-                  <button
-                    onClick={fetchAllstarClips}
-                    className="font-[family-name:var(--font-jetbrains)] text-[0.55rem] text-orbital-purple hover:text-orbital-text transition-colors"
-                  >
-                    <RefreshCw size={12} />
-                  </button>
-                </HudCard>
-              ))}
+                  </HudCard>
+                );
+              })}
 
               {/* Error clips */}
-              {allstarClips.filter(c => c.status === "error").map(clip => (
+              {highlightClips.filter(c => c.status === "error").map(clip => (
                 <HudCard key={clip.id} className="p-4 border-orbital-danger/30">
                   <div className="flex items-center gap-2">
                     <span className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-danger">
-                      Erro: {clip.error_message || "Falha ao gerar highlight"}
+                      Erro clip #{clip.rank}: {clip.error_message || "Falha ao gerar highlight"}
                     </span>
                   </div>
                 </HudCard>
               ))}
 
-              {/* Admin: generate highlight button for maps without clips */}
+              {/* Admin: generate highlights button for maps without clips */}
               {isAdmin && mapStats.filter(ms => ms.demoFile && ms.end_time).map(ms => {
-                const hasClip = allstarClips.some(c => c.map_number === ms.map_number);
+                const hasClip = highlightClips.some(c => c.map_number === ms.map_number);
                 if (hasClip) return null;
                 return (
                   <button
                     key={`gen-${ms.map_number}`}
-                    onClick={() => submitToAllstar(ms.map_number, ms.demoFile!)}
-                    disabled={allstarSubmitting}
+                    onClick={() => triggerHighlights(ms.map_number)}
+                    disabled={highlightsTriggering}
                     className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-orbital-card border border-dashed border-orbital-purple/30 hover:border-orbital-purple/60 hover:bg-orbital-purple/5 transition-all disabled:opacity-50"
                   >
-                    {allstarSubmitting ? (
+                    {highlightsTriggering ? (
                       <Loader2 size={14} className="text-orbital-purple animate-spin" />
                     ) : (
                       <Sparkles size={14} className="text-orbital-purple" />
                     )}
                     <span className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-purple">
-                      {allstarSubmitting ? "ENVIANDO..." : `GERAR HIGHLIGHT — ${ms.map_name?.replace("de_", "").toUpperCase() || `MAPA ${ms.map_number + 1}`}`}
+                      {highlightsTriggering ? "GERANDO..." : `GERAR HIGHLIGHTS — ${ms.map_name?.replace("de_", "").toUpperCase() || `MAPA ${ms.map_number + 1}`}`}
                     </span>
                   </button>
                 );
               })}
 
               {/* No clips yet and not admin */}
-              {allstarClips.length === 0 && !isAdmin && (
+              {highlightClips.length === 0 && !isAdmin && (
                 <HudCard className="text-center py-6">
                   <Film size={20} className="text-orbital-border mx-auto mb-2" />
                   <p className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim">

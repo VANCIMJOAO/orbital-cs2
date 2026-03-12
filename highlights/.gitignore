@@ -1,0 +1,13 @@
+# Output
+output/
+*.mp4
+*.avi
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Temporários
+_concat_list.txt
+*.cfg
