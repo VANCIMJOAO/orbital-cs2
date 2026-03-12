@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowLeft, Target, Skull, Crosshair, Zap, Award, TrendingUp, Shield, Flame, Map, BarChart3, Film } from "lucide-react";
+import { ArrowLeft, Target, Skull, Crosshair, Zap, Award, TrendingUp, Flame, Map, BarChart3 } from "lucide-react";
 import Link from "next/link";
 import { HudCard, StatBox } from "@/components/hud-card";
 import { Match, getStatusText, getStatusType } from "@/lib/api";
@@ -320,9 +320,6 @@ export function ProfileContent({ steamId }: { steamId: string }) {
   const hsp = stats.kills > 0 ? Math.round((stats.headshot_kills / stats.kills) * 100) : (stats.hsp || 0);
   const kdr = stats.kdr || (stats.deaths > 0 ? (stats.kills / stats.deaths) : stats.kills);
   const avgRating = stats.average_rating || stats.rating || 0;
-  const totalFk = (stats.firstkill_t || 0) + (stats.firstkill_ct || 0);
-  const totalFd = (stats.firstdeath_t || 0) + (stats.firstdeath_ct || 0);
-
   const ratingColor = avgRating >= 1.2 ? "text-orbital-success" : avgRating >= 0.8 ? "text-orbital-text" : "text-orbital-danger";
 
   return (
@@ -404,38 +401,28 @@ export function ProfileContent({ steamId }: { steamId: string }) {
         </HudCard>
       </div>
 
-      {/* Detailed Stats */}
+      {/* Detailed Stats — GERAL + COMBATE side by side */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-        <HudCard delay={0.3} label="COMBATE">
+        <HudCard delay={0.3} label="GERAL">
+          <div className="space-y-3 pt-2">
+            <StatRow icon={<Target size={14} className="text-orbital-text-dim" />} label="Rounds" value={(stats.total_rounds || 0).toString()} />
+            <StatRow icon={<Crosshair size={14} className="text-orbital-success" />} label="Headshots" value={(stats.headshot_kills || 0).toString()} />
+            <StatRow icon={<Zap size={14} className="text-orbital-warning" />} label="Dano Total" value={(stats.damage || 0).toString()} />
+            <StatRow icon={<Award size={14} className="text-orbital-purple" />} label="Contribuição" value={(stats.contribution_score || 0).toString()} />
+            <StatRow icon={<TrendingUp size={14} className="text-orbital-success" />} label="Rating" value={avgRating.toFixed(2)} highlight={ratingColor} />
+          </div>
+        </HudCard>
+
+        <HudCard delay={0.35} label="COMBATE">
           <div className="space-y-3 pt-2">
             <StatRow icon={<Crosshair size={14} className="text-orbital-purple" />} label="HS%" value={`${hsp}%`} />
             <StatRow icon={<Target size={14} className="text-orbital-success" />} label="ADR" value={adr.toString()} />
             <StatRow icon={<Zap size={14} className="text-orbital-warning" />} label="Flash Assists" value={stats.flash_assists?.toString() || "0"} />
             <StatRow icon={<Award size={14} className="text-orbital-purple" />} label="KAST" value={stats.kast ? `${stats.kast.toFixed(1)}%` : "N/A"} />
-            <StatRow icon={<TrendingUp size={14} className="text-orbital-success" />} label="Rating" value={avgRating.toFixed(2)} highlight={ratingColor} />
-          </div>
-        </HudCard>
-
-        <HudCard delay={0.35} label="ABERTURAS">
-          <div className="space-y-3 pt-2">
-            <StatRow icon={<Target size={14} className="text-orbital-success" />} label="First Kills (T)" value={(stats.firstkill_t || 0).toString()} />
-            <StatRow icon={<Target size={14} className="text-orbital-success" />} label="First Kills (CT)" value={(stats.firstkill_ct || 0).toString()} />
-            <StatRow icon={<Skull size={14} className="text-orbital-danger" />} label="First Deaths (T)" value={(stats.firstdeath_t || 0).toString()} />
-            <StatRow icon={<Skull size={14} className="text-orbital-danger" />} label="First Deaths (CT)" value={(stats.firstdeath_ct || 0).toString()} />
-            <StatRow icon={<Shield size={14} className="text-orbital-purple" />} label="FK/FD" value={totalFd > 0 ? (totalFk / totalFd).toFixed(2) : totalFk.toString()} />
+            <StatRow icon={<Flame size={14} className="text-orbital-warning" />} label="MVPs" value={(stats.mvp || 0).toString()} />
           </div>
         </HudCard>
       </div>
-
-      {/* Rounds info */}
-      <HudCard delay={0.4} label="GERAL">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 py-2">
-          <StatBox label="ROUNDS" value={stats.total_rounds || 0} />
-          <StatBox label="HEADSHOTS" value={stats.headshot_kills || 0} />
-          <StatBox label="DANO TOTAL" value={stats.damage || 0} />
-          <StatBox label="CONTRIB." value={stats.contribution_score || 0} />
-        </div>
-      </HudCard>
 
       {/* Evolution Charts */}
       {matchHistory.length >= 2 && (
