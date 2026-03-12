@@ -604,7 +604,7 @@ export function MatchDetailContent({ match: initialMatch, playerStats: initialSt
         </motion.section>
       )}
 
-      {/* ═══ VETO HISTORY ═══ */}
+      {/* ═══ VETO + STREAM (side by side) ═══ */}
       {(() => {
         // Use G5API vetoes first, fallback to bracket match veto_actions
         const vetoList = vetoes.length > 0
@@ -616,65 +616,70 @@ export function MatchDetailContent({ match: initialMatch, playerStats: initialSt
           ? bracketMatch.map
           : null;
 
-        if (vetoList.length === 0) return null;
+        const hasVeto = vetoList.length > 0;
 
         return (
-          <motion.section initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="mb-6">
-            <div className="flex items-center gap-3 mb-3">
-              <Ban size={14} className="text-orbital-purple" />
-              <h3 className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.2em] text-orbital-purple">VETO</h3>
-              <div className="h-[1px] flex-1 bg-gradient-to-r from-orbital-purple/30 to-transparent" />
-            </div>
-            <div className="bg-orbital-card border border-orbital-border p-4">
-              <div className="space-y-1.5">
-                {vetoList.map((v, i) => (
-                  <div key={v.id} className="flex items-center gap-3 py-1.5">
-                    <span className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim w-4 text-right">{i + 1}.</span>
-                    <span className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text min-w-[80px]">{v.team_name}</span>
-                    <span className={`font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.1em] px-2 py-0.5 border ${
-                      v.action === "ban"
-                        ? "text-orbital-danger bg-orbital-danger/5 border-orbital-danger/20"
-                        : "text-orbital-success bg-orbital-success/5 border-orbital-success/20"
-                    }`}>
-                      {v.action === "ban" ? "REMOVEU" : "ESCOLHEU"}
-                    </span>
-                    <span className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-text font-bold">
-                      {v.map.replace("de_", "").toUpperCase()}
-                    </span>
+          <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className={`mb-6 grid gap-4 ${hasVeto ? "grid-cols-1 lg:grid-cols-2" : "grid-cols-1"}`}>
+            {/* VETO */}
+            {hasVeto && (
+              <section>
+                <div className="flex items-center gap-3 mb-3">
+                  <Ban size={14} className="text-orbital-purple" />
+                  <h3 className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.2em] text-orbital-purple">VETO</h3>
+                  <div className="h-[1px] flex-1 bg-gradient-to-r from-orbital-purple/30 to-transparent" />
+                </div>
+                <div className="bg-orbital-card border border-orbital-border p-4 h-[calc(100%-2rem)]">
+                  <div className="space-y-1.5">
+                    {vetoList.map((v, i) => (
+                      <div key={v.id} className="flex items-center gap-3 py-1.5">
+                        <span className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim w-4 text-right">{i + 1}.</span>
+                        <span className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text min-w-[80px]">{v.team_name}</span>
+                        <span className={`font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.1em] px-2 py-0.5 border ${
+                          v.action === "ban"
+                            ? "text-orbital-danger bg-orbital-danger/5 border-orbital-danger/20"
+                            : "text-orbital-success bg-orbital-success/5 border-orbital-success/20"
+                        }`}>
+                          {v.action === "ban" ? "REMOVEU" : "ESCOLHEU"}
+                        </span>
+                        <span className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-text font-bold">
+                          {v.map.replace("de_", "").toUpperCase()}
+                        </span>
+                      </div>
+                    ))}
+                    {leftoverMap && (
+                      <div className="flex items-center gap-3 py-1.5">
+                        <span className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim w-4 text-right">{vetoList.length + 1}.</span>
+                        <span className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-purple font-bold">
+                          {leftoverMap.replace("de_", "").toUpperCase()}
+                        </span>
+                        <span className="font-[family-name:var(--font-jetbrains)] text-[0.55rem] text-orbital-text-dim">restou</span>
+                      </div>
+                    )}
                   </div>
-                ))}
-                {leftoverMap && (
-                  <div className="flex items-center gap-3 py-1.5">
-                    <span className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim w-4 text-right">{vetoList.length + 1}.</span>
-                    <span className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-purple font-bold">
-                      {leftoverMap.replace("de_", "").toUpperCase()}
-                    </span>
-                    <span className="font-[family-name:var(--font-jetbrains)] text-[0.55rem] text-orbital-text-dim">restou</span>
-                  </div>
-                )}
+                </div>
+              </section>
+            )}
+
+            {/* STREAM */}
+            <section>
+              <div className="flex items-center gap-3 mb-3">
+                <Radio size={14} className="text-orbital-purple" />
+                <h3 className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.2em] text-orbital-purple">STREAM</h3>
+                <div className="h-[1px] flex-1 bg-gradient-to-r from-orbital-purple/30 to-transparent" />
               </div>
-            </div>
-          </motion.section>
+              <div className="bg-orbital-card border border-orbital-border overflow-hidden h-[calc(100%-2rem)]">
+                <div className="relative w-full h-full min-h-[250px]">
+                  <iframe
+                    src="https://player.twitch.tv/?channel=orbitalcuplives&parent=www.orbitalroxa.com.br&parent=orbitalroxa.com.br&parent=orbital-cs2.vercel.app&parent=localhost"
+                    className="absolute inset-0 w-full h-full"
+                    allowFullScreen
+                  />
+                </div>
+              </div>
+            </section>
+          </motion.div>
         );
       })()}
-
-      {/* ═══ STREAM ═══ */}
-      <motion.section initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.17 }} className="mb-6">
-        <div className="flex items-center gap-3 mb-3">
-          <Radio size={14} className="text-orbital-purple" />
-          <h3 className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.2em] text-orbital-purple">STREAM</h3>
-          <div className="h-[1px] flex-1 bg-gradient-to-r from-orbital-purple/30 to-transparent" />
-        </div>
-        <div className="bg-orbital-card border border-orbital-border overflow-hidden">
-          <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
-            <iframe
-              src="https://player.twitch.tv/?channel=orbitalcuplives&parent=www.orbitalroxa.com.br&parent=orbitalroxa.com.br&parent=orbital-cs2.vercel.app&parent=localhost"
-              className="absolute inset-0 w-full h-full"
-              allowFullScreen
-            />
-          </div>
-        </div>
-      </motion.section>
 
       {/* ═══ GAME LOG ═══ */}
       {(killEvents.length > 0 || bombEvents.length > 0) && (
