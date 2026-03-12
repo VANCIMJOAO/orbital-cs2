@@ -230,7 +230,12 @@ export function ProfileContent({ steamId }: { steamId: string }) {
         if (res.ok) {
           const data = await res.json();
           const rawStats = data.playerstats || data.playerStats || data;
-          const statsArr: { match_id: number }[] = Array.isArray(rawStats) ? rawStats : [];
+          const statsArr: { match_id: number; team_id: number }[] = Array.isArray(rawStats) ? rawStats : [];
+          // Map match_id → player's team_id
+          const playerTeamMap: Record<number, number> = {};
+          for (const s of statsArr) {
+            if (!(s.match_id in playerTeamMap)) playerTeamMap[s.match_id] = s.team_id;
+          }
           const matchIds = [...new Set(statsArr.map(s => s.match_id))].sort((a, b) => b - a).slice(0, 5);
 
           const matchPromises = matchIds.map(async (id) => {
@@ -242,11 +247,15 @@ export function ProfileContent({ steamId }: { steamId: string }) {
               if (matchRes.ok) {
                 const d = await matchRes.json();
                 const m = d.match as Match;
+                // Attach player's team_id to determine win/loss
+                const pTeamId = playerTeamMap[id];
+                type MatchExt = Match & { round_score?: string; map_name?: string; player_team_id?: number };
+                const ext = m as MatchExt;
+                ext.player_team_id = pTeamId;
                 if (mapRes.ok) {
                   const mapData = await mapRes.json();
                   const maps = mapData.mapstats || mapData.mapStats || [];
                   if (maps.length > 0) {
-                    // Sum round scores across all maps
                     let t1Rounds = 0, t2Rounds = 0;
                     const mapNames: string[] = [];
                     for (const ms of maps) {
@@ -254,8 +263,8 @@ export function ProfileContent({ steamId }: { steamId: string }) {
                       t2Rounds += ms.team2_score || 0;
                       if (ms.map_name) mapNames.push(ms.map_name.replace("de_", ""));
                     }
-                    (m as Match & { round_score?: string; map_name?: string }).round_score = `${t1Rounds} - ${t2Rounds}`;
-                    (m as Match & { map_name?: string }).map_name = mapNames.join(", ");
+                    ext.round_score = `${t1Rounds} - ${t2Rounds}`;
+                    ext.map_name = mapNames.join(", ");
                   }
                 }
                 return m;
@@ -481,54 +490,56 @@ export function ProfileContent({ steamId }: { steamId: string }) {
       {/* Recent Matches */}
       {recentMatches.length > 0 && (
         <HudCard delay={0.5} label="ÚLTIMAS PARTIDAS" className="mt-6">
-          <div className="overflow-x-auto">
-            <table className="w-full font-[family-name:var(--font-jetbrains)] text-xs">
-              <thead>
-                <tr className="text-orbital-text-dim font-[family-name:var(--font-orbitron)] text-[0.55rem] tracking-[0.15em]">
-                  <th className="text-center py-2 px-2 w-12">#</th>
-                  <th className="text-right py-2 px-2">TIME 1</th>
-                  <th className="text-center py-2 px-3 w-20">PLACAR</th>
-                  <th className="text-left py-2 px-2">TIME 2</th>
-                  <th className="text-center py-2 px-2 w-24">MAPA</th>
-                  <th className="text-center py-2 px-2 w-24">STATUS</th>
-                </tr>
-              </thead>
-              <tbody>
-                {recentMatches.map((match) => {
-                  const st = getStatusType(match);
-                  const stText = getStatusText(match);
-                  const ext = match as Match & { round_score?: string; map_name?: string };
-                  return (
-                    <tr key={match.id} onClick={() => window.location.href = `/partidas/${match.id}`} className="cursor-pointer hover:bg-orbital-purple/5 transition-colors border-t border-orbital-border/30">
-                      <td className="text-center py-2.5 px-2">
-                        <span className="text-orbital-purple">{match.id}</span>
-                      </td>
-                      <td className="text-right py-2.5 px-2 text-orbital-text">
-                        {match.team1_string || `Time ${match.team1_id}`}
-                      </td>
-                      <td className="text-center py-2.5 px-3 font-bold text-orbital-text whitespace-nowrap">
-                        {ext.round_score || `${match.team1_score} - ${match.team2_score}`}
-                      </td>
-                      <td className="text-left py-2.5 px-2 text-orbital-text">
-                        {match.team2_string || `Time ${match.team2_id}`}
-                      </td>
-                      <td className="text-center py-2.5 px-2 text-orbital-text-dim text-[0.6rem]">
-                        {ext.map_name || "—"}
-                      </td>
-                      <td className="text-center py-2.5 px-2">
-                        <span className={`text-[0.6rem] ${
-                          st === "live" ? "text-orbital-live" :
-                          st === "cancelled" ? "text-orbital-danger" :
-                          "text-orbital-text-dim"
-                        }`}>
-                          {stText}
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+          <div className="space-y-2 py-2">
+            {recentMatches.map((match) => {
+              const ext = match as Match & { round_score?: string; map_name?: string; player_team_id?: number };
+              const playerWon = match.winner != null && ext.player_team_id != null && match.winner === ext.player_team_id;
+              const playerLost = match.winner != null && ext.player_team_id != null && match.winner !== ext.player_team_id;
+              const isLive = getStatusType(match) === "live";
+              const resultLabel = isLive ? "AO VIVO" : playerWon ? "VITÓRIA" : playerLost ? "DERROTA" : getStatusText(match);
+              const resultColor = isLive ? "text-orbital-live" : playerWon ? "text-orbital-success" : playerLost ? "text-orbital-danger" : "text-orbital-text-dim";
+              const borderColor = isLive ? "border-orbital-live/30" : playerWon ? "border-orbital-success/20" : playerLost ? "border-orbital-danger/20" : "border-orbital-border/30";
+              const bgColor = isLive ? "bg-orbital-live/5" : playerWon ? "bg-orbital-success/5" : playerLost ? "bg-orbital-danger/5" : "bg-transparent";
+
+              return (
+                <div
+                  key={match.id}
+                  onClick={() => window.location.href = `/partidas/${match.id}`}
+                  className={`flex items-center gap-3 px-3 py-2.5 border ${borderColor} ${bgColor} cursor-pointer hover:bg-orbital-purple/5 transition-all group`}
+                >
+                  {/* Result indicator */}
+                  <div className={`w-1 h-8 shrink-0 ${isLive ? "bg-orbital-live" : playerWon ? "bg-orbital-success" : playerLost ? "bg-orbital-danger" : "bg-orbital-border"}`} />
+
+                  {/* Match content */}
+                  <div className="flex-1 min-w-0 flex items-center">
+                    {/* Team 1 */}
+                    <span className={`font-[family-name:var(--font-jetbrains)] text-xs flex-1 text-right truncate ${ext.player_team_id === match.team1_id ? "text-orbital-text font-bold" : "text-orbital-text-dim"}`}>
+                      {match.team1_string || `Time ${match.team1_id}`}
+                    </span>
+
+                    {/* Score */}
+                    <span className="font-[family-name:var(--font-jetbrains)] text-sm font-bold text-orbital-text mx-4 whitespace-nowrap w-16 text-center">
+                      {ext.round_score || `${match.team1_score} - ${match.team2_score}`}
+                    </span>
+
+                    {/* Team 2 */}
+                    <span className={`font-[family-name:var(--font-jetbrains)] text-xs flex-1 text-left truncate ${ext.player_team_id === match.team2_id ? "text-orbital-text font-bold" : "text-orbital-text-dim"}`}>
+                      {match.team2_string || `Time ${match.team2_id}`}
+                    </span>
+                  </div>
+
+                  {/* Map */}
+                  <span className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim w-20 text-center shrink-0">
+                    {ext.map_name || "—"}
+                  </span>
+
+                  {/* Result label */}
+                  <span className={`font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.1em] w-16 text-center shrink-0 ${resultColor}`}>
+                    {resultLabel}
+                  </span>
+                </div>
+              );
+            })}
           </div>
         </HudCard>
       )}
