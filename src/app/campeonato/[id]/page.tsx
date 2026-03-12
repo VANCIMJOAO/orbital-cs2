@@ -475,8 +475,8 @@ function MatchNode({
           {match.label}
         </span>
         {isLive && (
-          <span className="flex items-center gap-1 font-[family-name:var(--font-orbitron)] text-[0.45rem] text-orbital-live">
-            <span className="w-1.5 h-1.5 rounded-full bg-orbital-live animate-pulse" />
+          <span className="flex items-center gap-1 font-[family-name:var(--font-orbitron)] text-[0.45rem] text-orbital-live animate-pulse">
+            <span className="w-1.5 h-1.5 rounded-full bg-orbital-live shadow-[0_0_6px_rgba(239,68,68,0.6)]" />
             LIVE
           </span>
         )}
@@ -550,13 +550,14 @@ function MatchNode({
 }
 
 function TeamRow({ name, teamId, isWinner, isLoser }: { name: string; teamId: number | null; isWinner: boolean; isLoser: boolean }) {
+  const isTBD = !teamId || name === "TBD" || name === "A definir";
   return (
-    <div className={`flex items-center gap-2 px-2 py-1.5 ${
-      isWinner ? "bg-orbital-success/10 border-l-2 border-orbital-success" : isLoser ? "bg-[#0A0A0A] opacity-50" : "bg-[#0A0A0A]"
+    <div className={`flex items-center gap-2 px-2 py-1.5 transition-colors ${
+      isWinner ? "bg-orbital-success/10 border-l-2 border-orbital-success" : isLoser ? "bg-[#0A0A0A] opacity-40" : "bg-[#0A0A0A]"
     }`}>
-      <Shield size={10} className={isWinner ? "text-orbital-success" : "text-orbital-text-dim"} />
+      <Shield size={10} className={isWinner ? "text-orbital-success" : isTBD ? "text-orbital-text-dim/30" : "text-orbital-text-dim"} />
       <span className={`font-[family-name:var(--font-jetbrains)] text-[0.65rem] ${
-        !teamId ? "text-orbital-text-dim/40 italic" : isWinner ? "text-orbital-success font-bold" : "text-orbital-text"
+        isTBD ? "text-orbital-text-dim/30 italic" : isWinner ? "text-orbital-success font-bold" : "text-orbital-text"
       }`}>
         {name}
       </span>

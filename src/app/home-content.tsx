@@ -91,8 +91,8 @@ function TournamentHome({ tournament: t, liveMatches, recentMatches, teamsMap, m
           {/* Status badge */}
           <div className="flex items-center justify-center gap-2 mb-6">
             {isLive && (
-              <span className="flex items-center gap-2 px-3 py-1.5 bg-orbital-live/10 border border-orbital-live/30">
-                <span className="w-2 h-2 rounded-full bg-orbital-live animate-pulse" />
+              <span className="flex items-center gap-2 px-3 py-1.5 bg-orbital-live/10 border border-orbital-live/30 shadow-[0_0_15px_rgba(239,68,68,0.15)] animate-pulse">
+                <span className="w-2 h-2 rounded-full bg-orbital-live shadow-[0_0_8px_rgba(239,68,68,0.6)]" />
                 <span className="font-[family-name:var(--font-orbitron)] text-[0.55rem] tracking-[0.2em] text-orbital-live">AO VIVO</span>
               </span>
             )}
@@ -164,12 +164,23 @@ function TournamentHome({ tournament: t, liveMatches, recentMatches, teamsMap, m
       </section>
 
       {/* Stats Row */}
-      <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-10">
+      <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
         <HudCard className="text-center" delay={0.1}>
           <StatBox label="Partidas" value={`${finished}/${total}`} />
         </HudCard>
         <HudCard className="text-center" delay={0.2}>
           <StatBox label="Progresso" value={`${progress}%`} />
+          {/* Progress bar */}
+          <div className="mt-2 mx-3 mb-1">
+            <div className="h-1.5 bg-orbital-border/30 rounded-full overflow-hidden">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${progress}%` }}
+                transition={{ duration: 1, delay: 0.5, ease: "easeOut" }}
+                className="h-full bg-gradient-to-r from-orbital-purple to-orbital-purple/60 rounded-full"
+              />
+            </div>
+          </div>
         </HudCard>
         <HudCard className="text-center" delay={0.3}>
           <StatBox label="Times" value={t.teams.length} />
@@ -181,7 +192,7 @@ function TournamentHome({ tournament: t, liveMatches, recentMatches, teamsMap, m
 
       {/* Live / Next Match */}
       {(liveMatch || nextMatch) && (
-        <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="mb-10">
+        <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="mb-8">
           <SectionHeader icon={Activity} title={liveMatch ? "PARTIDA AO VIVO" : "PRÓXIMA PARTIDA"} accent={liveMatch ? "live" : undefined} />
           {(() => {
             const m = liveMatch || nextMatch!;
@@ -189,13 +200,17 @@ function TournamentHome({ tournament: t, liveMatches, recentMatches, teamsMap, m
             const team2 = getTeamName(t, m.team2_id);
             const team1Logo = m.team1_id ? teamsMap?.[m.team1_id]?.logo : null;
             const team2Logo = m.team2_id ? teamsMap?.[m.team2_id]?.logo : null;
+            const isPending = !liveMatch;
             return (
               <Link href={`/campeonato/${t.id}`}>
-                <div className={`relative bg-orbital-card border p-6 hover:border-orbital-purple/30 transition-all ${
-                  liveMatch ? "border-orbital-live/30 glow-purple-sm" : "border-orbital-border"
+                <div className={`relative overflow-hidden border p-6 hover:border-orbital-purple/30 transition-all ${
+                  liveMatch
+                    ? "border-orbital-live/30 bg-gradient-to-r from-orbital-live/5 via-orbital-card to-orbital-live/5"
+                    : "border-orbital-purple/20 bg-gradient-to-r from-orbital-purple/5 via-orbital-card to-orbital-purple/5"
                 }`}>
-                  <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-orbital-purple/30 to-transparent" />
-                  <div className="flex items-center justify-between">
+                  <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-orbital-purple/40 to-transparent" />
+                  {liveMatch && <div className="absolute inset-0 bg-orbital-live/[0.02] animate-pulse pointer-events-none" />}
+                  <div className="relative flex items-center justify-between">
                     <div className="flex items-center gap-4 flex-1 justify-end">
                       <span className="font-[family-name:var(--font-orbitron)] text-sm sm:text-base font-bold text-orbital-text text-right">{team1}</span>
                       <div className="w-10 h-10 border border-orbital-border flex items-center justify-center bg-[#0A0A0A] shrink-0">
@@ -206,7 +221,12 @@ function TournamentHome({ tournament: t, liveMatches, recentMatches, teamsMap, m
                       <div className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.2em] text-orbital-text-dim mb-1">{m.label}</div>
                       <div className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text-dim">
                         {liveMatch ? (
-                          <span className="text-orbital-live font-bold">LIVE</span>
+                          <span className="inline-flex items-center gap-1.5 text-orbital-live font-bold">
+                            <span className="w-2 h-2 rounded-full bg-orbital-live animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.6)]" />
+                            AO VIVO
+                          </span>
+                        ) : isPending ? (
+                          <span className="text-orbital-purple/60 text-[0.6rem] font-[family-name:var(--font-orbitron)] tracking-widest animate-pulse">AGUARDANDO</span>
                         ) : (
                           "vs"
                         )}
@@ -232,7 +252,7 @@ function TournamentHome({ tournament: t, liveMatches, recentMatches, teamsMap, m
       )}
 
       {/* Bracket Preview */}
-      <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="mb-10">
+      <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="mb-8">
         <SectionHeader icon={Swords} title="BRACKET" href={`/campeonato/${t.id}`} />
         <HudCard className="p-5">
           <BracketPreview tournament={t} mapScoresMap={mapScoresMap} />
@@ -245,7 +265,7 @@ function TournamentHome({ tournament: t, liveMatches, recentMatches, teamsMap, m
       </motion.section>
 
       {/* Teams Grid */}
-      <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="mb-10">
+      <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="mb-8">
         <SectionHeader icon={Users} title="TIMES PARTICIPANTES" />
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {t.teams.map((team, i) => {
@@ -268,7 +288,7 @@ function TournamentHome({ tournament: t, liveMatches, recentMatches, teamsMap, m
               >
                 <div className="relative w-full h-[220px] transition-transform duration-500 [transform-style:preserve-3d] group-hover:[transform:rotateY(180deg)]">
                   {/* Front */}
-                  <div className={`absolute inset-0 [backface-visibility:hidden] bg-orbital-card border ${borderClass} ${isChampion ? "bg-orbital-success/5" : ""} p-5 flex flex-col items-center justify-center`}>
+                  <div className={`absolute inset-0 [backface-visibility:hidden] bg-orbital-card border ${borderClass} ${isChampion ? "bg-orbital-success/5" : ""} p-5 flex flex-col items-center justify-center hover:border-orbital-purple/40 hover:scale-[1.02] transition-all duration-300`}>
                     <div className="w-14 h-14 mb-3 border border-orbital-border flex items-center justify-center bg-[#0A0A0A]">
                       <TeamLogo logo={logo} size={40} className="w-10 h-10" />
                     </div>
@@ -319,7 +339,7 @@ function TournamentHome({ tournament: t, liveMatches, recentMatches, teamsMap, m
       </motion.section>
 
       {/* Map Pool */}
-      <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="mb-10">
+      <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="mb-8">
         <SectionHeader icon={Crosshair} title="MAP POOL" />
         <div className="grid grid-cols-3 sm:grid-cols-7 gap-2">
           {t.map_pool.map((map, i) => (
@@ -328,26 +348,26 @@ function TournamentHome({ tournament: t, liveMatches, recentMatches, teamsMap, m
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6 + i * 0.05 }}
-              className="relative bg-orbital-card border border-orbital-border hover:border-orbital-purple/30 transition-all overflow-hidden group"
+              className="relative border border-orbital-border hover:border-orbital-purple/40 transition-all overflow-hidden group"
             >
-              <div className="aspect-[16/10] relative bg-[#0A0A0A] overflow-hidden">
+              <div className="aspect-[16/12] relative bg-[#0A0A0A] overflow-hidden">
                 {MAP_IMAGES[map] ? (
                   <img
                     src={MAP_IMAGES[map]}
                     alt={map}
-                    className="w-full h-full object-cover opacity-70 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300"
+                    className="w-full h-full object-cover opacity-60 group-hover:opacity-90 group-hover:scale-110 transition-all duration-500"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
                     <Crosshair size={20} className="text-orbital-purple/30" />
                   </div>
                 )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-              </div>
-              <div className="p-2 text-center">
-                <span className="font-[family-name:var(--font-orbitron)] text-[0.55rem] tracking-wider text-orbital-text group-hover:text-orbital-purple transition-colors">
-                  {map.replace("de_", "").toUpperCase()}
-                </span>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-2 text-center">
+                  <span className="font-[family-name:var(--font-orbitron)] text-[0.55rem] tracking-wider text-white/90 group-hover:text-orbital-purple transition-colors drop-shadow-lg">
+                    {map.replace("de_", "").toUpperCase()}
+                  </span>
+                </div>
               </div>
             </motion.div>
           ))}
@@ -355,7 +375,7 @@ function TournamentHome({ tournament: t, liveMatches, recentMatches, teamsMap, m
       </motion.section>
 
       {/* Tournament Matches from G5API */}
-      <section className="mb-10">
+      <section className="mb-8">
         <SectionHeader icon={Swords} title="RESULTADOS" href="/partidas" />
         {tournamentRecentMatches.length > 0 ? (
           <div className="grid gap-3">
@@ -376,7 +396,7 @@ function TournamentHome({ tournament: t, liveMatches, recentMatches, teamsMap, m
       {(() => {
         const tournamentLiveMatches = liveMatches.filter(m => tournamentMatchIds.has(m.id));
         return tournamentLiveMatches.length > 0 ? (
-          <section className="mb-10">
+          <section className="mb-8">
             <SectionHeader icon={Activity} title="AO VIVO" accent="live" />
             <div className="grid gap-3">
               {tournamentLiveMatches.map((match, i) => (
@@ -406,10 +426,12 @@ function BracketPreview({ tournament: t, mapScoresMap }: { tournament: Tournamen
   const wf = t.matches.find(m => m.id === "WF");
   const gf = t.matches.find(m => m.id === "GF");
 
+  const isTBD = (name: string) => name === "TBD" || name === "A definir";
+
   const TeamRow = ({ name, score, isWinner, isLive }: { name: string; score?: number; isWinner: boolean; isLive?: boolean }) => (
-    <div className={`flex items-center justify-between px-2.5 py-1 ${isWinner ? "bg-orbital-purple/10" : ""}`}>
+    <div className={`flex items-center justify-between px-2.5 py-1 ${isWinner ? "bg-orbital-success/10" : ""}`}>
       <span className={`truncate text-[0.6rem] font-[family-name:var(--font-jetbrains)] ${
-        isWinner ? "text-orbital-purple font-bold" : "text-orbital-text-dim"
+        isWinner ? "text-orbital-success font-bold" : isTBD(name) ? "text-orbital-text-dim/30 italic" : "text-orbital-text-dim"
       }`}>
         {name}
       </span>
@@ -417,7 +439,7 @@ function BracketPreview({ tournament: t, mapScoresMap }: { tournament: Tournamen
         {isLive && <span className="flex items-center gap-1 text-orbital-live text-[0.45rem] font-[family-name:var(--font-orbitron)]"><span className="status-dot status-live" /> LIVE</span>}
         {score !== undefined && (
           <span className={`font-[family-name:var(--font-jetbrains)] text-[0.6rem] font-bold ${
-            isWinner ? "text-orbital-purple" : "text-orbital-text-dim"
+            isWinner ? "text-orbital-success" : "text-orbital-text-dim"
           }`}>{score}</span>
         )}
       </div>
@@ -431,6 +453,7 @@ function BracketPreview({ tournament: t, mapScoresMap }: { tournament: Tournamen
     const isLive = match.status === "live";
     const isDone = match.status === "finished";
     const hasLink = match.match_id != null;
+    const bothTBD = isTBD(team1) && isTBD(team2);
 
     const content = (
       <div className={`border overflow-hidden ${hasLink ? "cursor-pointer hover:border-orbital-purple/40 transition-colors" : ""} ${
@@ -438,12 +461,13 @@ function BracketPreview({ tournament: t, mapScoresMap }: { tournament: Tournamen
       }${
         isLive ? "border-orbital-live/40 bg-orbital-live/5" :
         isDone ? "border-orbital-success/20 bg-[#0A0A0A]" :
+        isGrandFinal && bothTBD ? "border-orbital-border/40 bg-[#0A0A0A] opacity-50" :
         isGrandFinal ? "border-orbital-purple/40 bg-orbital-purple/5" :
         "border-orbital-border/60 bg-[#0A0A0A]"
       }`}>
         {isGrandFinal && (
-          <div className="bg-orbital-purple/15 px-2.5 py-0.5 text-center border-b border-orbital-purple/20">
-            <span className="font-[family-name:var(--font-orbitron)] text-[0.4rem] tracking-[0.2em] text-orbital-purple">GRAND FINAL</span>
+          <div className={`px-2.5 py-0.5 text-center border-b ${bothTBD ? "bg-orbital-border/10 border-orbital-border/20" : "bg-orbital-purple/15 border-orbital-purple/20"}`}>
+            <span className={`font-[family-name:var(--font-orbitron)] text-[0.4rem] tracking-[0.2em] ${bothTBD ? "text-orbital-text-dim/40" : "text-orbital-purple"}`}>GRAND FINAL</span>
           </div>
         )}
         {(() => {
