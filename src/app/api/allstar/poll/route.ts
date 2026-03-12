@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import mysql from "mysql2/promise";
 
 const DATABASE_URL = process.env.DATABASE_URL || "";
-const ALLSTAR_API_KEY = process.env.ALLSTAR_SERVER_API_KEY || "ffd47a65-70b1-4a8c-8293-2191dfa8a3ab";
+const ALLSTAR_API_KEY = process.env.ALLSTAR_SERVER_API_KEY || "";
 const ALLSTAR_API_URL = "https://prt.allstar.gg";
 
 async function getConnection() {

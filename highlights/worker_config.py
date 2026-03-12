@@ -7,7 +7,9 @@ Ajuste conforme seu ambiente.
 G5API_URL = "https://g5api-production-998f.up.railway.app"
 
 # API key compartilhada com o G5API (deve ser a mesma do env var HIGHLIGHTS_API_KEY)
-HIGHLIGHTS_API_KEY = "orbital-highlights-2024-secret"
+# Carrega de variável de ambiente; configure antes de rodar o worker
+import os as _os
+HIGHLIGHTS_API_KEY = _os.environ.get("HIGHLIGHTS_API_KEY", "")
 
 # Intervalo de polling em segundos
 POLL_INTERVAL = 30
