@@ -301,12 +301,12 @@ export default function AdminTimes() {
                     {players.map((p, i) => (
                       <div key={i} className="flex gap-2">
                         <input
-                          type="text" value={p.steamId} onChange={e => updatePlayer(i, "steamId", e.target.value)}
-                          placeholder="Steam64 ID" className="flex-1 bg-[#0A0A0A] border border-orbital-border text-orbital-text font-[family-name:var(--font-jetbrains)] text-xs px-3 py-2 focus:border-orbital-purple/50 focus:outline-none transition-colors placeholder:text-orbital-text-dim/30"
-                        />
-                        <input
                           type="text" value={p.name} onChange={e => updatePlayer(i, "name", e.target.value)}
                           placeholder="Nick" className="flex-1 bg-[#0A0A0A] border border-orbital-border text-orbital-text font-[family-name:var(--font-jetbrains)] text-xs px-3 py-2 focus:border-orbital-purple/50 focus:outline-none transition-colors placeholder:text-orbital-text-dim/30"
+                        />
+                        <input
+                          type="text" value={p.steamId} onChange={e => updatePlayer(i, "steamId", e.target.value)}
+                          placeholder="Steam64 ID" className="flex-1 bg-[#0A0A0A] border border-orbital-border text-orbital-text font-[family-name:var(--font-jetbrains)] text-xs px-3 py-2 focus:border-orbital-purple/50 focus:outline-none transition-colors placeholder:text-orbital-text-dim/30"
                         />
                         {players.length > 1 && (
                           <button type="button" onClick={() => removePlayer(i)} className="px-2 text-orbital-danger/50 hover:text-orbital-danger transition-colors">
