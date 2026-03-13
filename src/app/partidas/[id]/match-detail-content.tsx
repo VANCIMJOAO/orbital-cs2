@@ -206,9 +206,40 @@ export function MatchDetailContent({ match: initialMatch, playerStats: initialSt
   };
 
   // Stats per team (filtered by active tab / map)
-  const filteredStats = activeTab === "all"
-    ? playerStats
-    : playerStats.filter(s => s.map_id === activeTab);
+  // When "all" and multiple maps, aggregate stats per player (sum kills, deaths, etc.)
+  const filteredStats = (() => {
+    if (activeTab !== "all") return playerStats.filter(s => s.map_id === activeTab);
+    if (mapStats.length <= 1) return playerStats;
+    // Aggregate: group by steam_id + team_id, sum numeric fields
+    const grouped: Record<string, PlayerStats> = {};
+    for (const s of playerStats) {
+      const key = `${s.steam_id}_${s.team_id}`;
+      const existing = grouped[key];
+      if (!existing) {
+        grouped[key] = { ...s };
+      } else {
+        existing.kills += s.kills;
+        existing.deaths += s.deaths;
+        existing.assists += s.assists;
+        existing.flash_assists += s.flash_assists;
+        existing.headshot_kills += s.headshot_kills;
+        existing.roundsplayed += s.roundsplayed;
+        existing.damage += s.damage;
+        existing.k1 += s.k1;
+        existing.k2 += s.k2;
+        existing.k3 += s.k3;
+        existing.k4 += s.k4;
+        existing.k5 += s.k5;
+        existing.firstkill_t += s.firstkill_t;
+        existing.firstkill_ct += s.firstkill_ct;
+        existing.firstdeath_t += s.firstdeath_t;
+        existing.firstdeath_ct += s.firstdeath_ct;
+        existing.mvp += s.mvp;
+        existing.contribution_score += s.contribution_score;
+      }
+    }
+    return Object.values(grouped);
+  })();
   const team1Stats = filteredStats.filter((s) => s.team_id === match.team1_id);
   const team2Stats = filteredStats.filter((s) => s.team_id === match.team2_id);
 
@@ -421,6 +452,50 @@ export function MatchDetailContent({ match: initialMatch, playerStats: initialSt
           </div>
         </div>
       </motion.section>
+
+      {/* ═══ CHAMPION BANNER (tournament finals) ═══ */}
+      {isFinished && match.winner && tournamentName && (
+        <motion.section
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.15, duration: 0.5 }}
+          className="mb-6"
+        >
+          <div className="relative bg-gradient-to-r from-yellow-500/[0.03] via-yellow-400/[0.08] to-yellow-500/[0.03] border border-yellow-500/20 overflow-hidden">
+            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTTAgMjBMMjAgMEw0MCAyMEwyMCA0MFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgyMzQsMTc5LDgsLjA1KSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCBmaWxsPSJ1cmwoI2cpIiB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIi8+PC9zdmc+')] opacity-50" />
+            <div className="relative py-6 px-6 flex flex-col items-center gap-3">
+              <div className="flex items-center gap-2">
+                <div className="h-[1px] w-8 bg-gradient-to-r from-transparent to-yellow-400/50" />
+                <Trophy size={18} className="text-yellow-400" />
+                <span className="font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-[0.25em] text-yellow-400/80">
+                  CAMPEÃO
+                </span>
+                <Trophy size={18} className="text-yellow-400" />
+                <div className="h-[1px] w-8 bg-gradient-to-l from-transparent to-yellow-400/50" />
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 border border-yellow-500/30 flex items-center justify-center bg-[#0A0A0A]">
+                  <TeamLogo
+                    logo={match.winner === match.team1_id ? team1?.logo : team2?.logo}
+                    size={48}
+                    className="w-10 h-10 sm:w-12 sm:h-12"
+                  />
+                </div>
+                <div>
+                  <h3 className="font-[family-name:var(--font-orbitron)] text-lg sm:text-2xl font-black tracking-wider text-yellow-400 glow-purple-text" style={{ textShadow: "0 0 20px rgba(234,179,8,0.4)" }}>
+                    {match.winner === match.team1_id
+                      ? (match.team1_string || team1?.name || "Time 1")
+                      : (match.team2_string || team2?.name || "Time 2")}
+                  </h3>
+                  <p className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-yellow-400/60 mt-0.5">
+                    {tournamentName}{bracketMatch?.label ? ` — ${bracketMatch.label}` : ""}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.section>
+      )}
 
       {/* Admin Actions */}
       {isAdmin && (
@@ -742,8 +817,14 @@ export function MatchDetailContent({ match: initialMatch, playerStats: initialSt
           ? vetoes.map(v => ({ team_name: v.team_name, action: v.pick_or_ban as "ban" | "pick", map: v.map, id: v.id }))
           : (bracketMatch?.veto_actions || []).map((v, i) => ({ team_name: v.team_name, action: v.action, map: v.map, id: i }));
 
-        // For BO1 with 6 bans, the 7th map is left over — add it
-        const leftoverMap = bracketMatch?.map && vetoList.length > 0 && !vetoList.some(v => v.action === "pick")
+        // Find leftover maps: maps not in the veto list but played (from mapStats)
+        // BO1: 6 bans → 1 leftover; BO3: 4 bans + 2 picks → 1 leftover (decider)
+        const vetoMaps = new Set(vetoList.map(v => v.map));
+        const leftoverMaps = mapStats
+          .filter(ms => !vetoMaps.has(ms.map_name))
+          .map(ms => ms.map_name);
+        // Fallback for BO1 with bracketMatch.map
+        const leftoverMap = leftoverMaps.length === 0 && bracketMatch?.map && !vetoMaps.has(bracketMatch.map)
           ? bracketMatch.map
           : null;
 
@@ -777,9 +858,20 @@ export function MatchDetailContent({ match: initialMatch, playerStats: initialSt
                         </span>
                       </div>
                     ))}
+                    {leftoverMaps.map((mapName, i) => (
+                      <div key={mapName} className="flex items-center gap-3 py-2 px-2 -mx-2 bg-orbital-success/5 border border-orbital-success/20 mt-1">
+                        <span className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim w-4 text-right">{vetoList.length + i + 1}.</span>
+                        <span className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-success font-bold">
+                          {mapName.replace("de_", "").toUpperCase()}
+                        </span>
+                        <span className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.1em] px-2 py-0.5 text-orbital-success bg-orbital-success/10 border border-orbital-success/20">
+                          {leftoverMaps.length === 1 ? "JOGADO" : "DECIDER"}
+                        </span>
+                      </div>
+                    ))}
                     {leftoverMap && (
                       <div className="flex items-center gap-3 py-2 px-2 -mx-2 bg-orbital-success/5 border border-orbital-success/20 mt-1">
-                        <span className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim w-4 text-right">{vetoList.length + 1}.</span>
+                        <span className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim w-4 text-right">{vetoList.length + leftoverMaps.length + 1}.</span>
                         <span className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-success font-bold">
                           {leftoverMap.replace("de_", "").toUpperCase()}
                         </span>
