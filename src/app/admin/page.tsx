@@ -1,12 +1,13 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Swords, Users, Server, Calendar, ArrowRight, BarChart3, Trophy, Globe, UserCheck } from "lucide-react";
+import { Swords, Users, Server, Calendar, ArrowRight, BarChart3, Trophy, Globe, UserCheck, Radio } from "lucide-react";
 import Link from "next/link";
 import { HudCard } from "@/components/hud-card";
 import { useAuth } from "@/lib/auth-context";
 import { useEffect, useState } from "react";
 import { Match, Team, Season, getStatusType } from "@/lib/api";
+import { Tournament } from "@/lib/tournament";
 
 const quickLinks = [
   { href: "/admin/partidas", label: "Criar Partida", icon: Swords, desc: "Configurar e iniciar uma nova partida", color: "text-orbital-success" },
@@ -28,17 +29,21 @@ interface Metrics {
 export default function AdminDashboard() {
   const { user } = useAuth();
   const [metrics, setMetrics] = useState<Metrics | null>(null);
+  const [activeTournaments, setActiveTournaments] = useState<Tournament[]>([]);
 
   useEffect(() => {
     async function fetchMetrics() {
       try {
-        const [matchesRes, teamsRes, serversRes, seasonsRes, leaderboardRes] = await Promise.all([
+        const [matchesRes, teamsRes, serversRes, seasonsRes, leaderboardRes, tournamentsRes] = await Promise.all([
           fetch("/api/matches", { credentials: "include" }).then(r => r.json()).catch(() => ({ matches: [] })),
           fetch("/api/teams", { credentials: "include" }).then(r => r.json()).catch(() => ({ teams: [] })),
           fetch("/api/servers", { credentials: "include" }).then(r => r.json()).catch(() => ({ servers: [] })),
           fetch("/api/seasons", { credentials: "include" }).then(r => r.json()).catch(() => ({ seasons: [] })),
           fetch("/api/leaderboard", { credentials: "include" }).then(r => r.json()).catch(() => ({ leaderboard: [] })),
+          fetch("/api/tournaments").then(r => r.json()).catch(() => ({ tournaments: [] })),
         ]);
+        const allTournaments: Tournament[] = tournamentsRes.tournaments || [];
+        setActiveTournaments(allTournaments.filter(t => t.status !== "finished"));
         const matches: Match[] = matchesRes.matches || [];
         const teams: Team[] = teamsRes.teams || [];
         const servers = serversRes.servers || [];
@@ -103,6 +108,60 @@ export default function AdminDashboard() {
                 <div className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.2em] text-orbital-text-dim mt-1">
                   {m.label}
                 </div>
+              </motion.div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Mission Control Shortcuts */}
+      {activeTournaments.length > 0 && (
+        <div className="mb-6 space-y-2">
+          {activeTournaments.map((t, i) => {
+            const finished = t.matches.filter(m => m.status === "finished").length;
+            const total = t.matches.length;
+            const liveMatch = t.matches.find(m => m.status === "live");
+            return (
+              <motion.div
+                key={t.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15 + i * 0.05 }}
+              >
+                <Link href={`/admin/campeonato/${t.id}`} className="block group">
+                  <div className={`relative border p-4 transition-all duration-300 ${
+                    t.status === "active"
+                      ? "bg-orbital-live/5 border-orbital-live/30 hover:border-orbital-live/60"
+                      : "bg-orbital-purple/5 border-orbital-purple/20 hover:border-orbital-purple/50"
+                  }`}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className={`w-10 h-10 border flex items-center justify-center shrink-0 ${
+                          t.status === "active" ? "bg-orbital-live/10 border-orbital-live/30" : "bg-orbital-purple/10 border-orbital-purple/20"
+                        }`}>
+                          <Radio size={18} className={t.status === "active" ? "text-orbital-live" : "text-orbital-purple"} />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="font-[family-name:var(--font-orbitron)] text-xs font-bold text-orbital-text tracking-wider truncate">
+                              {t.name}
+                            </span>
+                            {liveMatch && (
+                              <span className="flex items-center gap-1 font-[family-name:var(--font-orbitron)] text-[0.45rem] text-orbital-live animate-pulse shrink-0">
+                                <span className="w-1.5 h-1.5 rounded-full bg-orbital-live shadow-[0_0_6px_rgba(239,68,68,0.6)]" />
+                                LIVE
+                              </span>
+                            )}
+                          </div>
+                          <p className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim mt-0.5">
+                            Mission Control — {finished}/{total} partidas
+                          </p>
+                        </div>
+                      </div>
+                      <ArrowRight size={16} className="text-orbital-text-dim group-hover:text-orbital-purple transition-colors shrink-0" />
+                    </div>
+                  </div>
+                </Link>
               </motion.div>
             );
           })}

@@ -63,6 +63,7 @@ export function ProfileContent({ steamId }: { steamId: string }) {
   const [mapPerformance, setMapPerformance] = useState<{ map: string; wins: number; total: number; avgRating: number; kills: number; deaths: number }[]>([]);
   const [matchHistory, setMatchHistory] = useState<MatchDataPoint[]>([]);
   const [avatar, setAvatar] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<{ admin: boolean; superAdmin: boolean }>({ admin: false, superAdmin: false });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
@@ -71,6 +72,13 @@ export function ProfileContent({ steamId }: { steamId: string }) {
     fetch(`/api/steam/avatar/${steamId}`)
       .then(r => r.ok ? r.json() : null)
       .then(d => { if (d?.avatar) setAvatar(d.avatar); })
+      .catch(() => {});
+    // Fetch user role (admin/super_admin)
+    fetch(`/api/users/${steamId}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => {
+        if (d?.user) setUserRole({ admin: !!d.user.admin, superAdmin: !!d.user.super_admin });
+      })
       .catch(() => {});
   }, [steamId]);
 
@@ -401,14 +409,14 @@ export function ProfileContent({ steamId }: { steamId: string }) {
                 {stats.name}
               </h1>
               {steamId === "76561198023055702" && (
-                <>
-                  <span className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.1em] px-2 py-0.5 bg-red-500/20 border border-red-500/50 text-red-400">
-                    CRIADOR
-                  </span>
-                  <span className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.1em] px-2 py-0.5 bg-yellow-500/20 border border-yellow-500/50 text-yellow-400">
-                    ADMIN
-                  </span>
-                </>
+                <span className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.1em] px-2 py-0.5 bg-red-500/20 border border-red-500/50 text-red-400">
+                  CRIADOR
+                </span>
+              )}
+              {userRole.admin && (
+                <span className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.1em] px-2 py-0.5 bg-yellow-500/20 border border-yellow-500/50 text-yellow-400">
+                  ADMIN
+                </span>
               )}
             </div>
             <div className="flex items-center gap-4 mt-3 justify-center sm:justify-start">
