@@ -376,11 +376,16 @@ export async function getPlayerMatches(steamId: string): Promise<Match[]> {
 
 // ── Admin: Teams ──
 export async function createTeam(team: { name: string; tag: string; flag: string; logo?: string; public_team: boolean; auth_name: Record<string, string> }): Promise<{ team: Team }> {
+  // G5API expects auth_name as { steamId: { name, captain, coach } }
+  const authNested = Object.fromEntries(
+    Object.entries(team.auth_name).map(([steamId, nick]) => [steamId, { name: nick, captain: 0, coach: 0 }])
+  );
+  const payload = { ...team, auth_name: authNested };
   const res = await fetch(`${API_WRITE_PROXY}/teams`, {
     method: "POST",
     credentials: "include",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify([team]),  // G5API espera array: req.body[0]
+    body: JSON.stringify([payload]),  // G5API espera array: req.body[0]
   });
   if (!res.ok) throw new Error(`Erro ao criar time: ${res.status}`);
   return res.json();
