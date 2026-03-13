@@ -348,7 +348,7 @@ export default function CampeonatoPage({ params }: { params: Promise<{ id: strin
 
         {/* Grand Final */}
         {grandFinal && (
-          <HudCard label="GRAND FINAL — BO3">
+          <HudCard label="GRAND FINAL — BO3" className="border-amber-500/20 shadow-[0_0_25px_rgba(245,158,11,0.06)]">
             <div className="flex justify-center py-4">
               <MatchNode
                 match={grandFinal}
@@ -472,7 +472,7 @@ function MatchNode({
   return (
     <div className={`border p-3 transition-all ${
       isGrandFinal
-        ? "bg-orbital-purple/5 border-orbital-purple/30 min-w-[280px]"
+        ? "bg-amber-500/5 border-amber-500/30 shadow-[0_0_20px_rgba(245,158,11,0.08)] min-w-[280px]"
         : isLive
           ? "bg-orbital-card border-orbital-live/40"
           : isFinished

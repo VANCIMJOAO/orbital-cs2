@@ -480,7 +480,7 @@ function BracketPreview({ tournament: t, mapScoresMap }: { tournament: Tournamen
     const content = (
       <div className={`border p-3 transition-all ${hasLink ? "cursor-pointer hover:border-orbital-purple/40" : ""} ${
         isGrandFinal
-          ? "bg-orbital-purple/5 border-orbital-purple/30"
+          ? "bg-amber-500/5 border-amber-500/30 shadow-[0_0_20px_rgba(245,158,11,0.08)]"
           : isLive
             ? "bg-orbital-card border-orbital-live/40"
             : isDone
@@ -621,13 +621,24 @@ function BracketPreview({ tournament: t, mapScoresMap }: { tournament: Tournamen
             <div className="h-[1px] flex-1 bg-orbital-danger/15" />
           </div>
           <div className="overflow-x-auto">
-            <div className="flex gap-4 sm:gap-6 py-2 px-1 min-w-[600px]">
-              {sortedLowerRounds.map(([round, roundMatches]) => (
-                <div key={round} className="flex flex-col gap-3 min-w-[160px] sm:min-w-[180px]">
-                  <div className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.2em] text-orbital-text-dim text-center mb-1">
-                    RODADA {round}
+            <div className="flex items-center py-2 px-1 min-w-[700px]">
+              {sortedLowerRounds.map(([round, roundMatches], idx) => (
+                <div key={round} className="flex items-center">
+                  <div className="flex flex-col gap-3 min-w-[155px] sm:min-w-[175px]">
+                    <div className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.2em] text-orbital-text-dim text-center mb-1">
+                      RODADA {round}
+                    </div>
+                    {roundMatches.map(m => <MatchSlot key={m.id} match={m} />)}
                   </div>
-                  {roundMatches.map(m => <MatchSlot key={m.id} match={m} />)}
+                  {/* Connector arrow between rounds */}
+                  {idx < sortedLowerRounds.length - 1 && (
+                    <div className="flex items-center justify-center px-1">
+                      <svg width="24" height="24" viewBox="0 0 24 24" className="text-orbital-danger/25">
+                        <line x1="0" y1="12" x2="24" y2="12" stroke="currentColor" strokeWidth="1" />
+                        <path d="M18,8 L24,12 L18,16" fill="none" stroke="currentColor" strokeWidth="1" />
+                      </svg>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -639,12 +650,12 @@ function BracketPreview({ tournament: t, mapScoresMap }: { tournament: Tournamen
       {grandFinal && (
         <div>
           <div className="flex items-center gap-2 mb-3">
-            <div className="h-[1px] w-4 bg-orbital-purple/60" />
-            <span className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.2em] text-orbital-purple">GRAND FINAL</span>
-            <div className="h-[1px] flex-1 bg-orbital-purple/30" />
+            <Trophy size={12} className="text-amber-500" />
+            <span className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.2em] text-amber-500">GRAND FINAL — BO3</span>
+            <div className="h-[1px] flex-1 bg-amber-500/30" />
           </div>
           <div className="flex justify-center">
-            <div className="w-full max-w-[280px]">
+            <div className="w-full max-w-[300px]">
               <MatchSlot match={grandFinal} isGrandFinal />
             </div>
           </div>
