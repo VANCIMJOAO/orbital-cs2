@@ -59,8 +59,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         login,
         logout,
         refresh,
-        isAdmin: user?.admin || user?.super_admin || false,
-        isSuperAdmin: user?.super_admin || false,
+        isAdmin: !!(user?.admin || user?.super_admin),
+        isSuperAdmin: !!user?.super_admin,
       }}
     >
       {children}

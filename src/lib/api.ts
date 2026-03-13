@@ -324,19 +324,24 @@ export async function getCurrentUser(): Promise<User | null> {
     const data = await res.json();
     if (data === false || data === null) return null;
     const sessionUser = data.user || data || null;
-    if (!sessionUser?.steam_id) return sessionUser;
     // Fetch fresh admin flags from DB (session may be stale in Redis)
-    try {
-      const dbRes = await fetch(`${API_BASE_PROXY}/users/${sessionUser.steam_id}`, { cache: "no-store" });
-      if (dbRes.ok) {
-        const dbData = await dbRes.json();
-        const dbUser = dbData.user || dbData;
-        if (dbUser) {
-          sessionUser.admin = dbUser.admin || 0;
-          sessionUser.super_admin = dbUser.super_admin || 0;
+    const userId = sessionUser.steam_id || sessionUser.id;
+    if (userId) {
+      try {
+        const dbRes = await fetch(`${API_BASE_PROXY}/users/${userId}`, {
+          credentials: "include",
+          cache: "no-store",
+        });
+        if (dbRes.ok) {
+          const dbData = await dbRes.json();
+          const dbUser = dbData.user || dbData;
+          if (dbUser && (dbUser.admin !== undefined || dbUser.super_admin !== undefined)) {
+            sessionUser.admin = dbUser.admin ?? sessionUser.admin;
+            sessionUser.super_admin = dbUser.super_admin ?? sessionUser.super_admin;
+          }
         }
-      }
-    } catch { /* use session values as fallback */ }
+      } catch { /* use session values as fallback */ }
+    }
     return sessionUser;
   } catch {
     return null;
