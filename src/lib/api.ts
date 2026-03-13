@@ -575,16 +575,39 @@ export async function addPlayerToMatch(matchId: number, steamId: string, nicknam
 }
 
 export async function getMatchBackups(matchId: number): Promise<string[]> {
-  const res = await fetch(`${API_WRITE_PROXY}/matches/${matchId}/backup`, {
-    credentials: "include",
-  });
-  if (!res.ok) return [];
-  const data = await res.json();
-  // G5API retorna { message: "...", response: "backup1.cfg\nbackup2.cfg\n..." }
-  if (typeof data.response === "string") {
-    return data.response.split("\n").map((s: string) => s.trim()).filter(Boolean);
-  }
-  return data.backups || [];
+  // Tenta buscar backups via RCON (servidor ativo) e via remote (filesystem do G5API)
+  const results: string[] = [];
+
+  // 1. RCON (get5_listbackups no servidor de jogo)
+  try {
+    const res = await fetch(`${API_WRITE_PROXY}/matches/${matchId}/backup`, {
+      credentials: "include",
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (typeof data.response === "string") {
+        const rconBackups = data.response.split("\n").map((s: string) => s.trim()).filter(Boolean);
+        results.push(...rconBackups);
+      }
+    }
+  } catch { /* servidor offline, ignora */ }
+
+  // 2. Remote (backups salvos no filesystem do G5API)
+  try {
+    const res = await fetch(`${API_WRITE_PROXY}/matches/${matchId}/backup/remote`, {
+      credentials: "include",
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data.response)) {
+        for (const f of data.response) {
+          if (!results.includes(f)) results.push(f);
+        }
+      }
+    }
+  } catch { /* ignora */ }
+
+  return results;
 }
 
 export async function restoreMatchBackup(matchId: number, backupFile: string): Promise<void> {

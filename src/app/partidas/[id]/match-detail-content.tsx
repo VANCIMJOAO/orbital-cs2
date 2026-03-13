@@ -1355,6 +1355,7 @@ function AdminActions({ match, isActive, team1, team2, adminAction, setAdminActi
   const [playerNickname, setPlayerNickname] = useState("");
   const [playerTeam, setPlayerTeam] = useState("team1");
   const [backups, setBackups] = useState<string[]>([]);
+  const [backupsLoading, setBackupsLoading] = useState(false);
 
   const inputClass = "w-full bg-orbital-bg border border-orbital-border px-3 py-1.5 text-[0.65rem] font-[family-name:var(--font-jetbrains)] text-orbital-text focus:border-orbital-purple/60 outline-none";
 
@@ -1416,7 +1417,9 @@ function AdminActions({ match, isActive, team1, team2, adminAction, setAdminActi
     setMenuOpen(false);
     setPanel(panel === p ? "none" : p);
     if (p === "backups" && panel !== "backups") {
-      getMatchBackups(match.id).then(b => setBackups(Array.isArray(b) ? b : [])).catch(() => setBackups([]));
+      setBackupsLoading(true);
+      setBackups([]);
+      getMatchBackups(match.id).then(b => setBackups(Array.isArray(b) ? b : [])).catch(() => setBackups([])).finally(() => setBackupsLoading(false));
     }
   };
 
@@ -1537,7 +1540,12 @@ function AdminActions({ match, isActive, team1, team2, adminAction, setAdminActi
             <span className="font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-[0.15em] text-orbital-purple">BACKUPS</span>
             <button onClick={() => setPanel("none")} className="text-orbital-text-dim hover:text-orbital-text text-xs">✕</button>
           </div>
-          {backups.length === 0 ? (
+          {backupsLoading ? (
+            <div className="flex items-center gap-2">
+              <Loader2 size={14} className="animate-spin text-orbital-purple" />
+              <span className="text-[0.65rem] text-orbital-text-dim font-[family-name:var(--font-jetbrains)]">Buscando backups...</span>
+            </div>
+          ) : backups.length === 0 ? (
             <span className="text-[0.65rem] text-orbital-text-dim font-[family-name:var(--font-jetbrains)]">Nenhum backup encontrado</span>
           ) : (
             <div className="space-y-1 max-h-48 overflow-y-auto">
