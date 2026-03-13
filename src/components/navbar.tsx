@@ -50,7 +50,7 @@ export function Navbar() {
           </Link>
 
           {/* Desktop Nav */}
-          <div className="hidden md:flex items-center gap-1">
+          <div className="hidden lg:flex items-center gap-1">
             {navLinks.map((link) => {
               const isActive = pathname === link.href || (link.href !== "/" && pathname.startsWith(link.href));
               const Icon = link.icon;
@@ -160,7 +160,7 @@ export function Navbar() {
                           <Link
                             href="/admin"
                             onClick={() => setUserMenuOpen(false)}
-                            className="flex items-center gap-3 px-4 py-2.5 text-orbital-text-dim hover:text-orbital-text hover:bg-orbital-purple/5 transition-colors md:hidden"
+                            className="flex items-center gap-3 px-4 py-2.5 text-orbital-text-dim hover:text-orbital-text hover:bg-orbital-purple/5 transition-colors lg:hidden"
                           >
                             <Shield size={14} />
                             <span className="font-[family-name:var(--font-jetbrains)] text-xs">Painel Admin</span>
@@ -192,7 +192,7 @@ export function Navbar() {
 
             {/* Mobile Toggle */}
             <button
-              className="md:hidden text-orbital-text-dim hover:text-orbital-purple transition-colors"
+              className="lg:hidden text-orbital-text-dim hover:text-orbital-purple transition-colors"
               onClick={() => setMobileOpen(!mobileOpen)}
             >
               {mobileOpen ? <X size={20} /> : <Menu size={20} />}
@@ -206,7 +206,7 @@ export function Navbar() {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="md:hidden bg-[#0A0A0A] border-b border-[#1A1A1A] px-4 pb-4"
+          className="lg:hidden bg-[#0A0A0A] border-b border-[#1A1A1A] px-4 pb-4"
         >
           {navLinks.map((link) => {
             const isActive = pathname === link.href;
