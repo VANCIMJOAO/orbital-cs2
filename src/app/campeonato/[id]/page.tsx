@@ -412,27 +412,37 @@ function BracketSection({
   const sortedRounds = Array.from(rounds.entries()).sort((a, b) => a[0] - b[0]);
 
   return (
-    <div className="flex gap-6 overflow-x-auto py-4 px-2">
-      {sortedRounds.map(([round, roundMatches]) => (
-        <div key={round} className="flex flex-col gap-4 min-w-[220px]">
-          <div className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.2em] text-orbital-text-dim text-center mb-2">
-            {roundMatches[0]?.bracket === "winner"
-              ? round === 1 ? "QUARTAS" : round === 2 ? "SEMIFINAL" : "FINAL"
-              : `RODADA ${round}`
-            }
+    <div className="relative">
+      <div className="flex gap-4 sm:gap-6 overflow-x-auto py-4 px-2 pb-6 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-orbital-purple/30">
+        {sortedRounds.map(([round, roundMatches]) => (
+          <div key={round} className="flex flex-col gap-4 min-w-[180px] sm:min-w-[220px]">
+            <div className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.2em] text-orbital-text-dim text-center mb-2">
+              {roundMatches[0]?.bracket === "winner"
+                ? round === 1 ? "QUARTAS" : round === 2 ? "SEMIFINAL" : "FINAL"
+                : `RODADA ${round}`
+              }
+            </div>
+            {roundMatches.map(match => (
+              <MatchNode
+                key={match.id}
+                match={match}
+                tournament={tournament}
+                isAdmin={isAdmin}
+                onSetWinner={onSetWinner}
+                onStartVeto={onStartVeto}
+              />
+            ))}
           </div>
-          {roundMatches.map(match => (
-            <MatchNode
-              key={match.id}
-              match={match}
-              tournament={tournament}
-              isAdmin={isAdmin}
-              onSetWinner={onSetWinner}
-              onStartVeto={onStartVeto}
-            />
-          ))}
-        </div>
-      ))}
+        ))}
+        {/* Spacer to prevent last column from being cut */}
+        <div className="min-w-[1px] shrink-0" />
+      </div>
+      {/* Scroll indicator for mobile */}
+      <div className="sm:hidden flex justify-center gap-1 mt-1">
+        <div className="w-8 h-0.5 bg-orbital-purple/40 rounded-full" />
+        <div className="w-2 h-0.5 bg-orbital-purple/20 rounded-full" />
+        <div className="w-2 h-0.5 bg-orbital-purple/20 rounded-full" />
+      </div>
     </div>
   );
 }

@@ -294,7 +294,7 @@ function TournamentHome({ tournament: t, liveMatches, recentMatches, teamsMap, m
                     <div className="w-14 h-14 mb-3 border border-orbital-border flex items-center justify-center bg-[#0A0A0A]">
                       <TeamLogo logo={logo} size={40} className="w-10 h-10" />
                     </div>
-                    <div className="font-[family-name:var(--font-orbitron)] text-xs tracking-wider text-orbital-text truncate max-w-full">
+                    <div className="font-[family-name:var(--font-orbitron)] text-[0.6rem] sm:text-xs tracking-wide sm:tracking-wider text-orbital-text truncate max-w-full text-center">
                       {team.name}
                     </div>
                     <div className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim mt-1">

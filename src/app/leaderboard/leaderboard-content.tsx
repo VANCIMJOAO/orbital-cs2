@@ -71,7 +71,7 @@ export function LeaderboardContent() {
         animate={{ opacity: 1, y: 0 }}
         className="py-8"
       >
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
           <div className="flex items-center gap-3">
             <Trophy size={20} className="text-orbital-purple" />
             <h1 className="font-[family-name:var(--font-orbitron)] text-xl font-bold tracking-wider text-orbital-text">
@@ -79,15 +79,15 @@ export function LeaderboardContent() {
             </h1>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             {/* Season Filter */}
             {seasons.length > 0 && (
-              <div className="flex items-center gap-2">
-                <Filter size={12} className="text-orbital-text-dim" />
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <Filter size={12} className="text-orbital-text-dim hidden sm:block" />
                 <select
                   value={selectedSeason}
                   onChange={e => handleSeasonChange(e.target.value)}
-                  className="bg-[#0A0A0A] border border-orbital-border text-orbital-text font-[family-name:var(--font-jetbrains)] text-xs px-3 py-1.5 focus:border-orbital-purple/50 focus:outline-none"
+                  className="bg-[#0A0A0A] border border-orbital-border text-orbital-text font-[family-name:var(--font-jetbrains)] text-[0.6rem] sm:text-xs px-2 sm:px-3 py-1.5 focus:border-orbital-purple/50 focus:outline-none max-w-[140px] sm:max-w-none"
                 >
                   <option value="">Todas as seasons</option>
                   {seasons.map(s => (
@@ -100,10 +100,10 @@ export function LeaderboardContent() {
             {sorted.length > 0 && (
               <button
                 onClick={exportCSV}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 transition-all font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-purple"
+                className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 transition-all font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-purple"
               >
                 <Download size={11} />
-                CSV
+                <span className="hidden sm:inline">CSV</span>
               </button>
             )}
           </div>

@@ -66,7 +66,7 @@ export function PartidasContent({ matches, teamsMap, mapScoresMap }: {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="flex items-center gap-2 mb-6 overflow-x-auto pb-2"
+        className="flex items-center gap-2 mb-6 overflow-x-auto pb-3 -mx-1 px-1"
       >
         <Filter size={14} className="text-orbital-text-dim flex-shrink-0" />
         {filters.map((f) => {
