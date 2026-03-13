@@ -313,6 +313,7 @@ export function getSSEUrl(matchId: number): string {
 // Assim, todo o fluxo Steam OAuth passa pelo proxy e o cookie connect.sid
 // é setado no domínio do frontend (localhost ou produção).
 // As chamadas /isloggedin e /logout também usam o proxy.
+// Busca sessão + dados atualizados do DB (sessão pode ter admin flags desatualizados)
 export async function getCurrentUser(): Promise<User | null> {
   try {
     const res = await fetch(`${API_BASE_PROXY}/isloggedin`, {
@@ -322,7 +323,21 @@ export async function getCurrentUser(): Promise<User | null> {
     if (!res.ok) return null;
     const data = await res.json();
     if (data === false || data === null) return null;
-    return data.user || data || null;
+    const sessionUser = data.user || data || null;
+    if (!sessionUser?.steam_id) return sessionUser;
+    // Fetch fresh admin flags from DB (session may be stale in Redis)
+    try {
+      const dbRes = await fetch(`${API_BASE_PROXY}/users/${sessionUser.steam_id}`, { cache: "no-store" });
+      if (dbRes.ok) {
+        const dbData = await dbRes.json();
+        const dbUser = dbData.user || dbData;
+        if (dbUser) {
+          sessionUser.admin = dbUser.admin || 0;
+          sessionUser.super_admin = dbUser.super_admin || 0;
+        }
+      }
+    } catch { /* use session values as fallback */ }
+    return sessionUser;
   } catch {
     return null;
   }
