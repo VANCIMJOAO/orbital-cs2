@@ -1356,6 +1356,7 @@ function AdminActions({ match, isActive, team1, team2, adminAction, setAdminActi
   const [playerTeam, setPlayerTeam] = useState("team1");
   const [backups, setBackups] = useState<string[]>([]);
   const [backupsLoading, setBackupsLoading] = useState(false);
+  const [backupsError, setBackupsError] = useState("");
 
   const inputClass = "w-full bg-orbital-bg border border-orbital-border px-3 py-1.5 text-[0.65rem] font-[family-name:var(--font-jetbrains)] text-orbital-text focus:border-orbital-purple/60 outline-none";
 
@@ -1419,7 +1420,14 @@ function AdminActions({ match, isActive, team1, team2, adminAction, setAdminActi
     if (p === "backups" && panel !== "backups") {
       setBackupsLoading(true);
       setBackups([]);
-      getMatchBackups(match.id).then(b => setBackups(Array.isArray(b) ? b : [])).catch(() => setBackups([])).finally(() => setBackupsLoading(false));
+      setBackupsError("");
+      getMatchBackups(match.id)
+        .then(b => {
+          setBackups(Array.isArray(b) ? b : []);
+          if (!b || b.length === 0) setBackupsError("Servidor não retornou backups. Verifique se a partida está ativa.");
+        })
+        .catch((e) => { setBackups([]); setBackupsError(String(e)); })
+        .finally(() => setBackupsLoading(false));
     }
   };
 
@@ -1546,7 +1554,7 @@ function AdminActions({ match, isActive, team1, team2, adminAction, setAdminActi
               <span className="text-[0.65rem] text-orbital-text-dim font-[family-name:var(--font-jetbrains)]">Buscando backups...</span>
             </div>
           ) : backups.length === 0 ? (
-            <span className="text-[0.65rem] text-orbital-text-dim font-[family-name:var(--font-jetbrains)]">Nenhum backup encontrado</span>
+            <span className="text-[0.65rem] text-orbital-text-dim font-[family-name:var(--font-jetbrains)]">{backupsError || "Nenhum backup encontrado"}</span>
           ) : (
             <div className="space-y-1 max-h-48 overflow-y-auto">
               {backups.map((b, i) => (

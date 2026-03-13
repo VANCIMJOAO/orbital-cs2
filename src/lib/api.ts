@@ -583,29 +583,31 @@ export async function getMatchBackups(matchId: number): Promise<string[]> {
     const res = await fetch(`${API_WRITE_PROXY}/matches/${matchId}/backup`, {
       credentials: "include",
     });
-    if (res.ok) {
-      const data = await res.json();
-      if (typeof data.response === "string") {
-        const rconBackups = data.response.split("\n").map((s: string) => s.trim()).filter(Boolean);
-        results.push(...rconBackups);
-      }
+    const data = await res.json();
+    console.log("[backups] RCON response:", res.status, data);
+    if (res.ok && typeof data.response === "string") {
+      const rconBackups = data.response.split("\n").map((s: string) => s.trim()).filter(Boolean);
+      results.push(...rconBackups);
     }
-  } catch { /* servidor offline, ignora */ }
+  } catch (err) {
+    console.error("[backups] RCON error:", err);
+  }
 
   // 2. Remote (backups salvos no filesystem do G5API)
   try {
     const res = await fetch(`${API_WRITE_PROXY}/matches/${matchId}/backup/remote`, {
       credentials: "include",
     });
-    if (res.ok) {
-      const data = await res.json();
-      if (Array.isArray(data.response)) {
-        for (const f of data.response) {
-          if (!results.includes(f)) results.push(f);
-        }
+    const data = await res.json();
+    console.log("[backups] Remote response:", res.status, data);
+    if (res.ok && Array.isArray(data.response)) {
+      for (const f of data.response) {
+        if (!results.includes(f)) results.push(f);
       }
     }
-  } catch { /* ignora */ }
+  } catch (err) {
+    console.error("[backups] Remote error:", err);
+  }
 
   return results;
 }
