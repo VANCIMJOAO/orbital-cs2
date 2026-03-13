@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Loader2, Check, AlertCircle, ChevronUp, Trophy, Trash2, Eye, ArrowRight, ArrowLeft, Users } from "lucide-react";
+import { Plus, Loader2, Check, AlertCircle, ChevronUp, Trophy, Trash2, Eye, ArrowRight, ArrowLeft, Users, Radio } from "lucide-react";
 import { HudCard } from "@/components/hud-card";
 import Link from "next/link";
 import { useEffect, useState, useCallback } from "react";
@@ -487,6 +487,13 @@ export default function AdminCampeonatos() {
                 </div>
 
                 <div className="flex items-center gap-1 shrink-0 ml-2">
+                  <Link
+                    href={`/admin/campeonato/${t.id}`}
+                    className="p-2 text-orbital-text-dim hover:text-orbital-purple transition-colors"
+                    title="Mission Control"
+                  >
+                    <Radio size={14} />
+                  </Link>
                   <Link
                     href={`/campeonato/${t.id}`}
                     className="p-2 text-orbital-text-dim hover:text-orbital-purple transition-colors"
