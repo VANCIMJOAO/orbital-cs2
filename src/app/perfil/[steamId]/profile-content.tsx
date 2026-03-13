@@ -73,11 +73,16 @@ export function ProfileContent({ steamId }: { steamId: string }) {
       .then(r => r.ok ? r.json() : null)
       .then(d => { if (d?.avatar) setAvatar(d.avatar); })
       .catch(() => {});
-    // Fetch user role (admin/super_admin)
+    // Fetch user role + name (admin/super_admin)
     fetch(`/api/users/${steamId}`)
       .then(r => r.ok ? r.json() : null)
       .then(d => {
-        if (d?.user) setUserRole({ admin: !!d.user.admin, superAdmin: !!d.user.super_admin });
+        if (d?.user) {
+          setUserRole({ admin: !!d.user.admin, superAdmin: !!d.user.super_admin });
+          if (d.user.name) {
+            setStats(prev => prev && prev.name === steamId ? { ...prev, name: d.user.name } : prev);
+          }
+        }
       })
       .catch(() => {});
   }, [steamId]);
@@ -92,7 +97,21 @@ export function ProfileContent({ steamId }: { steamId: string }) {
         const rawStats = data.playerstats || data.playerStats || data;
         const matches: Record<string, unknown>[] = Array.isArray(rawStats) ? rawStats : [rawStats];
 
-        if (matches.length === 0) throw new Error("No stats");
+        if (matches.length === 0) {
+          // No stats yet — show empty profile instead of error
+          setStats({
+            steam_id: steamId,
+            name: steamId,
+            wins: 0, total_maps: 0, total_rounds: 0,
+            kills: 0, deaths: 0, assists: 0,
+            headshot_kills: 0, flash_assists: 0, damage: 0,
+            rating: 0, kdr: 0, hsp: 0, average_rating: 0,
+            kast: 0, contribution_score: 0, mvp: 0,
+            firstkill_t: 0, firstkill_ct: 0, firstdeath_t: 0, firstdeath_ct: 0,
+          });
+          setLoading(false);
+          return;
+        }
 
         // Agregar stats de todas as partidas
         const aggregated: ProfileStats = {
@@ -169,7 +188,17 @@ export function ProfileContent({ steamId }: { steamId: string }) {
 
         setStats(aggregated);
       } catch {
-        setError(true);
+        // No stats — show empty profile
+        setStats({
+          steam_id: steamId,
+          name: steamId,
+          wins: 0, total_maps: 0, total_rounds: 0,
+          kills: 0, deaths: 0, assists: 0,
+          headshot_kills: 0, flash_assists: 0, damage: 0,
+          rating: 0, kdr: 0, hsp: 0, average_rating: 0,
+          kast: 0, contribution_score: 0, mvp: 0,
+          firstkill_t: 0, firstkill_ct: 0, firstdeath_t: 0, firstdeath_ct: 0,
+        });
       }
 
       // Buscar map performance usando os match_ids das playerstats
