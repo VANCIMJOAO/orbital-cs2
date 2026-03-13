@@ -6,6 +6,7 @@ import { Tournament, BracketMatch, getTeamName } from "@/lib/tournament";
 
 // ── Shared Types ──
 export type MapScoresMap = Record<number, { team1_score: number; team2_score: number; map_name: string }[]>;
+export type TeamsMap = Record<number, { name: string; logo: string | null; players?: { name: string; steamId: string; captain: number }[] }>;
 
 interface AdminActions {
   isAdmin: boolean;
@@ -13,21 +14,34 @@ interface AdminActions {
   onStartVeto: (match: BracketMatch) => void;
 }
 
+// ── Team Logo ──
+function TeamLogo({ logo, size = 16 }: { logo: string | null | undefined; size?: number }) {
+  if (!logo) return <Shield size={size * 0.7} className="text-orbital-text-dim/40" />;
+  return <img src={logo} alt="" width={size} height={size} className="object-contain" />;
+}
+
 // ── Team Row ──
-function BracketTeamRow({ name, teamId, isWinner, isLoser, score, isLive }: {
+function BracketTeamRow({ name, teamId, isWinner, isLoser, score, isLive, logo }: {
   name: string;
   teamId: number | null;
   isWinner: boolean;
   isLoser?: boolean;
   score?: number;
   isLive?: boolean;
+  logo?: string | null;
 }) {
   const isTBD = !teamId || name === "TBD" || name === "A definir";
   return (
     <div className={`flex items-center gap-2 px-2.5 py-1.5 transition-colors ${
       isWinner ? "bg-orbital-success/10 border-l-2 border-orbital-success" : isLoser ? "bg-[#0A0A0A] opacity-40" : "bg-[#0A0A0A]"
     }`}>
-      <Shield size={10} className={isWinner ? "text-orbital-success" : isTBD ? "text-orbital-text-dim/30" : "text-orbital-text-dim"} />
+      <div className="w-4 h-4 flex items-center justify-center shrink-0">
+        {isTBD ? (
+          <Shield size={10} className="text-orbital-text-dim/30" />
+        ) : (
+          <TeamLogo logo={logo} size={16} />
+        )}
+      </div>
       <span className={`truncate text-[0.65rem] font-[family-name:var(--font-jetbrains)] ${
         isTBD ? "text-orbital-text-dim/30 italic" : isWinner ? "text-orbital-success font-bold" : isLoser ? "text-orbital-text-dim" : "text-orbital-text"
       }`}>
@@ -57,12 +71,14 @@ export function BracketMatchCard({
   tournament,
   isGrandFinal,
   mapScoresMap,
+  teamsMap,
   admin,
 }: {
   match: BracketMatch;
   tournament: Tournament;
   isGrandFinal?: boolean;
   mapScoresMap?: MapScoresMap;
+  teamsMap?: TeamsMap;
   admin?: AdminActions;
 }) {
   const team1 = getTeamName(tournament, match.team1_id);
@@ -75,6 +91,9 @@ export function BracketMatchCard({
   const scores = match.match_id ? mapScoresMap?.[match.match_id] : undefined;
   const t1Score = scores?.[0]?.team1_score;
   const t2Score = scores?.[0]?.team2_score;
+
+  const team1Logo = match.team1_id ? teamsMap?.[match.team1_id]?.logo : null;
+  const team2Logo = match.team2_id ? teamsMap?.[match.team2_id]?.logo : null;
 
   const content = (
     <div className={`border p-3 transition-all ${hasLink ? "cursor-pointer hover:border-orbital-purple/40" : ""} ${
@@ -114,6 +133,7 @@ export function BracketMatchCard({
         <BracketTeamRow
           name={team1}
           teamId={match.team1_id}
+          logo={team1Logo}
           score={t1Score}
           isWinner={isDone && match.winner_id === match.team1_id}
           isLoser={isDone && match.winner_id !== null && match.winner_id !== match.team1_id}
@@ -122,6 +142,7 @@ export function BracketMatchCard({
         <BracketTeamRow
           name={team2}
           teamId={match.team2_id}
+          logo={team2Logo}
           score={t2Score}
           isWinner={isDone && match.winner_id === match.team2_id}
           isLoser={isDone && match.winner_id !== null && match.winner_id !== match.team2_id}
@@ -188,12 +209,14 @@ export function BracketSection({
   matches,
   tournament,
   mapScoresMap,
+  teamsMap,
   admin,
   isWinnerBracket,
 }: {
   matches: BracketMatch[];
   tournament: Tournament;
   mapScoresMap?: MapScoresMap;
+  teamsMap?: TeamsMap;
   admin?: AdminActions;
   isWinnerBracket?: boolean;
 }) {
@@ -223,6 +246,7 @@ export function BracketSection({
                   match={match}
                   tournament={tournament}
                   mapScoresMap={mapScoresMap}
+                  teamsMap={teamsMap}
                   admin={admin}
                 />
               ))}
@@ -254,10 +278,12 @@ export function BracketSection({
 export function FullBracket({
   tournament,
   mapScoresMap,
+  teamsMap,
   admin,
 }: {
   tournament: Tournament;
   mapScoresMap?: MapScoresMap;
+  teamsMap?: TeamsMap;
   admin?: AdminActions;
 }) {
   const winnerMatches = tournament.matches.filter(m => m.bracket === "winner");
@@ -278,6 +304,7 @@ export function FullBracket({
             matches={winnerMatches}
             tournament={tournament}
             mapScoresMap={mapScoresMap}
+            teamsMap={teamsMap}
             admin={admin}
             isWinnerBracket
           />
@@ -296,6 +323,7 @@ export function FullBracket({
             matches={lowerMatches}
             tournament={tournament}
             mapScoresMap={mapScoresMap}
+            teamsMap={teamsMap}
             admin={admin}
           />
         </div>
@@ -316,6 +344,7 @@ export function FullBracket({
                 tournament={tournament}
                 isGrandFinal
                 mapScoresMap={mapScoresMap}
+                teamsMap={teamsMap}
                 admin={admin}
               />
             </div>

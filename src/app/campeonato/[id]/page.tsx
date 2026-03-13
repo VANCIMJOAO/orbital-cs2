@@ -8,7 +8,8 @@ import Link from "next/link";
 import { HudCard } from "@/components/hud-card";
 import { FullBracket } from "@/components/bracket";
 import { useAuth } from "@/lib/auth-context";
-import { createMatch, getServers, Server } from "@/lib/api";
+import { createMatch, getServers, getTeams, Server } from "@/lib/api";
+import { TeamsMap } from "@/components/bracket";
 import {
   Tournament,
   BracketMatch,
@@ -32,6 +33,7 @@ export default function CampeonatoPage({ params }: { params: Promise<{ id: strin
   const [actionLoading, setActionLoading] = useState(false);
   const [matchError, setMatchError] = useState<string | null>(null);
   const [vetoFirstTeam, setVetoFirstTeam] = useState<"team1" | "team2" | null>(null);
+  const [teamsMap, setTeamsMap] = useState<TeamsMap>({});
 
   const fetchTournament = useCallback(async () => {
     try {
@@ -44,6 +46,22 @@ export default function CampeonatoPage({ params }: { params: Promise<{ id: strin
   }, [id]);
 
   useEffect(() => { fetchTournament(); }, [fetchTournament]);
+
+  // Fetch teams for logos
+  useEffect(() => {
+    getTeams().then(r => {
+      const map: TeamsMap = {};
+      (r.teams || []).forEach((t: { id: number; name: string; logo: string | null; auth_name?: Record<string, string | { name: string; captain?: number }> }) => {
+        const players = t.auth_name ? Object.entries(t.auth_name).map(([steamId, val]) => ({
+          steamId,
+          name: typeof val === "string" ? val : val.name,
+          captain: typeof val === "string" ? 0 : (val.captain || 0),
+        })) : [];
+        map[t.id] = { name: t.name, logo: t.logo, players };
+      });
+      setTeamsMap(map);
+    }).catch(() => {});
+  }, []);
 
   // Auto-advance: poll live G5API matches for completion
   useEffect(() => {
@@ -325,6 +343,7 @@ export default function CampeonatoPage({ params }: { params: Promise<{ id: strin
       <HudCard className="p-5 overflow-hidden">
         <FullBracket
           tournament={tournament}
+          teamsMap={teamsMap}
           admin={adminActions}
         />
       </HudCard>

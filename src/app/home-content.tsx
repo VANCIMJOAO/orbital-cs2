@@ -256,7 +256,7 @@ function TournamentHome({ tournament: t, liveMatches, recentMatches, teamsMap, m
       <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="mb-8">
         <SectionHeader icon={Swords} title="BRACKET" href={`/campeonato/${t.id}`} />
         <HudCard className="p-5 overflow-hidden">
-          <FullBracket tournament={t} mapScoresMap={mapScoresMap} />
+          <FullBracket tournament={t} mapScoresMap={mapScoresMap} teamsMap={teamsMap} />
           <div className="text-center mt-4">
             <Link href={`/campeonato/${t.id}`} className="inline-flex items-center gap-2 px-4 py-2 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 transition-all font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-wider text-orbital-purple">
               VER BRACKET COMPLETO <ChevronRight size={12} />
