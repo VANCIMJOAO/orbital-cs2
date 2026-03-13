@@ -2,10 +2,11 @@
 
 import { useEffect, useState, useCallback, use } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Trophy, Swords, X, Check, ArrowLeft, Loader2, Shield, Play, Trash2 } from "lucide-react";
+import { Trophy, Swords, X, Check, ArrowLeft, Loader2, Play, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { HudCard } from "@/components/hud-card";
+import { FullBracket } from "@/components/bracket";
 import { useAuth } from "@/lib/auth-context";
 import { createMatch, getServers, Server } from "@/lib/api";
 import {
@@ -261,10 +262,8 @@ export default function CampeonatoPage({ params }: { params: Promise<{ id: strin
     );
   }
 
-  const winnerMatches = tournament.matches.filter(m => m.bracket === "winner");
-  const lowerMatches = tournament.matches.filter(m => m.bracket === "lower");
-  const grandFinal = tournament.matches.find(m => m.bracket === "grand_final");
   const nextMatch = getNextPlayableMatch(tournament);
+  const adminActions = isAdmin ? { isAdmin, onSetWinner: handleSetWinner, onStartVeto: openVeto } : undefined;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-20">
@@ -323,45 +322,12 @@ export default function CampeonatoPage({ params }: { params: Promise<{ id: strin
       )}
 
       {/* Bracket Visualization */}
-      <div className="space-y-8">
-        {/* Winner Bracket */}
-        <HudCard label="WINNER BRACKET">
-          <BracketSection
-            matches={winnerMatches}
-            tournament={tournament}
-            isAdmin={isAdmin}
-            onSetWinner={handleSetWinner}
-            onStartVeto={openVeto}
-          />
-        </HudCard>
-
-        {/* Lower Bracket */}
-        <HudCard label="LOWER BRACKET">
-          <BracketSection
-            matches={lowerMatches}
-            tournament={tournament}
-            isAdmin={isAdmin}
-            onSetWinner={handleSetWinner}
-            onStartVeto={openVeto}
-          />
-        </HudCard>
-
-        {/* Grand Final */}
-        {grandFinal && (
-          <HudCard label="GRAND FINAL — BO3" className="border-amber-500/20 shadow-[0_0_25px_rgba(245,158,11,0.06)]">
-            <div className="flex justify-center py-4">
-              <MatchNode
-                match={grandFinal}
-                tournament={tournament}
-                isAdmin={isAdmin}
-                onSetWinner={handleSetWinner}
-                onStartVeto={openVeto}
-                isGrandFinal
-              />
-            </div>
-          </HudCard>
-        )}
-      </div>
+      <HudCard className="p-5 overflow-hidden">
+        <FullBracket
+          tournament={tournament}
+          admin={adminActions}
+        />
+      </HudCard>
 
       {/* Veto Modal */}
       <AnimatePresence>
@@ -383,195 +349,6 @@ export default function CampeonatoPage({ params }: { params: Promise<{ id: strin
           />
         )}
       </AnimatePresence>
-    </div>
-  );
-}
-
-// Bracket Section Component
-function BracketSection({
-  matches,
-  tournament,
-  isAdmin,
-  onSetWinner,
-  onStartVeto,
-}: {
-  matches: BracketMatch[];
-  tournament: Tournament;
-  isAdmin: boolean;
-  onSetWinner: (matchId: string, winnerId: number) => void;
-  onStartVeto: (match: BracketMatch) => void;
-}) {
-  // Group by round
-  const rounds = new Map<number, BracketMatch[]>();
-  matches.forEach(m => {
-    const list = rounds.get(m.round) || [];
-    list.push(m);
-    rounds.set(m.round, list);
-  });
-
-  const sortedRounds = Array.from(rounds.entries()).sort((a, b) => a[0] - b[0]);
-
-  return (
-    <div className="relative">
-      <div className="flex gap-4 sm:gap-6 overflow-x-auto py-4 px-2 pb-6 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-orbital-purple/30">
-        {sortedRounds.map(([round, roundMatches]) => (
-          <div key={round} className="flex flex-col gap-4 min-w-[180px] sm:min-w-[220px]">
-            <div className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.2em] text-orbital-text-dim text-center mb-2">
-              {roundMatches[0]?.bracket === "winner"
-                ? round === 1 ? "QUARTAS" : round === 2 ? "SEMIFINAL" : "FINAL"
-                : `RODADA ${round}`
-              }
-            </div>
-            {roundMatches.map(match => (
-              <MatchNode
-                key={match.id}
-                match={match}
-                tournament={tournament}
-                isAdmin={isAdmin}
-                onSetWinner={onSetWinner}
-                onStartVeto={onStartVeto}
-              />
-            ))}
-          </div>
-        ))}
-        {/* Spacer to prevent last column from being cut */}
-        <div className="min-w-[1px] shrink-0" />
-      </div>
-      {/* Scroll indicator for mobile */}
-      <div className="sm:hidden flex justify-center gap-1 mt-1">
-        <div className="w-8 h-0.5 bg-orbital-purple/40 rounded-full" />
-        <div className="w-2 h-0.5 bg-orbital-purple/20 rounded-full" />
-        <div className="w-2 h-0.5 bg-orbital-purple/20 rounded-full" />
-      </div>
-    </div>
-  );
-}
-
-// Match Node Component
-function MatchNode({
-  match,
-  tournament,
-  isAdmin,
-  onSetWinner,
-  onStartVeto,
-  isGrandFinal = false,
-}: {
-  match: BracketMatch;
-  tournament: Tournament;
-  isAdmin: boolean;
-  onSetWinner: (matchId: string, winnerId: number) => void;
-  onStartVeto: (match: BracketMatch) => void;
-  isGrandFinal?: boolean;
-}) {
-  const team1Name = getTeamName(tournament, match.team1_id);
-  const team2Name = getTeamName(tournament, match.team2_id);
-  const isReady = match.team1_id && match.team2_id && match.status === "pending";
-  const isLive = match.status === "live";
-  const isFinished = match.status === "finished";
-
-  return (
-    <div className={`border p-3 transition-all ${
-      isGrandFinal
-        ? "bg-amber-500/5 border-amber-500/30 shadow-[0_0_20px_rgba(245,158,11,0.08)] min-w-[280px]"
-        : isLive
-          ? "bg-orbital-card border-orbital-live/40"
-          : isFinished
-            ? "bg-orbital-card border-orbital-success/20"
-            : "bg-orbital-card border-orbital-border"
-    }`}>
-      {/* Label */}
-      <div className="flex items-center justify-between mb-2">
-        <span className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.15em] text-orbital-text-dim">
-          {match.label}
-        </span>
-        {isLive && (
-          <span className="flex items-center gap-1 font-[family-name:var(--font-orbitron)] text-[0.45rem] text-orbital-live animate-pulse">
-            <span className="w-1.5 h-1.5 rounded-full bg-orbital-live shadow-[0_0_6px_rgba(239,68,68,0.6)]" />
-            LIVE
-          </span>
-        )}
-        {match.map && (
-          <span className="font-[family-name:var(--font-jetbrains)] text-[0.55rem] text-orbital-purple">
-            {match.map.replace("de_", "").toUpperCase()}
-          </span>
-        )}
-        {match.maps && (
-          <span className="font-[family-name:var(--font-jetbrains)] text-[0.5rem] text-orbital-purple">
-            {match.maps.map(m => m.replace("de_", "").toUpperCase()).join(" / ")}
-          </span>
-        )}
-      </div>
-
-      {/* Teams */}
-      <div className="space-y-1">
-        <TeamRow
-          name={team1Name}
-          teamId={match.team1_id}
-          isWinner={match.winner_id === match.team1_id && match.winner_id !== null}
-          isLoser={match.winner_id !== null && match.winner_id !== match.team1_id}
-        />
-        <TeamRow
-          name={team2Name}
-          teamId={match.team2_id}
-          isWinner={match.winner_id === match.team2_id && match.winner_id !== null}
-          isLoser={match.winner_id !== null && match.winner_id !== match.team2_id}
-        />
-      </div>
-
-      {/* Admin actions */}
-      {isAdmin && (
-        <div className="mt-2 flex gap-1">
-          {isReady && match.status === "pending" && (
-            <button
-              onClick={() => onStartVeto(match)}
-              className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 transition-all font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-wider text-orbital-purple"
-            >
-              <Swords size={10} /> VETO
-            </button>
-          )}
-          {isLive && match.team1_id && match.team2_id && (
-            <>
-              <button
-                onClick={() => onSetWinner(match.id, match.team1_id!)}
-                className="flex-1 px-2 py-1.5 border border-orbital-border hover:border-orbital-success/50 hover:bg-orbital-success/10 transition-all font-[family-name:var(--font-jetbrains)] text-[0.5rem] text-orbital-text-dim hover:text-orbital-success truncate"
-              >
-                {team1Name} W
-              </button>
-              <button
-                onClick={() => onSetWinner(match.id, match.team2_id!)}
-                className="flex-1 px-2 py-1.5 border border-orbital-border hover:border-orbital-success/50 hover:bg-orbital-success/10 transition-all font-[family-name:var(--font-jetbrains)] text-[0.5rem] text-orbital-text-dim hover:text-orbital-success truncate"
-              >
-                {team2Name} W
-              </button>
-            </>
-          )}
-          {match.match_id && (
-            <Link
-              href={`/partidas/${match.match_id}`}
-              className="px-2 py-1.5 border border-orbital-border hover:border-orbital-purple/30 transition-all font-[family-name:var(--font-jetbrains)] text-[0.5rem] text-orbital-text-dim hover:text-orbital-purple"
-            >
-              #{match.match_id}
-            </Link>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function TeamRow({ name, teamId, isWinner, isLoser }: { name: string; teamId: number | null; isWinner: boolean; isLoser: boolean }) {
-  const isTBD = !teamId || name === "TBD" || name === "A definir";
-  return (
-    <div className={`flex items-center gap-2 px-2 py-1.5 transition-colors ${
-      isWinner ? "bg-orbital-success/10 border-l-2 border-orbital-success" : isLoser ? "bg-[#0A0A0A] opacity-40" : "bg-[#0A0A0A]"
-    }`}>
-      <Shield size={10} className={isWinner ? "text-orbital-success" : isTBD ? "text-orbital-text-dim/30" : "text-orbital-text-dim"} />
-      <span className={`font-[family-name:var(--font-jetbrains)] text-[0.65rem] ${
-        isTBD ? "text-orbital-text-dim/30 italic" : isWinner ? "text-orbital-success font-bold" : "text-orbital-text"
-      }`}>
-        {name}
-      </span>
-      {isWinner && <Check size={10} className="text-orbital-success ml-auto" />}
     </div>
   );
 }

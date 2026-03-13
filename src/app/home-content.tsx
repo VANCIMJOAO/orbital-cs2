@@ -1,10 +1,11 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Trophy, Crosshair, Swords, Users, Activity, ChevronRight, MapPin, Calendar, DollarSign, Shield, Check } from "lucide-react";
+import { Trophy, Crosshair, Swords, Users, Activity, ChevronRight, MapPin, Calendar, DollarSign, Shield } from "lucide-react";
 import Link from "next/link";
 import { HudCard, StatBox } from "@/components/hud-card";
 import { MatchCard } from "@/components/match-card";
+import { FullBracket, MapScoresMap } from "@/components/bracket";
 import { Match } from "@/lib/api";
 import { Tournament, getTeamName } from "@/lib/tournament";
 
@@ -25,8 +26,6 @@ function TeamLogo({ logo, size = 32, className = "" }: { logo: string | null | u
   if (!logo) return <Shield size={size * 0.6} className="text-orbital-text-dim" />;
   return <img src={logo} alt="" width={size} height={size} className={`object-contain ${className}`} />;
 }
-
-export type MapScoresMap = Record<number, { team1_score: number; team2_score: number; map_name: string }[]>;
 
 interface HomeContentProps {
   tournament: Tournament | null;
@@ -257,7 +256,7 @@ function TournamentHome({ tournament: t, liveMatches, recentMatches, teamsMap, m
       <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="mb-8">
         <SectionHeader icon={Swords} title="BRACKET" href={`/campeonato/${t.id}`} />
         <HudCard className="p-5 overflow-hidden">
-          <BracketPreview tournament={t} mapScoresMap={mapScoresMap} />
+          <FullBracket tournament={t} mapScoresMap={mapScoresMap} />
           <div className="text-center mt-4">
             <Link href={`/campeonato/${t.id}`} className="inline-flex items-center gap-2 px-4 py-2 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 transition-all font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-wider text-orbital-purple">
               VER BRACKET COMPLETO <ChevronRight size={12} />
@@ -417,250 +416,6 @@ function TournamentHome({ tournament: t, liveMatches, recentMatches, teamsMap, m
           <QuickLink href="/leaderboard" icon={Activity} label="RANKING" desc="Classificação dos jogadores" delay={0.3} />
         </div>
       </section>
-    </div>
-  );
-}
-
-// ── Bracket Preview (styled like campeonato page) ──
-function BracketPreview({ tournament: t, mapScoresMap }: { tournament: Tournament; mapScoresMap?: MapScoresMap }) {
-  const winnerQFs = t.matches.filter(m => m.bracket === "winner" && m.round === 1);
-  const winnerSFs = t.matches.filter(m => m.bracket === "winner" && m.round === 2);
-  const wf = t.matches.find(m => m.id === "WF");
-  const gf = t.matches.find(m => m.id === "GF");
-
-  const lowerMatches = t.matches.filter(m => m.bracket === "lower");
-  const grandFinal = t.matches.find(m => m.bracket === "grand_final");
-
-  const isTBD = (name: string, id: number | null) => !id || name === "TBD" || name === "A definir";
-
-  const BracketTeamRow = ({ name, teamId, isWinner, isLoser, score, isLive }: {
-    name: string; teamId: number | null; isWinner: boolean; isLoser?: boolean; score?: number; isLive?: boolean;
-  }) => {
-    const tbd = isTBD(name, teamId);
-    return (
-      <div className={`flex items-center gap-2 px-2.5 py-1.5 transition-colors ${
-        isWinner ? "bg-orbital-success/10 border-l-2 border-orbital-success" : isLoser ? "bg-[#0A0A0A] opacity-40" : "bg-[#0A0A0A]"
-      }`}>
-        <Shield size={10} className={isWinner ? "text-orbital-success" : tbd ? "text-orbital-text-dim/30" : "text-orbital-text-dim"} />
-        <span className={`truncate text-[0.65rem] font-[family-name:var(--font-jetbrains)] ${
-          tbd ? "text-orbital-text-dim/30 italic" : isWinner ? "text-orbital-success font-bold" : isLoser ? "text-orbital-text-dim" : "text-orbital-text"
-        }`}>
-          {name}
-        </span>
-        <div className="flex items-center gap-1.5 ml-auto">
-          {isLive && (
-            <span className="flex items-center gap-1 text-orbital-live text-[0.4rem] font-[family-name:var(--font-orbitron)]">
-              <span className="w-1.5 h-1.5 rounded-full bg-orbital-live animate-pulse shadow-[0_0_6px_rgba(239,68,68,0.6)]" />
-              LIVE
-            </span>
-          )}
-          {isWinner && <Check size={10} className="text-orbital-success" />}
-          {score !== undefined && (
-            <span className={`font-[family-name:var(--font-jetbrains)] text-[0.6rem] font-bold ${
-              isWinner ? "text-orbital-success" : "text-orbital-text-dim"
-            }`}>{score}</span>
-          )}
-        </div>
-      </div>
-    );
-  };
-
-  const MatchSlot = ({ match, isGrandFinal }: { match: typeof t.matches[0] | undefined; isGrandFinal?: boolean }) => {
-    if (!match) return null;
-    const team1 = getTeamName(t, match.team1_id);
-    const team2 = getTeamName(t, match.team2_id);
-    const isLive = match.status === "live";
-    const isDone = match.status === "finished";
-    const hasLink = match.match_id != null;
-
-    const scores = match.match_id ? mapScoresMap?.[match.match_id] : undefined;
-    const t1Score = scores?.[0]?.team1_score;
-    const t2Score = scores?.[0]?.team2_score;
-
-    const content = (
-      <div className={`border p-3 transition-all ${hasLink ? "cursor-pointer hover:border-orbital-purple/40" : ""} ${
-        isGrandFinal
-          ? "bg-amber-500/5 border-amber-500/30 shadow-[0_0_20px_rgba(245,158,11,0.08)]"
-          : isLive
-            ? "bg-orbital-card border-orbital-live/40"
-            : isDone
-              ? "bg-orbital-card border-orbital-success/20"
-              : "bg-orbital-card border-orbital-border"
-      }`}>
-        {/* Label row */}
-        <div className="flex items-center justify-between mb-2">
-          <span className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.15em] text-orbital-text-dim">
-            {match.label}
-          </span>
-          {isLive && (
-            <span className="flex items-center gap-1 font-[family-name:var(--font-orbitron)] text-[0.45rem] text-orbital-live animate-pulse">
-              <span className="w-1.5 h-1.5 rounded-full bg-orbital-live shadow-[0_0_6px_rgba(239,68,68,0.6)]" />
-              LIVE
-            </span>
-          )}
-          {match.map && (
-            <span className="font-[family-name:var(--font-jetbrains)] text-[0.55rem] text-orbital-purple">
-              {match.map.replace("de_", "").toUpperCase()}
-            </span>
-          )}
-          {match.maps && (
-            <span className="font-[family-name:var(--font-jetbrains)] text-[0.5rem] text-orbital-purple">
-              {match.maps.map(m => m.replace("de_", "").toUpperCase()).join(" / ")}
-            </span>
-          )}
-        </div>
-
-        {/* Teams */}
-        <div className="space-y-1">
-          <BracketTeamRow
-            name={team1}
-            teamId={match.team1_id}
-            score={t1Score}
-            isWinner={isDone && match.winner_id === match.team1_id}
-            isLoser={isDone && match.winner_id !== null && match.winner_id !== match.team1_id}
-            isLive={isLive}
-          />
-          <BracketTeamRow
-            name={team2}
-            teamId={match.team2_id}
-            score={t2Score}
-            isWinner={isDone && match.winner_id === match.team2_id}
-            isLoser={isDone && match.winner_id !== null && match.winner_id !== match.team2_id}
-          />
-        </div>
-
-        {/* Match link indicator */}
-        {hasLink && (
-          <div className="mt-2 text-center">
-            <span className="font-[family-name:var(--font-jetbrains)] text-[0.5rem] text-orbital-purple/60">
-              #{match.match_id}
-            </span>
-          </div>
-        )}
-      </div>
-    );
-
-    if (hasLink) {
-      return <Link href={`/partidas/${match.match_id}`} className="block">{content}</Link>;
-    }
-    return content;
-  };
-
-  // Group lower bracket by rounds
-  const lowerRounds = new Map<number, typeof t.matches>();
-  lowerMatches.forEach(m => {
-    const list = lowerRounds.get(m.round) || [];
-    list.push(m);
-    lowerRounds.set(m.round, list);
-  });
-  const sortedLowerRounds = Array.from(lowerRounds.entries()).sort((a, b) => a[0] - b[0]);
-
-  return (
-    <div className="space-y-6">
-      {/* Winner Bracket */}
-      <div>
-        <div className="flex items-center gap-2 mb-3">
-          <div className="h-[1px] w-4 bg-orbital-purple/40" />
-          <span className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.2em] text-orbital-purple">WINNER BRACKET</span>
-          <div className="h-[1px] flex-1 bg-orbital-purple/20" />
-        </div>
-        <div className="overflow-x-auto">
-          <div className="min-w-[700px]">
-            {/* Round labels */}
-            <div className="grid grid-cols-[1fr_24px_1fr_24px_1fr] items-center mb-3">
-              <div className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.2em] text-orbital-text-dim text-center">QUARTAS</div>
-              <div />
-              <div className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.2em] text-orbital-text-dim text-center">SEMIFINAL</div>
-              <div />
-              <div className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.2em] text-orbital-text-dim text-center">FINAL</div>
-            </div>
-
-            {/* Bracket grid with connectors */}
-            <div className="grid grid-cols-[1fr_24px_1fr_24px_1fr] items-center">
-              {/* QFs */}
-              <div className="space-y-3">
-                {winnerQFs.map(m => <MatchSlot key={m.id} match={m} />)}
-              </div>
-
-              {/* QF → SF connectors */}
-              <div className="flex flex-col justify-around h-full">
-                {[0, 1].map(i => (
-                  <svg key={i} width="24" height="48" viewBox="0 0 24 48" className="text-orbital-purple/25">
-                    <path d="M0,12 L12,12 L12,24 L24,24 M0,36 L12,36 L12,24" fill="none" stroke="currentColor" strokeWidth="1" />
-                  </svg>
-                ))}
-              </div>
-
-              {/* SFs */}
-              <div className="space-y-8 flex flex-col justify-center">
-                {winnerSFs.map(m => <MatchSlot key={m.id} match={m} />)}
-              </div>
-
-              {/* SF → Final connector */}
-              <div className="flex items-center justify-center h-full">
-                <svg width="24" height="80" viewBox="0 0 24 80" className="text-orbital-purple/25">
-                  <path d="M0,20 L12,20 L12,40 L24,40 M0,60 L12,60 L12,40" fill="none" stroke="currentColor" strokeWidth="1" />
-                </svg>
-              </div>
-
-              {/* Final */}
-              <div className="flex items-center justify-center">
-                <div className="w-full"><MatchSlot match={wf} /></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Lower Bracket */}
-      {lowerMatches.length > 0 && (
-        <div>
-          <div className="flex items-center gap-2 mb-3">
-            <div className="h-[1px] w-4 bg-orbital-danger/40" />
-            <span className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.2em] text-orbital-danger/80">LOWER BRACKET</span>
-            <div className="h-[1px] flex-1 bg-orbital-danger/15" />
-          </div>
-          <div className="overflow-x-auto">
-            <div className="flex items-center py-2 px-1 min-w-[700px]">
-              {sortedLowerRounds.map(([round, roundMatches], idx) => (
-                <div key={round} className="flex items-center">
-                  <div className="flex flex-col gap-3 min-w-[155px] sm:min-w-[175px]">
-                    <div className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.2em] text-orbital-text-dim text-center mb-1">
-                      RODADA {round}
-                    </div>
-                    {roundMatches.map(m => <MatchSlot key={m.id} match={m} />)}
-                  </div>
-                  {/* Connector arrow between rounds */}
-                  {idx < sortedLowerRounds.length - 1 && (
-                    <div className="flex items-center justify-center px-1">
-                      <svg width="24" height="24" viewBox="0 0 24 24" className="text-orbital-danger/25">
-                        <line x1="0" y1="12" x2="24" y2="12" stroke="currentColor" strokeWidth="1" />
-                        <path d="M18,8 L24,12 L18,16" fill="none" stroke="currentColor" strokeWidth="1" />
-                      </svg>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Grand Final */}
-      {grandFinal && (
-        <div>
-          <div className="flex items-center gap-2 mb-3">
-            <Trophy size={12} className="text-amber-500" />
-            <span className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.2em] text-amber-500">GRAND FINAL — BO3</span>
-            <div className="h-[1px] flex-1 bg-amber-500/30" />
-          </div>
-          <div className="flex justify-center">
-            <div className="w-full max-w-[300px]">
-              <MatchSlot match={grandFinal} isGrandFinal />
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
