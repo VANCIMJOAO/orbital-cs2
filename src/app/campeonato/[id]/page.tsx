@@ -204,6 +204,7 @@ export default function CampeonatoPage({ params }: { params: Promise<{ id: strin
         title: `${tournament.name} — ${vetoMatch.label}`,
         maplist,
         veto_mappool: maplist.join(" "),
+        spectator_auths: { "0": "76561198806637089;Orbital Open Cup" },
       });
 
       const updatedMatch = { ...vetoMatch, match_id: result.match.id, status: "live" as const };

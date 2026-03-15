@@ -497,6 +497,7 @@ export async function createMatch(match: {
   is_pug?: boolean;
   maplist?: string[];
   veto_mappool?: string;
+  spectator_auths?: { [key: string]: string };
 }): Promise<{ match: { id: number } }> {
   // G5API expects veto_mappool as space-separated string, not maplist array
   // Fallback: full CS2 active duty pool (for in-game veto when no maps pre-selected)

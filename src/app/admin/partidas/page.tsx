@@ -122,6 +122,7 @@ export default function AdminPartidas() {
         title: title || undefined,
         maplist,
         veto_mappool: maplist ? maplist.join(" ") : CS2_MAPS.join(" "),
+        spectator_auths: { "0": "76561198806637089;Orbital Open Cup" },
       });
       setFeedback({ type: "success", msg: `Partida #${result.match.id} criada com sucesso!` });
       setTeam1Id(""); setTeam2Id(""); setServerId(""); setTitle(""); setSelectedMaps([]);
