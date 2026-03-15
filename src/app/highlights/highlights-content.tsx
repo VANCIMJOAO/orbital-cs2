@@ -26,8 +26,6 @@ interface HighlightClip {
   team2_string: string;
 }
 
-const G5API_URL = "https://g5api-production-998f.up.railway.app";
-
 export function HighlightsContent() {
   const [clips, setClips] = useState<HighlightClip[]>([]);
   const [loading, setLoading] = useState(true);
@@ -103,7 +101,7 @@ export function HighlightsContent() {
             >
               {/* Video with auto-generated thumbnail (ignore server thumb — it's the same generic intro for all clips) */}
               <VideoPlayer
-                src={`${G5API_URL}/highlights-files/${clip.video_file}`}
+                src={`/api/highlights-proxy/${clip.video_file}`}
                 clipId={clip.id}
               />
 

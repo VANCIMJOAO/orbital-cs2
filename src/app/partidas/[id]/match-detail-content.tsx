@@ -168,7 +168,7 @@ export function MatchDetailContent({ match: initialMatch, playerStats: initialSt
   const fetchHighlightClips = useCallback(async () => {
     try {
       setHighlightsLoading(true);
-      const res = await fetch(`/api/highlights/clips?matchId=${match.id}`);
+      const res = await fetch(`/api/highlights/${match.id}`);
       const data = await res.json();
       if (data.clips) setHighlightClips(data.clips);
     } catch { /* ignore */ }
