@@ -499,10 +499,12 @@ export async function createMatch(match: {
   veto_mappool?: string;
 }): Promise<{ match: { id: number } }> {
   // G5API expects veto_mappool as space-separated string, not maplist array
+  // Fallback: full CS2 active duty pool (for in-game veto when no maps pre-selected)
+  const CS2_FULL_POOL = "de_ancient de_anubis de_dust2 de_inferno de_mirage de_nuke de_vertigo";
   const { maplist, ...rest } = match;
   const payload = {
     ...rest,
-    veto_mappool: maplist ? maplist.join(" ") : rest.veto_mappool,
+    veto_mappool: maplist ? maplist.join(" ") : (rest.veto_mappool || CS2_FULL_POOL),
   };
   const res = await fetch(`${API_WRITE_PROXY}/matches`, {
     method: "POST",

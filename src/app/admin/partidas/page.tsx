@@ -28,7 +28,7 @@ export default function AdminPartidas() {
   const [numMaps, setNumMaps] = useState("1");
   const [skipVeto, setSkipVeto] = useState(false);
   const [vetoFirst, setVetoFirst] = useState("team1");
-  const [sideType, setSideType] = useState("standard");
+  const [sideType, setSideType] = useState("always_knife");
   const [playersPerTeam, setPlayersPerTeam] = useState("5");
   const [minReady, setMinReady] = useState("5");
   const [seasonId, setSeasonId] = useState("");
@@ -103,6 +103,10 @@ export default function AdminPartidas() {
 
     setSubmitting(true);
     try {
+      const maplist = selectedMaps.length > 0
+        ? selectedMaps
+        : (skipVeto ? CS2_MAPS.slice(0, parseInt(numMaps)) : undefined);
+
       const result = await createMatch({
         team1_id: parseInt(team1Id),
         team2_id: parseInt(team2Id),
@@ -116,7 +120,8 @@ export default function AdminPartidas() {
         min_player_ready: parseInt(minReady),
         season_id: seasonId ? parseInt(seasonId) : undefined,
         title: title || undefined,
-        maplist: selectedMaps.length > 0 ? selectedMaps : (skipVeto ? CS2_MAPS.slice(0, parseInt(numMaps)) : undefined),
+        maplist,
+        veto_mappool: maplist ? maplist.join(" ") : CS2_MAPS.join(" "),
       });
       setFeedback({ type: "success", msg: `Partida #${result.match.id} criada com sucesso!` });
       setTeam1Id(""); setTeam2Id(""); setServerId(""); setTitle(""); setSelectedMaps([]);
