@@ -197,24 +197,24 @@ function TournamentHome({ tournament: t, liveMatches, recentMatches, teamsMap, m
 
           {/* MVP banner */}
           {tournamentMvp && (
-            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.4 }} className="mt-4 relative bg-gradient-to-r from-orbital-purple/[0.03] via-orbital-purple/[0.08] to-orbital-purple/[0.03] border border-orbital-purple/20 overflow-hidden">
+            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.4 }} className="mt-4 relative bg-gradient-to-r from-red-500/[0.03] via-red-400/[0.08] to-red-500/[0.03] border border-red-500/20 overflow-hidden">
               <div className="relative py-4 px-6 flex flex-col items-center gap-2">
                 <div className="flex items-center gap-2">
-                  <div className="h-[1px] w-6 bg-gradient-to-r from-transparent to-orbital-purple/50" />
-                  <Star size={14} className="text-orbital-purple fill-orbital-purple" />
-                  <span className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.25em] text-orbital-purple/80">
+                  <div className="h-[1px] w-6 bg-gradient-to-r from-transparent to-red-400/50" />
+                  <Star size={14} className="text-red-400 fill-red-400" />
+                  <span className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.25em] text-red-400/80">
                     MVP DO CAMPEONATO
                   </span>
-                  <Star size={14} className="text-orbital-purple fill-orbital-purple" />
-                  <div className="h-[1px] w-6 bg-gradient-to-l from-transparent to-orbital-purple/50" />
+                  <Star size={14} className="text-red-400 fill-red-400" />
+                  <div className="h-[1px] w-6 bg-gradient-to-l from-transparent to-red-400/50" />
                 </div>
                 <Link href={`/perfil/${tournamentMvp.steamId}`} className="group flex items-center gap-4">
                   <div>
-                    <h3 className="font-[family-name:var(--font-orbitron)] text-base sm:text-lg font-bold tracking-wider text-orbital-purple group-hover:text-orbital-text transition-colors" style={{ textShadow: "0 0 15px rgba(168,85,247,0.3)" }}>
+                    <h3 className="font-[family-name:var(--font-orbitron)] text-base sm:text-lg font-bold tracking-wider text-red-400 group-hover:text-orbital-text transition-colors" style={{ textShadow: "0 0 15px rgba(248,113,113,0.3)" }}>
                       {tournamentMvp.name}
                     </h3>
                     <div className="flex items-center gap-3 font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim mt-0.5">
-                      <span>Rating <span className="text-orbital-purple font-bold">{(tournamentMvp.average_rating || 0).toFixed(2)}</span></span>
+                      <span>Rating <span className="text-red-400 font-bold">{(tournamentMvp.average_rating || 0).toFixed(2)}</span></span>
                       <span>{tournamentMvp.kills}K / {tournamentMvp.deaths}D</span>
                       <span>HS {Math.round(tournamentMvp.hsp || 0)}%</span>
                     </div>
