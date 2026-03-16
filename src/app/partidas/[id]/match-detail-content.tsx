@@ -817,12 +817,11 @@ export function MatchDetailContent({ match: initialMatch, playerStats: initialSt
           ? vetoes.map(v => ({ team_name: v.team_name, action: v.pick_or_ban as "ban" | "pick", map: v.map, id: v.id }))
           : (bracketMatch?.veto_actions || []).map((v, i) => ({ team_name: v.team_name, action: v.action, map: v.map, id: i }));
 
-        // Find leftover maps: maps not in the veto list but played (from mapStats)
+        // Find leftover maps: maps in pool not mentioned in veto list
         // BO1: 6 bans → 1 leftover; BO3: 4 bans + 2 picks → 1 leftover (decider)
         const vetoMaps = new Set(vetoList.map(v => v.map));
-        const leftoverMaps = mapStats
-          .filter(ms => !vetoMaps.has(ms.map_name))
-          .map(ms => ms.map_name);
+        const CS2_MAP_POOL = ["de_ancient", "de_anubis", "de_dust2", "de_inferno", "de_mirage", "de_nuke", "de_overpass"];
+        const leftoverMaps = CS2_MAP_POOL.filter(m => !vetoMaps.has(m));
         // Fallback for BO1 with bracketMatch.map
         const leftoverMap = leftoverMaps.length === 0 && bracketMatch?.map && !vetoMaps.has(bracketMatch.map)
           ? bracketMatch.map
@@ -842,33 +841,49 @@ export function MatchDetailContent({ match: initialMatch, playerStats: initialSt
                 </div>
                 <div className="bg-orbital-card border border-orbital-border p-4 h-[calc(100%-2rem)]">
                   <div className="space-y-1.5">
-                    {vetoList.map((v, i) => (
-                      <div key={v.id} className="flex items-center gap-3 py-1.5">
-                        <span className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim w-4 text-right">{i + 1}.</span>
-                        <span className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text min-w-[80px]">{v.team_name}</span>
-                        <span className={`font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.1em] px-2 py-0.5 border ${
-                          v.action === "ban"
-                            ? "text-orbital-danger bg-orbital-danger/5 border-orbital-danger/20"
-                            : "text-orbital-success bg-orbital-success/5 border-orbital-success/20"
-                        }`}>
-                          {v.action === "ban" ? "REMOVEU" : "ESCOLHEU"}
-                        </span>
-                        <span className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-text font-bold">
-                          {v.map.replace("de_", "").toUpperCase()}
-                        </span>
-                      </div>
-                    ))}
-                    {leftoverMaps.map((mapName, i) => (
-                      <div key={mapName} className="flex items-center gap-3 py-2 px-2 -mx-2 bg-orbital-success/5 border border-orbital-success/20 mt-1">
-                        <span className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim w-4 text-right">{vetoList.length + i + 1}.</span>
-                        <span className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-success font-bold">
-                          {mapName.replace("de_", "").toUpperCase()}
-                        </span>
-                        <span className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.1em] px-2 py-0.5 text-orbital-success bg-orbital-success/10 border border-orbital-success/20">
-                          {leftoverMaps.length === 1 ? "JOGADO" : "DECIDER"}
-                        </span>
-                      </div>
-                    ))}
+                    {vetoList.map((v, i) => {
+                      const isCurrentMap = currentMap?.map_name === v.map && !isFinished;
+                      return (
+                        <div key={v.id} className={`flex items-center gap-3 py-1.5 ${isCurrentMap ? "py-2 px-2 -mx-2 bg-orbital-success/5 border border-orbital-success/20" : ""}`}>
+                          <span className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim w-4 text-right">{i + 1}.</span>
+                          <span className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text min-w-[80px]">{v.team_name}</span>
+                          <span className={`font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.1em] px-2 py-0.5 border ${
+                            v.action === "ban"
+                              ? "text-orbital-danger bg-orbital-danger/5 border-orbital-danger/20"
+                              : "text-orbital-success bg-orbital-success/5 border-orbital-success/20"
+                          }`}>
+                            {v.action === "ban" ? "REMOVEU" : "ESCOLHEU"}
+                          </span>
+                          <span className={`font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider font-bold ${isCurrentMap ? "text-orbital-success" : "text-orbital-text"}`}>
+                            {v.map.replace("de_", "").toUpperCase()}
+                          </span>
+                          {isCurrentMap && (
+                            <span className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.1em] px-2 py-0.5 text-orbital-success bg-orbital-success/10 border border-orbital-success/20 ml-auto">
+                              AO VIVO
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })}
+                    {leftoverMaps.map((mapName, i) => {
+                      const isCurrentMap = currentMap?.map_name === mapName && !isFinished;
+                      return (
+                        <div key={mapName} className={`flex items-center gap-3 py-2 px-2 -mx-2 mt-1 ${isCurrentMap ? "bg-orbital-success/5 border border-orbital-success/20" : "border border-orbital-border"}`}>
+                          <span className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim w-4 text-right">{vetoList.length + i + 1}.</span>
+                          <span className={`font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider font-bold ${isCurrentMap ? "text-orbital-success" : "text-orbital-text-dim"}`}>
+                            {mapName.replace("de_", "").toUpperCase()}
+                          </span>
+                          <span className={`font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.1em] px-2 py-0.5 ${isCurrentMap ? "text-orbital-success bg-orbital-success/10 border border-orbital-success/20" : "text-orbital-text-dim bg-orbital-card border border-orbital-border"}`}>
+                            {isBO1 ? "JOGADO" : "DECIDER"}
+                          </span>
+                          {isCurrentMap && (
+                            <span className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.1em] px-2 py-0.5 text-orbital-success bg-orbital-success/10 border border-orbital-success/20 ml-auto">
+                              AO VIVO
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })}
                     {leftoverMap && (
                       <div className="flex items-center gap-3 py-2 px-2 -mx-2 bg-orbital-success/5 border border-orbital-success/20 mt-1">
                         <span className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim w-4 text-right">{vetoList.length + leftoverMaps.length + 1}.</span>
