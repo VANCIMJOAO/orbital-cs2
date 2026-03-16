@@ -1,4 +1,4 @@
-import { getMatches, getTeams, getMatch, getMapStats, Match, Team, MapStats, getStatusType } from "@/lib/api";
+import { getMatches, getTeams, getMatch, getMapStats, getLeaderboard, Match, Team, MapStats, LeaderboardEntry, getStatusType } from "@/lib/api";
 import { Tournament, advanceBracket } from "@/lib/tournament";
 import { getTournamentsFromDB, saveTournamentToDB } from "@/lib/tournaments-db";
 import { HomeContent } from "./home-content";
@@ -107,6 +107,17 @@ export default async function HomePage() {
     activeTournament = await autoAdvanceTournament(activeTournament, matches);
   }
 
+  // Fetch tournament MVP (top player by rating in tournament season)
+  let tournamentMvp: LeaderboardEntry | null = null;
+  if (activeTournament?.season_id && activeTournament.status === "finished") {
+    try {
+      const lbRes = await getLeaderboard(activeTournament.season_id);
+      const lb = lbRes.leaderboard || [];
+      const sorted = [...lb].sort((a, b) => (b.average_rating || 0) - (a.average_rating || 0));
+      tournamentMvp = sorted[0] || null;
+    } catch { /* ignore */ }
+  }
+
   return (
     <HomeContent
       tournament={activeTournament}
@@ -117,6 +128,7 @@ export default async function HomePage() {
       teamCount={teams.length}
       teamsMap={teamsMap}
       mapScoresMap={mapScoresMap}
+      tournamentMvp={tournamentMvp}
     />
   );
 }
