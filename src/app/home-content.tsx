@@ -158,11 +158,37 @@ function TournamentHome({ tournament: t, liveMatches, recentMatches, teamsMap, m
 
           {/* Champion banner */}
           {champion && (
-            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3 }} className="mt-8 inline-flex items-center gap-3 px-6 py-3 bg-orbital-success/10 border border-orbital-success/30">
-              <Trophy size={20} className="text-orbital-success" />
-              <div>
-                <div className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.2em] text-orbital-success">CAMPEÃO</div>
-                <div className="font-[family-name:var(--font-orbitron)] text-lg font-bold text-orbital-success">{champion.name}</div>
+            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3 }} className="mt-8 relative bg-gradient-to-r from-yellow-500/[0.03] via-yellow-400/[0.08] to-yellow-500/[0.03] border border-yellow-500/20 overflow-hidden">
+              <div className="relative py-6 px-6 flex flex-col items-center gap-3">
+                <div className="flex items-center gap-2">
+                  <div className="h-[1px] w-8 bg-gradient-to-r from-transparent to-yellow-400/50" />
+                  <Trophy size={18} className="text-yellow-400" />
+                  <span className="font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-[0.25em] text-yellow-400/80">
+                    CAMPEÃO
+                  </span>
+                  <Trophy size={18} className="text-yellow-400" />
+                  <div className="h-[1px] w-8 bg-gradient-to-l from-transparent to-yellow-400/50" />
+                </div>
+                <div className="flex items-center gap-4">
+                  {teamsMap?.[champion.id]?.logo && (
+                    <div className="w-12 h-12 sm:w-16 sm:h-16 border border-yellow-500/30 flex items-center justify-center bg-[#0A0A0A]">
+                      <TeamLogo logo={teamsMap[champion.id].logo} size={48} className="w-10 h-10 sm:w-12 sm:h-12" />
+                    </div>
+                  )}
+                  <div>
+                    <h3 className="font-[family-name:var(--font-orbitron)] text-lg sm:text-2xl font-black tracking-wider text-yellow-400" style={{ textShadow: "0 0 20px rgba(234,179,8,0.4)" }}>
+                      {champion.name}
+                    </h3>
+                    <p className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-yellow-400/60 mt-0.5">
+                      {t.name}
+                    </p>
+                    {teamsMap?.[champion.id]?.players && teamsMap[champion.id].players!.length > 0 && (
+                      <p className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-yellow-400/50 mt-1">
+                        {teamsMap[champion.id].players!.map(p => p.name).join(" • ")}
+                      </p>
+                    )}
+                  </div>
+                </div>
               </div>
             </motion.div>
           )}
