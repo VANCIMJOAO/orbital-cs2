@@ -490,6 +490,17 @@ export function MatchDetailContent({ match: initialMatch, playerStats: initialSt
                   <p className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-yellow-400/60 mt-0.5">
                     {tournamentName}{bracketMatch?.label ? ` — ${bracketMatch.label}` : ""}
                   </p>
+                  {(() => {
+                    const winnerTeam = match.winner === match.team1_id ? team1 : team2;
+                    const playerNames = winnerTeam?.auth_name
+                      ? Object.values(winnerTeam.auth_name).map(v => typeof v === "string" ? v : v.name).filter(Boolean)
+                      : [];
+                    return playerNames.length > 0 ? (
+                      <p className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-yellow-400/50 mt-1">
+                        {playerNames.join(" • ")}
+                      </p>
+                    ) : null;
+                  })()}
                 </div>
               </div>
             </div>
