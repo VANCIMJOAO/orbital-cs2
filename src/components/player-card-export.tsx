@@ -86,10 +86,12 @@ async function generateCard(
   const W = 600;
   const H = 900;
   const canvas = document.createElement("canvas");
-  canvas.width = W * 2; // 2x for retina
-  canvas.height = H * 2;
+  canvas.width = W;
+  canvas.height = H;
   const ctx = canvas.getContext("2d")!;
-  ctx.scale(2, 2);
+
+  // Esperar fontes carregarem
+  await document.fonts.ready;
 
   const purple = "#A855F7";
   const bg = "#0A0A0A";
