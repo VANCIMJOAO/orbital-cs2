@@ -223,27 +223,30 @@ async function generateCard(
   ctx.fillStyle = textDim;
   drawSpacedText(ctx, "RATING GERAL", W / 2, ratingY, 3);
 
-  ctx.font = "700 28px Orbitron, monospace";
+  ctx.font = "700 22px Orbitron, monospace";
   ctx.fillStyle = rc;
   ctx.shadowColor = rc + "55";
-  ctx.shadowBlur = 15;
-  ctx.fillText(stats.avgRating > 0 ? stats.avgRating.toFixed(2) : "—", W / 2, ratingY + 30);
+  ctx.shadowBlur = 12;
+  ctx.fillText(stats.avgRating > 0 ? stats.avgRating.toFixed(2) : "—", W / 2, ratingY + 26);
   ctx.shadowBlur = 0;
 
-  // Tier badge
-  const tierY = ratingY + 48;
+  // Tier badge — centered manually
+  const tierY = ratingY + 42;
   const tierText = tier.label;
-  ctx.font = "700 9px Orbitron, monospace";
-  // Measure with spacing
-  const tierCharW = Array.from(tierText).reduce((w, c) => w + ctx.measureText(c).width + 2, -2);
-  const tierW = tierCharW + 24;
+  ctx.font = "700 7px Orbitron, monospace";
+  const tierTextW = ctx.measureText(tierText).width + tierText.length * 2;
+  const tierPad = 12;
+  const tierBoxW = tierTextW + tierPad * 2;
+  const tierBoxH = 16;
+  const tierBoxX = W / 2 - tierBoxW / 2;
+  const tierBoxY = tierY - tierBoxH / 2;
   ctx.fillStyle = tier.color + "15";
-  ctx.fillRect(W / 2 - tierW / 2, tierY - 8, tierW, 20);
+  ctx.fillRect(tierBoxX, tierBoxY, tierBoxW, tierBoxH);
   ctx.strokeStyle = tier.color + "55";
   ctx.lineWidth = 1;
-  ctx.strokeRect(W / 2 - tierW / 2, tierY - 8, tierW, 20);
+  ctx.strokeRect(tierBoxX, tierBoxY, tierBoxW, tierBoxH);
   ctx.fillStyle = tier.color;
-  drawSpacedText(ctx, tierText, W / 2, tierY + 6, 2);
+  drawSpacedText(ctx, tierText, W / 2, tierY + 3, 2);
 
   // ── Separator ──
   let sepY = tierY + 30;
@@ -303,9 +306,9 @@ async function generateCard(
     drawSpacedText(ctx, s.label, x + cellW / 2, y + 22, 2);
 
     // Value
-    ctx.font = "700 18px 'JetBrains Mono', monospace";
+    ctx.font = "700 14px 'JetBrains Mono', monospace";
     ctx.fillStyle = s.color;
-    ctx.fillText(s.value, x + cellW / 2, y + 48);
+    ctx.fillText(s.value, x + cellW / 2, y + 46);
   }
 
   // ── Secondary stats ──
