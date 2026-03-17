@@ -74,14 +74,17 @@ export default async function RecapPage({ params }: { params: Promise<{ id: stri
     try {
       const [matchRes, mapRes, playerRes] = await Promise.all([
         getMatch(bm.match_id!),
-        getMapStats(bm.match_id!),
-        getPlayerStats(bm.match_id!),
+        getMapStats(bm.match_id!).then(r => r as Record<string, unknown>),
+        getPlayerStats(bm.match_id!).then(r => r as Record<string, unknown>),
       ]);
+      // G5API returns lowercase keys: mapstats, playerstats
+      const mapStats = (mapRes.mapStats || mapRes.mapstats || []) as MapStats[];
+      const playerStats = (playerRes.playerStats || playerRes.playerstats || []) as PlayerStats[];
       return {
         bracketMatch: bm,
         match: matchRes.match || null,
-        mapStats: mapRes.mapStats || [],
-        playerStats: playerRes.playerStats || [],
+        mapStats,
+        playerStats,
       };
     } catch {
       return { bracketMatch: bm, match: null, mapStats: [], playerStats: [] };
