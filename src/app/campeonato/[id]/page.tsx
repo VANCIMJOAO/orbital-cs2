@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, use, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Trophy, Swords, X, Check, ArrowLeft, Loader2, Play, Trash2 } from "lucide-react";
+import { Trophy, Swords, X, Check, ArrowLeft, Loader2, Play, Trash2, BarChart3 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { HudCard } from "@/components/hud-card";
@@ -291,9 +291,19 @@ export default function CampeonatoPage({ params }: { params: Promise<{ id: strin
             </button>
           )}
         </div>
-        <p className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text-dim">
-          Eliminação Dupla — {tournament.teams.length} times — {tournament.matches.filter(m => m.status === "finished").length}/{tournament.matches.length} partidas
-        </p>
+        <div className="flex items-center gap-4 mt-1">
+          <p className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text-dim">
+            Eliminação Dupla — {tournament.teams.length} times — {tournament.matches.filter(m => m.status === "finished").length}/{tournament.matches.length} partidas
+          </p>
+          {tournament.status === "finished" && (
+            <Link
+              href={`/campeonato/${tournament.id}/recap`}
+              className="flex items-center gap-2 px-4 py-1.5 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 hover:bg-orbital-purple/20 transition-all font-[family-name:var(--font-orbitron)] text-[0.55rem] tracking-wider text-orbital-purple"
+            >
+              <BarChart3 size={12} /> VER RECAP
+            </Link>
+          )}
+        </div>
       </motion.div>
 
       {/* Next Match Banner */}
