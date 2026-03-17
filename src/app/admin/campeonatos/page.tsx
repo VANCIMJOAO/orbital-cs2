@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Loader2, Check, AlertCircle, ChevronUp, Trophy, Trash2, Eye, ArrowRight, ArrowLeft, Users, Radio } from "lucide-react";
+import { Plus, Loader2, Check, AlertCircle, ChevronUp, Trophy, Trash2, Eye, ArrowRight, ArrowLeft, Users, Radio, Gamepad2, Monitor } from "lucide-react";
 import { HudCard } from "@/components/hud-card";
 import Link from "next/link";
 import { useEffect, useState, useCallback } from "react";
@@ -30,6 +30,8 @@ export default function AdminCampeonatos() {
   const [prizePool, setPrizePool] = useState("");
   const [description, setDescription] = useState("");
   const [spectatorAuth, setSpectatorAuth] = useState("76561198806637089;ORBITAL ROXA");
+  const [mode, setMode] = useState<"presencial" | "online">("presencial");
+  const [faceitChampionshipId, setFaceitChampionshipId] = useState("");
   const [selectedTeams, setSelectedTeams] = useState<number[]>([]);
   const [mapPool, setMapPool] = useState<string[]>(getDefaultMapPool());
   const [submitting, setSubmitting] = useState(false);
@@ -89,6 +91,8 @@ export default function AdminCampeonatos() {
         season_id: seasonId ? parseInt(seasonId) : null,
         server_id: null,
         format: "double_elimination",
+        mode,
+        faceit_championship_id: mode === "online" ? (faceitChampionshipId.trim() || null) : null,
         teams: tournamentTeams,
         matches,
         map_pool: mapPool,
@@ -98,10 +102,10 @@ export default function AdminCampeonatos() {
         current_match_id: null,
         start_date: startDate || null,
         end_date: endDate || null,
-        location: location || null,
+        location: mode === "presencial" ? (location || null) : null,
         prize_pool: prizePool || null,
         description: description || null,
-        spectator_auth: spectatorAuth || null,
+        spectator_auth: mode === "presencial" ? (spectatorAuth || null) : null,
       };
 
       await fetch("/api/tournaments", {
@@ -120,6 +124,8 @@ export default function AdminCampeonatos() {
       setLocation("");
       setPrizePool("");
       setDescription("");
+      setMode("presencial");
+      setFaceitChampionshipId("");
       await fetchData();
       setTimeout(() => { setShowCreate(false); setWizardStep(0); }, 1500);
     } catch (err) {
@@ -219,6 +225,43 @@ export default function AdminCampeonatos() {
                 {/* Step 0: Info */}
                 {wizardStep === 0 && (
                   <motion.div key="s0" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
+                    {/* Mode Toggle */}
+                    <div>
+                      <label className={labelClass}>MODO</label>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setMode("presencial")}
+                          className={`flex items-center justify-center gap-2 px-4 py-3 border transition-all ${
+                            mode === "presencial"
+                              ? "bg-orbital-purple/15 border-orbital-purple/50 text-orbital-purple"
+                              : "bg-[#0A0A0A] border-orbital-border text-orbital-text-dim hover:border-orbital-purple/30"
+                          }`}
+                        >
+                          <Monitor size={16} />
+                          <div className="text-left">
+                            <div className="font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-wider">PRESENCIAL</div>
+                            <div className="font-[family-name:var(--font-jetbrains)] text-[0.5rem] opacity-60">Servidor local + MatchZy</div>
+                          </div>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setMode("online")}
+                          className={`flex items-center justify-center gap-2 px-4 py-3 border transition-all ${
+                            mode === "online"
+                              ? "bg-[#FF5500]/15 border-[#FF5500]/50 text-[#FF5500]"
+                              : "bg-[#0A0A0A] border-orbital-border text-orbital-text-dim hover:border-[#FF5500]/30"
+                          }`}
+                        >
+                          <Gamepad2 size={16} />
+                          <div className="text-left">
+                            <div className="font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-wider">ONLINE</div>
+                            <div className="font-[family-name:var(--font-jetbrains)] text-[0.5rem] opacity-60">Faceit + Anti-cheat</div>
+                          </div>
+                        </button>
+                      </div>
+                    </div>
+
                     <div>
                       <label className={labelClass}>NOME DO CAMPEONATO</label>
                       <input
@@ -227,6 +270,22 @@ export default function AdminCampeonatos() {
                         className={`${inputClass} placeholder:text-orbital-text-dim/30`}
                       />
                     </div>
+
+                    {/* Faceit Championship ID (only online) */}
+                    {mode === "online" && (
+                      <div>
+                        <label className={labelClass}>FACEIT CHAMPIONSHIP ID</label>
+                        <input
+                          type="text" value={faceitChampionshipId} onChange={e => setFaceitChampionshipId(e.target.value)}
+                          placeholder="ID do championship na Faceit"
+                          className={`${inputClass} placeholder:text-orbital-text-dim/30`}
+                        />
+                        <p className="font-[family-name:var(--font-jetbrains)] text-[0.5rem] text-orbital-text-dim/50 mt-1">
+                          Crie o championship na Faceit e cole o ID aqui. Os webhooks vincularão as partidas automaticamente.
+                        </p>
+                      </div>
+                    )}
+
                     <div>
                       <label className={labelClass}>SEASON (opcional)</label>
                       <select value={seasonId} onChange={e => setSeasonId(e.target.value)} className={inputClass}>
@@ -258,18 +317,29 @@ export default function AdminCampeonatos() {
                       <label className={labelClass}>DESCRIÇÃO (opcional)</label>
                       <textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Descrição breve do campeonato..." rows={2} className={`${inputClass} placeholder:text-orbital-text-dim/30 resize-none`} />
                     </div>
-                    <div>
-                      <label className={labelClass}>SPECTATOR AUTH (SteamID64;Nome)</label>
-                      <input type="text" value={spectatorAuth} onChange={e => setSpectatorAuth(e.target.value)} placeholder="76561198806637089;ORBITAL ROXA" className={`${inputClass} placeholder:text-orbital-text-dim/30`} />
-                      <p className="font-[family-name:var(--font-jetbrains)] text-[0.5rem] text-orbital-text-dim/50 mt-1">SteamID64 da conta que fará a transmissão ao vivo</p>
-                    </div>
-                    <div className="bg-[#0A0A0A] border border-orbital-border p-4">
-                      <div className="font-[family-name:var(--font-orbitron)] text-[0.55rem] tracking-[0.2em] text-orbital-purple mb-2">FORMATO</div>
+                    {mode === "presencial" && (
+                      <div>
+                        <label className={labelClass}>SPECTATOR AUTH (SteamID64;Nome)</label>
+                        <input type="text" value={spectatorAuth} onChange={e => setSpectatorAuth(e.target.value)} placeholder="76561198806637089;ORBITAL ROXA" className={`${inputClass} placeholder:text-orbital-text-dim/30`} />
+                        <p className="font-[family-name:var(--font-jetbrains)] text-[0.5rem] text-orbital-text-dim/50 mt-1">SteamID64 da conta que fará a transmissão ao vivo</p>
+                      </div>
+                    )}
+                    <div className={`bg-[#0A0A0A] border p-4 ${mode === "online" ? "border-[#FF5500]/20" : "border-orbital-border"}`}>
+                      <div className={`font-[family-name:var(--font-orbitron)] text-[0.55rem] tracking-[0.2em] mb-2 ${mode === "online" ? "text-[#FF5500]" : "text-orbital-purple"}`}>
+                        {mode === "online" ? "FORMATO ONLINE" : "FORMATO"}
+                      </div>
                       <div className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text-dim space-y-1">
                         <p>Eliminação dupla (Winner + Lower bracket)</p>
                         <p>8 times — Perdeu 2 = eliminado</p>
                         <p>Todas as partidas BO1, Grand Final BO3</p>
                         <p>13 partidas no total</p>
+                        {mode === "online" && (
+                          <>
+                            <p className="text-[#FF5500]/70 mt-2">Partidas rodam na Faceit (anti-cheat ativo)</p>
+                            <p className="text-[#FF5500]/70">Stats importados automaticamente via webhook</p>
+                            <p className="text-[#FF5500]/70">Score ao vivo via polling</p>
+                          </>
+                        )}
                       </div>
                     </div>
                   </motion.div>
@@ -378,12 +448,19 @@ export default function AdminCampeonatos() {
 
                       <div className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text-dim space-y-2">
                         <p><span className="text-orbital-text">Nome:</span> {name}</p>
+                        <p>
+                          <span className="text-orbital-text">Modo:</span>{" "}
+                          <span className={mode === "online" ? "text-[#FF5500]" : "text-orbital-purple"}>
+                            {mode === "online" ? "ONLINE (Faceit)" : "PRESENCIAL (LAN)"}
+                          </span>
+                        </p>
                         <p><span className="text-orbital-text">Formato:</span> Eliminação Dupla — 8 times</p>
                         <p><span className="text-orbital-text">Partidas:</span> 12x BO1 + 1x BO3 (Grand Final)</p>
                         <p><span className="text-orbital-text">Map Pool:</span> {mapPool.map(m => m.replace("de_", "")).join(", ")}</p>
                         {startDate && <p><span className="text-orbital-text">Período:</span> {startDate}{endDate ? ` — ${endDate}` : ""}</p>}
-                        {location && <p><span className="text-orbital-text">Local:</span> {location}</p>}
+                        {mode === "presencial" && location && <p><span className="text-orbital-text">Local:</span> {location}</p>}
                         {prizePool && <p><span className="text-orbital-text">Premiação:</span> {prizePool}</p>}
+                        {mode === "online" && faceitChampionshipId && <p><span className="text-orbital-text">Faceit ID:</span> {faceitChampionshipId}</p>}
                       </div>
 
                       <div className="border-t border-orbital-border pt-3">
@@ -476,6 +553,11 @@ export default function AdminCampeonatos() {
                       >
                         {t.name}
                       </Link>
+                      {t.mode === "online" && (
+                        <span className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-wider text-[#FF5500]/60 border border-[#FF5500]/20 px-1.5 py-0.5">
+                          FACEIT
+                        </span>
+                      )}
                       <span className={`font-[family-name:var(--font-orbitron)] text-[0.55rem] tracking-wider ${
                         t.status === "active" ? "text-orbital-live" : t.status === "finished" ? "text-orbital-success" : "text-orbital-warning"
                       }`}>

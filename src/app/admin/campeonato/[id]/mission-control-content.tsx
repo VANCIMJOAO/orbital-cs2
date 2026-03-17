@@ -861,6 +861,18 @@ function VetoTab({
       );
     }
 
+    // ── MODO ONLINE: vincular Faceit match ──
+    if (tournament.mode === "online") {
+      return (
+        <OnlineModePanel
+          tournament={tournament}
+          nextMatch={nextMatch}
+          onTournamentUpdate={onResetVeto}
+        />
+      );
+    }
+
+    // ── MODO PRESENCIAL: iniciar veto ──
     return (
       <div className="py-8">
         <div className="bg-orbital-purple/5 border border-orbital-purple/30 p-4">
@@ -1148,21 +1160,221 @@ function QueueTab({
   );
 }
 
+// ===== ONLINE MODE PANEL =====
+function OnlineModePanel({
+  tournament,
+  nextMatch,
+  onTournamentUpdate,
+}: {
+  tournament: Tournament;
+  nextMatch: BracketMatch;
+  onTournamentUpdate: () => void;
+}) {
+  const [faceitMatchId, setFaceitMatchId] = useState("");
+  const [linking, setLinking] = useState(false);
+  const [linkFeedback, setLinkFeedback] = useState<{ type: "success" | "error"; msg: string } | null>(null);
+
+  // Partidas já vinculadas (ao vivo)
+  const linkedMatches = tournament.matches.filter(
+    (m) => m.faceit_match_id && (m.status === "live" || m.status === "ready")
+  );
+
+  const handleLink = async () => {
+    if (!faceitMatchId.trim()) return;
+    setLinking(true);
+    setLinkFeedback(null);
+
+    try {
+      // Vincular via API
+      const res = await fetch("/api/faceit/match", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          faceit_match_id: faceitMatchId.trim(),
+          tournament_id: tournament.id,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Erro ao importar");
+
+      // Atualizar o bracket match com o faceit_match_id
+      const updatedTournament = {
+        ...tournament,
+        matches: tournament.matches.map((m) => {
+          if (m.id === nextMatch.id) {
+            return { ...m, faceit_match_id: faceitMatchId.trim(), status: "live" as const };
+          }
+          return m;
+        }),
+      };
+
+      // Salvar
+      await fetch("/api/tournaments", {
+        method: "PUT",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedTournament),
+      });
+
+      setLinkFeedback({
+        type: "success",
+        msg: `Partida vinculada: ${data.match?.team1_name || ""} vs ${data.match?.team2_name || ""}`,
+      });
+      setFaceitMatchId("");
+
+      // Refresh
+      setTimeout(() => {
+        onTournamentUpdate();
+        window.location.reload();
+      }, 1500);
+    } catch (err) {
+      setLinkFeedback({ type: "error", msg: err instanceof Error ? err.message : "Erro" });
+    }
+    setLinking(false);
+  };
+
+  return (
+    <div className="py-6 space-y-5">
+      {/* Linked live matches */}
+      {linkedMatches.length > 0 && (
+        <div>
+          <div className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.2em] text-[#FF5500] mb-2 flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#FF5500] animate-pulse" />
+            AO VIVO NA FACEIT ({linkedMatches.length})
+          </div>
+          {linkedMatches.map((m) => (
+            <div
+              key={m.id}
+              className="flex items-center gap-3 px-3 py-2.5 border border-[#FF5500]/30 bg-[#FF5500]/5 mb-1"
+            >
+              <div className="flex-1 min-w-0">
+                <div className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text">
+                  {getTeamName(tournament, m.team1_id)} vs {getTeamName(tournament, m.team2_id)}
+                </div>
+                <div className="font-[family-name:var(--font-orbitron)] text-[0.4rem] tracking-wider text-orbital-text-dim mt-0.5">
+                  {m.label}
+                </div>
+              </div>
+              <Gamepad2 size={12} className="text-[#FF5500]/50 shrink-0" />
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Next match to link */}
+      <div className={`border p-4 ${linkedMatches.length > 0 ? "border-orbital-border" : "border-[#FF5500]/30 bg-[#FF5500]/5"}`}>
+        <div className="font-[family-name:var(--font-orbitron)] text-[0.55rem] tracking-[0.2em] text-[#FF5500] mb-3">
+          VINCULAR PARTIDA FACEIT
+        </div>
+        <div className="font-[family-name:var(--font-jetbrains)] text-sm text-orbital-text mb-1">
+          {getTeamName(tournament, nextMatch.team1_id)}{" "}
+          <span className="text-orbital-text-dim">vs</span>{" "}
+          {getTeamName(tournament, nextMatch.team2_id)}
+        </div>
+        <div className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim mb-4">
+          {nextMatch.label} — {nextMatch.num_maps === 1 ? "BO1" : "BO3"}
+        </div>
+
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={faceitMatchId}
+            onChange={(e) => setFaceitMatchId(e.target.value)}
+            placeholder="Cole o Faceit Match ID aqui..."
+            className="flex-1 bg-[#0A0A0A] border border-orbital-border px-3 py-2.5 font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text placeholder:text-orbital-text-dim/30 focus:border-[#FF5500]/50 focus:outline-none transition-colors"
+          />
+          <button
+            onClick={handleLink}
+            disabled={linking || !faceitMatchId.trim()}
+            className="px-5 py-2.5 bg-[#FF5500]/15 border border-[#FF5500]/40 hover:border-[#FF5500]/70 disabled:opacity-30 disabled:cursor-not-allowed transition-all font-[family-name:var(--font-orbitron)] text-[0.55rem] tracking-wider text-[#FF5500] flex items-center gap-2"
+          >
+            {linking ? <Loader2 size={12} className="animate-spin" /> : <Gamepad2 size={12} />}
+            VINCULAR
+          </button>
+        </div>
+
+        <p className="font-[family-name:var(--font-jetbrains)] text-[0.5rem] text-orbital-text-dim/40 mt-2">
+          O match ID está na URL da sala Faceit: faceit.com/cs2/room/<span className="text-orbital-text-dim/60">1-xxx...</span>
+        </p>
+        <p className="font-[family-name:var(--font-jetbrains)] text-[0.5rem] text-[#FF5500]/40 mt-1">
+          Quando a partida terminar na Faceit, o webhook atualiza o bracket automaticamente.
+        </p>
+
+        {linkFeedback && (
+          <div
+            className={`mt-3 flex items-center gap-2 text-xs font-[family-name:var(--font-jetbrains)] ${
+              linkFeedback.type === "success" ? "text-green-400" : "text-red-400"
+            }`}
+          >
+            {linkFeedback.type === "success" ? <Check size={12} /> : <X size={12} />}
+            {linkFeedback.msg}
+          </div>
+        )}
+      </div>
+
+      {/* Info box */}
+      <div className="bg-[#0A0A0A] border border-orbital-border p-3 space-y-1">
+        <div className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.2em] text-orbital-text-dim">COMO FUNCIONA</div>
+        <p className="font-[family-name:var(--font-jetbrains)] text-[0.55rem] text-orbital-text-dim/60">
+          1. Crie a partida na Faceit (championship ou manualmente)
+        </p>
+        <p className="font-[family-name:var(--font-jetbrains)] text-[0.55rem] text-orbital-text-dim/60">
+          2. Cole o Match ID aqui pra vincular ao bracket
+        </p>
+        <p className="font-[family-name:var(--font-jetbrains)] text-[0.55rem] text-orbital-text-dim/60">
+          3. Quando finalizar na Faceit → stats são importados e bracket avança
+        </p>
+      </div>
+    </div>
+  );
+}
+
 function QueueItem({ match, tournament }: { match: BracketMatch; tournament: Tournament }) {
   const t1 = getTeamName(tournament, match.team1_id);
   const t2 = getTeamName(tournament, match.team2_id);
   const isLive = match.status === "live";
   const isFinished = match.status === "finished";
+  const isFaceit = !!match.faceit_match_id;
+
+  // Polling score ao vivo pra partidas Faceit
+  const [liveScore, setLiveScore] = useState<{ faction1: number; faction2: number } | null>(null);
+
+  useEffect(() => {
+    if (!isFaceit || !isLive || !match.faceit_match_id) return;
+
+    let active = true;
+    const poll = async () => {
+      try {
+        const res = await fetch(`/api/faceit/live/${match.faceit_match_id}`);
+        if (res.ok && active) {
+          const data = await res.json();
+          if (data.score) setLiveScore(data.score);
+        }
+      } catch { /* ignore */ }
+    };
+
+    poll(); // Initial fetch
+    const interval = setInterval(poll, 20000); // Poll every 20s
+    return () => { active = false; clearInterval(interval); };
+  }, [isFaceit, isLive, match.faceit_match_id]);
 
   return (
     <div className={`flex items-center gap-3 px-3 py-2.5 border mb-1 ${
+      isLive && isFaceit ? "border-[#FF5500]/30 bg-[#FF5500]/5" :
       isLive ? "border-orbital-live/30 bg-orbital-live/5" :
       isFinished ? "border-orbital-success/20 bg-orbital-card" :
       "border-orbital-border bg-orbital-card"
     }`}>
       <div className="flex-1 min-w-0">
         <div className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text truncate">
-          {t1} <span className="text-orbital-text-dim">vs</span> {t2}
+          {t1}{" "}
+          {liveScore && isLive && (
+            <span className="font-[family-name:var(--font-orbitron)] text-[#FF5500]">
+              {liveScore.faction1} — {liveScore.faction2}
+            </span>
+          )}{" "}
+          {t2}
         </div>
         <div className="flex items-center gap-2 mt-0.5">
           <span className="font-[family-name:var(--font-orbitron)] text-[0.4rem] tracking-wider text-orbital-text-dim">
@@ -1173,9 +1385,15 @@ function QueueItem({ match, tournament }: { match: BracketMatch; tournament: Tou
               {match.map.replace("de_", "").toUpperCase()}
             </span>
           )}
+          {isFaceit && (
+            <span className="font-[family-name:var(--font-orbitron)] text-[0.35rem] tracking-wider text-[#FF5500]/40">
+              FACEIT
+            </span>
+          )}
         </div>
       </div>
       <span className={`shrink-0 font-[family-name:var(--font-orbitron)] text-[0.4rem] tracking-wider px-1.5 py-0.5 border ${
+        isLive && isFaceit ? "text-[#FF5500] border-[#FF5500]/30" :
         isLive ? "text-orbital-live border-orbital-live/30" :
         isFinished ? "text-orbital-success border-orbital-success/20" :
         match.team1_id && match.team2_id ? "text-orbital-purple border-orbital-purple/20" :
