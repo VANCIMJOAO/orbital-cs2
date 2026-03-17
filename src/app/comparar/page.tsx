@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { getLeaderboard } from "@/lib/api";
 import { CompareContent } from "./compare-content";
 
@@ -11,5 +12,9 @@ export default async function ComparePage() {
   } catch {
     /* fallback to empty */
   }
-  return <CompareContent initialPlayers={players} />;
+  return (
+    <Suspense>
+      <CompareContent initialPlayers={players} />
+    </Suspense>
+  );
 }

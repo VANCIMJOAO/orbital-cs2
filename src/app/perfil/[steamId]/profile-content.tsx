@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowLeft, Target, Skull, Crosshair, Zap, Award, TrendingUp, Flame, Map, BarChart3 } from "lucide-react";
+import { ArrowLeft, Target, Skull, Crosshair, Zap, Award, TrendingUp, Flame, Map, BarChart3, Swords } from "lucide-react";
 import Link from "next/link";
 import { HudCard, StatBox } from "@/components/hud-card";
 import { Match, getStatusText, getStatusType } from "@/lib/api";
@@ -462,6 +462,13 @@ export function ProfileContent({ steamId }: { steamId: string }) {
                 </span>
               )}
             </div>
+            <Link
+              href={`/comparar?p1=${steamId}`}
+              className="inline-flex items-center gap-1.5 mt-2 px-3 py-1 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 hover:bg-orbital-purple/20 transition-all font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-wider text-orbital-purple"
+            >
+              <Swords size={11} />
+              COMPARAR
+            </Link>
             <div className="flex items-center gap-4 mt-3 justify-center sm:justify-start">
               <div className="flex items-center gap-1.5">
                 <Award size={14} className="text-orbital-success" />

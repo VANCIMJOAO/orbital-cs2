@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Swords, ChevronDown, User } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { HudCard } from "@/components/hud-card";
 import { LeaderboardEntry } from "@/lib/api";
 
@@ -82,10 +82,10 @@ const STATS: StatDef[] = [
 ];
 
 /* ── Avatar component ── */
-function PlayerAvatar({ steamId, name, size = 80 }: { steamId: string; name: string; size?: number }) {
+function PlayerAvatar({ steamId, name, size = 80, avatarUrl }: { steamId: string; name: string; size?: number; avatarUrl?: string | null }) {
   const [error, setError] = useState(false);
 
-  if (error) {
+  if (error || !avatarUrl) {
     return (
       <div
         className="rounded-full bg-orbital-card border-2 border-orbital-border flex items-center justify-center"
@@ -97,14 +97,13 @@ function PlayerAvatar({ steamId, name, size = 80 }: { steamId: string; name: str
   }
 
   return (
-    <Image
-      src={`https://avatars.steamstatic.com/${steamId}_full.jpg`}
+    <img
+      src={avatarUrl}
       alt={name}
       width={size}
       height={size}
-      className="rounded-full border-2 border-orbital-border"
+      className="rounded-full border-2 border-orbital-border object-cover"
       onError={() => setError(true)}
-      unoptimized
     />
   );
 }
@@ -317,10 +316,12 @@ function PlayerCard({
   player,
   side,
   delay,
+  avatarUrl,
 }: {
   player: LeaderboardEntry;
   side: "left" | "right";
   delay: number;
+  avatarUrl?: string | null;
 }) {
   const accentColor = side === "left" ? "purple" : "red";
   const borderColor = side === "left" ? "border-purple-500/40" : "border-red-500/40";
@@ -334,7 +335,7 @@ function PlayerCard({
       className={`flex flex-col items-center text-center ${glowClass}`}
     >
       <div className={`relative mb-3 rounded-full border-2 ${borderColor} p-1`}>
-        <PlayerAvatar steamId={player.steamId} name={player.name} size={80} />
+        <PlayerAvatar steamId={player.steamId} name={player.name} size={80} avatarUrl={avatarUrl} />
         {/* Glow ring */}
         <div
           className={`absolute inset-0 rounded-full ${
@@ -437,13 +438,42 @@ function ScoreSummary({ p1, p2 }: { p1: LeaderboardEntry; p2: LeaderboardEntry }
 
 /* ── Main Component ── */
 export function CompareContent({ initialPlayers }: CompareContentProps) {
+  const searchParams = useSearchParams();
   const [player1, setPlayer1] = useState<LeaderboardEntry | null>(null);
   const [player2, setPlayer2] = useState<LeaderboardEntry | null>(null);
+  const [avatars, setAvatars] = useState<Record<string, string>>({});
 
   const sorted = useMemo(
     () => [...initialPlayers].sort((a, b) => (b.average_rating || 0) - (a.average_rating || 0)),
     [initialPlayers]
   );
+
+  // Pré-selecionar jogadores via query params (?p1=steamId&p2=steamId)
+  useEffect(() => {
+    const p1Id = searchParams.get("p1");
+    const p2Id = searchParams.get("p2");
+    if (p1Id && !player1) {
+      const found = initialPlayers.find(p => p.steamId === p1Id);
+      if (found) setPlayer1(found);
+    }
+    if (p2Id && !player2) {
+      const found = initialPlayers.find(p => p.steamId === p2Id);
+      if (found) setPlayer2(found);
+    }
+  }, [searchParams, initialPlayers]);
+
+  // Fetch avatars when players are selected
+  useEffect(() => {
+    const ids = [player1?.steamId, player2?.steamId].filter((id): id is string => !!id && !avatars[id]);
+    ids.forEach(steamId => {
+      fetch(`/api/steam/avatar/${steamId}`)
+        .then(r => r.json())
+        .then(d => {
+          if (d?.avatar) setAvatars(prev => ({ ...prev, [steamId]: d.avatar }));
+        })
+        .catch(() => {});
+    });
+  }, [player1?.steamId, player2?.steamId]);
 
   const bothSelected = player1 !== null && player2 !== null;
 
@@ -518,7 +548,7 @@ export function CompareContent({ initialPlayers }: CompareContentProps) {
 
               <div className="relative grid grid-cols-[1fr_auto_1fr] items-center gap-4 sm:gap-8 py-4 sm:py-6">
                 {/* Player 1 */}
-                <PlayerCard player={player1} side="left" delay={0.1} />
+                <PlayerCard player={player1} side="left" delay={0.1} avatarUrl={avatars[player1.steamId]} />
 
                 {/* VS Center */}
                 <motion.div
@@ -547,7 +577,7 @@ export function CompareContent({ initialPlayers }: CompareContentProps) {
                 </motion.div>
 
                 {/* Player 2 */}
-                <PlayerCard player={player2} side="right" delay={0.15} />
+                <PlayerCard player={player2} side="right" delay={0.15} avatarUrl={avatars[player2.steamId]} />
               </div>
 
               {/* Score summary */}
