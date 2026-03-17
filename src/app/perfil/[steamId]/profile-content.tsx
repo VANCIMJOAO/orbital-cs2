@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { ArrowLeft, Target, Skull, Crosshair, Zap, Award, TrendingUp, Flame, Map, BarChart3, Swords } from "lucide-react";
 import Link from "next/link";
 import { HudCard, StatBox } from "@/components/hud-card";
+import { PlayerCardExport } from "@/components/player-card-export";
 import { Match, getStatusText, getStatusType } from "@/lib/api";
 import { useEffect, useState } from "react";
 
@@ -462,13 +463,31 @@ export function ProfileContent({ steamId }: { steamId: string }) {
                 </span>
               )}
             </div>
-            <Link
-              href={`/comparar?p1=${steamId}`}
-              className="inline-flex items-center gap-1.5 mt-2 px-3 py-1 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 hover:bg-orbital-purple/20 transition-all font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-wider text-orbital-purple"
-            >
-              <Swords size={11} />
-              COMPARAR
-            </Link>
+            <div className="flex items-center gap-2 mt-2 flex-wrap justify-center sm:justify-start">
+              <Link
+                href={`/comparar?p1=${steamId}`}
+                className="inline-flex items-center gap-1.5 px-3 py-1 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 hover:bg-orbital-purple/20 transition-all font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-wider text-orbital-purple"
+              >
+                <Swords size={11} />
+                COMPARAR
+              </Link>
+              <PlayerCardExport
+                steamId={steamId}
+                displayName={displayName}
+                stats={{
+                  kills: stats.kills,
+                  deaths: stats.deaths,
+                  assists: stats.assists,
+                  wins: stats.wins,
+                  total_maps: stats.total_maps,
+                  mvp: stats.mvp,
+                  kdr: +kdr.toFixed(2),
+                  hsp: Math.round(hsp),
+                  avgRating,
+                  adr,
+                }}
+              />
+            </div>
             <div className="flex items-center gap-4 mt-3 justify-center sm:justify-start">
               <div className="flex items-center gap-1.5">
                 <Award size={14} className="text-orbital-success" />
