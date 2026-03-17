@@ -2,6 +2,9 @@ import mysql from "mysql2/promise";
 import { Tournament } from "./tournament";
 
 const DATABASE_URL = process.env.DATABASE_URL || "";
+if (!DATABASE_URL) {
+  console.warn("[ORBITAL] WARNING: DATABASE_URL not set. Tournament features will not work.");
+}
 
 export const dbPool = mysql.createPool(DATABASE_URL);
 

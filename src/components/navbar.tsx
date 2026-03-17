@@ -111,6 +111,9 @@ export function Navbar() {
                 <button
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
                   className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+                  aria-label="Menu do usuário"
+                  aria-expanded={userMenuOpen}
+                  aria-haspopup="true"
                 >
                   <Image
                     src={user.small_image || user.medium_image || ""}
@@ -194,6 +197,8 @@ export function Navbar() {
             <button
               className="lg:hidden text-orbital-text hover:text-orbital-purple transition-colors p-1"
               onClick={() => setMobileOpen(!mobileOpen)}
+              aria-label={mobileOpen ? "Fechar menu" : "Abrir menu"}
+              aria-expanded={mobileOpen}
             >
               {mobileOpen ? <X size={22} /> : <Menu size={22} />}
             </button>

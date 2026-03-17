@@ -509,10 +509,12 @@ export default function CampeonatoPage({ params }: { params: Promise<{ id: strin
       {/* ════════════════ TAB NAVIGATION ════════════════ */}
       <div className="sticky top-0 z-30 bg-[#0A0A0A]/95 backdrop-blur-sm border-b border-orbital-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="flex gap-0 overflow-x-auto scrollbar-none">
+          <div className="flex gap-0 overflow-x-auto scrollbar-none" role="tablist" aria-label="Seções do campeonato">
             {TABS.map(tab => (
               <button
                 key={tab.id}
+                role="tab"
+                aria-selected={activeTab === tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`relative px-5 py-3 font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-[0.2em] transition-colors whitespace-nowrap ${
                   activeTab === tab.id
@@ -632,6 +634,127 @@ export default function CampeonatoPage({ params }: { params: Promise<{ id: strin
                       </button>
                     </div>
                   )}
+
+                  {/* Classificação (Standings) */}
+                  {(() => {
+                    const finishedBracketMatches = tournament.matches.filter(m => m.status === "finished" && m.winner_id);
+                    if (finishedBracketMatches.length === 0) return null;
+
+                    const standingsMap: Record<number, { teamId: number; wins: number; losses: number; mapWins: number; mapLosses: number }> = {};
+
+                    const ensureTeam = (tid: number) => {
+                      if (!standingsMap[tid]) standingsMap[tid] = { teamId: tid, wins: 0, losses: 0, mapWins: 0, mapLosses: 0 };
+                    };
+
+                    for (const m of finishedBracketMatches) {
+                      if (!m.team1_id || !m.team2_id || !m.winner_id) continue;
+                      ensureTeam(m.team1_id);
+                      ensureTeam(m.team2_id);
+
+                      const loserId = m.winner_id === m.team1_id ? m.team2_id : m.team1_id;
+                      standingsMap[m.winner_id].wins++;
+                      standingsMap[loserId].losses++;
+
+                      // Map scores from mapScoresMap
+                      if (m.match_id && mapScoresMap[m.match_id]) {
+                        const maps = mapScoresMap[m.match_id];
+                        for (const ms of maps) {
+                          standingsMap[m.team1_id].mapWins += ms.team1_score;
+                          standingsMap[m.team1_id].mapLosses += ms.team2_score;
+                          standingsMap[m.team2_id].mapWins += ms.team2_score;
+                          standingsMap[m.team2_id].mapLosses += ms.team1_score;
+                        }
+                      }
+                    }
+
+                    // Also ensure teams with no finished matches appear
+                    for (const team of tournament.teams) {
+                      ensureTeam(team.id);
+                    }
+
+                    const sorted = Object.values(standingsMap).sort((a, b) => {
+                      if (b.wins !== a.wins) return b.wins - a.wins;
+                      return (b.mapWins - b.mapLosses) - (a.mapWins - a.mapLosses);
+                    });
+
+                    const isChampion = (tid: number) => tournament.status === "finished" && grandFinal?.winner_id === tid;
+
+                    return (
+                      <HudCard className="p-5" label="CLASSIFICAÇÃO">
+                        <div className="overflow-x-auto mt-2">
+                          <table className="w-full text-left">
+                            <thead>
+                              <tr className="border-b border-orbital-border">
+                                <th className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.15em] text-orbital-text-dim py-2 px-2 w-8">#</th>
+                                <th className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.15em] text-orbital-text-dim py-2 px-2">TIME</th>
+                                <th className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.15em] text-orbital-text-dim py-2 px-2 text-center">J</th>
+                                <th className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.15em] text-orbital-text-dim py-2 px-2 text-center">V</th>
+                                <th className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.15em] text-orbital-text-dim py-2 px-2 text-center">D</th>
+                                <th className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.15em] text-orbital-text-dim py-2 px-2 text-center">MW</th>
+                                <th className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.15em] text-orbital-text-dim py-2 px-2 text-center">ML</th>
+                                <th className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.15em] text-orbital-text-dim py-2 px-2 text-center">+/−</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {sorted.map((s, i) => {
+                                const teamData = teamsMap[s.teamId];
+                                const teamName = teamData?.name || tournament.teams.find(t => t.id === s.teamId)?.name || "TBD";
+                                const mapDiff = s.mapWins - s.mapLosses;
+                                const isTop = i === 0;
+                                const champ = isChampion(s.teamId);
+
+                                return (
+                                  <tr
+                                    key={s.teamId}
+                                    className={`border-b border-orbital-border/30 transition-colors hover:bg-white/[0.02] ${isTop ? "border-l-2 border-l-amber-500" : ""}`}
+                                  >
+                                    <td className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim py-2.5 px-2">
+                                      {i + 1}
+                                    </td>
+                                    <td className="py-2.5 px-2">
+                                      <div className="flex items-center gap-2">
+                                        <div className="w-6 h-6 flex items-center justify-center shrink-0">
+                                          {teamData?.logo ? (
+                                            <Image src={teamData.logo} alt={teamName} width={20} height={20} className="object-contain" unoptimized />
+                                          ) : (
+                                            <Shield size={12} className="text-orbital-text-dim/40" />
+                                          )}
+                                        </div>
+                                        <span className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text truncate">
+                                          {teamName}
+                                        </span>
+                                        {champ && <Trophy size={12} className="text-amber-500 shrink-0" />}
+                                      </div>
+                                    </td>
+                                    <td className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim py-2.5 px-2 text-center">
+                                      {s.wins + s.losses}
+                                    </td>
+                                    <td className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-emerald-400 py-2.5 px-2 text-center">
+                                      {s.wins}
+                                    </td>
+                                    <td className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-red-400 py-2.5 px-2 text-center">
+                                      {s.losses}
+                                    </td>
+                                    <td className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim py-2.5 px-2 text-center">
+                                      {s.mapWins}
+                                    </td>
+                                    <td className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim py-2.5 px-2 text-center">
+                                      {s.mapLosses}
+                                    </td>
+                                    <td className={`font-[family-name:var(--font-jetbrains)] text-[0.65rem] font-bold py-2.5 px-2 text-center ${
+                                      mapDiff > 0 ? "text-emerald-400" : mapDiff < 0 ? "text-red-400" : "text-orbital-text-dim"
+                                    }`}>
+                                      {mapDiff > 0 ? `+${mapDiff}` : mapDiff}
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                      </HudCard>
+                    );
+                  })()}
 
                   {/* Bracket */}
                   <HudCard className="p-5 overflow-hidden" label="BRACKET">
@@ -1372,6 +1495,9 @@ function VetoModal({
         initial={{ scale: 0.95, y: 20 }}
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.95, y: 20 }}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Veto de mapas"
         className="bg-[#0D0D0D] border border-orbital-purple/30 w-full max-w-lg max-h-[90vh] overflow-y-auto"
       >
         {/* Header */}
@@ -1384,7 +1510,7 @@ function VetoModal({
               {getTeamName(tournament, match.team1_id)} <span className="text-orbital-text-dim">vs</span> {getTeamName(tournament, match.team2_id)}
             </div>
           </div>
-          <button onClick={onClose} className="p-2 text-orbital-text-dim hover:text-orbital-text">
+          <button onClick={onClose} className="p-2 text-orbital-text-dim hover:text-orbital-text" aria-label="Fechar veto">
             <X size={16} />
           </button>
         </div>

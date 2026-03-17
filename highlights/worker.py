@@ -1,427 +1,409 @@
 #!/usr/bin/env python3
 """
-ORBITAL ROXA - Highlight Worker
-Daemon local que roda no PC com CS2.
-Polls G5API por demos pendentes, gera highlights e faz upload dos clips.
+ORBITAL ROXA - Worker Automatizado de Highlights
+Monitora partidas finalizadas e processa highlights automaticamente.
 
 Uso:
-  python worker.py                  # roda em loop
-  python worker.py --once           # processa uma vez e sai
-  python worker.py --test demo.dem  # testa pipeline com demo local
+  python worker.py                    # roda uma vez
+  python worker.py --daemon           # roda em loop contínuo
+  python worker.py --match 44         # processa match específico
+  python worker.py --match 44 --map 1 # processa mapa específico
+
+Fluxo por match/mapa:
+  1. Verifica se match tem highlights pendentes
+  2. Baixa demo do G5API (ou usa local)
+  3. Parseia demo → extrai top 3 highlights
+  4. Grava clips via CSDM (abre CS2)
+  5. Pós-processa com HUD animado + intro/outro
+  6. Upload para G5API
+
+Requer:
+  - Docker: csdm-postgres rodando
+  - CS2 instalado (para gravação via CSDM)
+  - Python deps: demoparser2, Pillow, requests
 """
 import os
 import sys
-import time
 import json
-import shutil
-import zipfile
+import time
+import signal
 import argparse
-import subprocess
 import requests
+from datetime import datetime
 
-# Adicionar diretório atual ao path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from worker_config import G5API_URL, HIGHLIGHTS_API_KEY, POLL_INTERVAL, TOP_N, DEMOS_DIR
+from orbital_highlights.extractor import find_highlights
+from orbital_highlights.config import BASE_DIR
 
-from worker_config import G5API_URL, HIGHLIGHTS_API_KEY, POLL_INTERVAL, TOP_N, DEMOS_DIR, CLIPS_DIR
-from orbital_highlights.extractor import find_highlights, generate_json
-from orbital_highlights.postprocess import process_clip, get_video_duration
-from orbital_highlights.config import FFMPEG
+# Directories
+PARSED_DIR = os.path.join(BASE_DIR, "parsed_highlights")
+RECORDINGS_DIR = os.path.join(BASE_DIR, "recordings")
+FINAL_DIR = os.path.join(BASE_DIR, "final_videos")
 
+for d in [DEMOS_DIR, PARSED_DIR, RECORDINGS_DIR, FINAL_DIR]:
+    os.makedirs(d, exist_ok=True)
 
-HEADERS = {"X-Highlights-Key": HIGHLIGHTS_API_KEY}
+# Graceful shutdown
+running = True
+def handle_signal(sig, frame):
+    global running
+    print(f"\n[Worker] Recebido sinal {sig}, finalizando...")
+    running = False
+
+signal.signal(signal.SIGINT, handle_signal)
+signal.signal(signal.SIGTERM, handle_signal)
 
 
 def log(msg):
-    """Log com timestamp."""
-    ts = time.strftime("%H:%M:%S")
+    ts = datetime.now().strftime("%H:%M:%S")
     print(f"[{ts}] {msg}")
 
 
-def update_status(match_id, map_number, rank, status, error_message=None, **metadata):
-    """Atualiza status de um clip no G5API."""
-    body = {
-        "matchId": match_id,
-        "mapNumber": map_number,
-        "rank": rank,
-        "status": status,
-        "errorMessage": error_message,
-    }
-    # Adicionar metadata opcional
-    key_map = {
-        "player_name": "playerName",
-        "steam_id": "steamId",
-        "kills_count": "killsCount",
-        "score": "score",
-        "description": "description",
-        "round_number": "roundNumber",
-        "tick_start": "tickStart",
-        "tick_end": "tickEnd",
-        "duration_s": "durationS",
-    }
-    for py_key, api_key in key_map.items():
-        if py_key in metadata and metadata[py_key] is not None:
-            body[api_key] = metadata[py_key]
-
+def api_get(endpoint):
+    """GET request to G5API."""
     try:
-        r = requests.post(f"{G5API_URL}/highlights/status", json=body, headers=HEADERS, timeout=10)
-        if r.status_code != 200:
-            log(f"  AVISO: status update falhou ({r.status_code}): {r.text}")
+        r = requests.get(f"{G5API_URL}{endpoint}", timeout=15)
+        r.raise_for_status()
+        return r.json()
     except Exception as e:
-        log(f"  AVISO: status update erro: {e}")
+        log(f"  API GET {endpoint} erro: {e}")
+        return None
 
 
-def upload_clip(match_id, map_number, rank, file_path, metadata):
-    """Faz upload de um clip MP4 para o G5API."""
-    with open(file_path, "rb") as f:
-        data = f.read()
-
-    headers = {
-        **HEADERS,
-        "Content-Type": "application/octet-stream",
-        "X-Match-Id": str(match_id),
-        "X-Map-Number": str(map_number),
-        "X-Rank": str(rank),
-        "X-Metadata": json.dumps(metadata),
-        "X-File-Type": "video",
-    }
-
-    r = requests.post(f"{G5API_URL}/highlights/upload", data=data, headers=headers, timeout=120)
-    if r.status_code == 200:
-        log(f"  Upload OK: {r.json().get('file', '')}")
-        return True
-    else:
-        log(f"  Upload ERRO ({r.status_code}): {r.text}")
-        return False
-
-
-def upload_thumbnail(match_id, map_number, rank, file_path):
-    """Faz upload de uma thumbnail JPG para o G5API."""
-    with open(file_path, "rb") as f:
-        data = f.read()
-
-    headers = {
-        **HEADERS,
-        "Content-Type": "application/octet-stream",
-        "X-Match-Id": str(match_id),
-        "X-Map-Number": str(map_number),
-        "X-Rank": str(rank),
-        "X-File-Type": "thumbnail",
-    }
-
-    r = requests.post(f"{G5API_URL}/highlights/upload", data=data, headers=headers, timeout=30)
-    return r.status_code == 200
-
-
-def generate_thumbnail(clip_path, thumb_path):
-    """Gera thumbnail de um clip usando FFmpeg."""
-    cmd = [
-        FFMPEG, "-y", "-i", clip_path,
-        "-ss", "2", "-vframes", "1",
-        "-q:v", "2",
-        thumb_path
-    ]
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
-    return result.returncode == 0
-
-
-def fetch_pending():
-    """Busca trabalho pendente no G5API."""
+def api_get_frontend(endpoint):
+    """GET request to frontend API (for highlights)."""
+    frontend_url = os.environ.get("FRONTEND_URL", "https://www.orbitalroxa.com.br")
     try:
-        r = requests.get(f"{G5API_URL}/highlights/pending", headers=HEADERS, timeout=10)
-        if r.status_code == 200:
-            return r.json().get("pending", [])
+        r = requests.get(f"{frontend_url}{endpoint}", timeout=15)
+        r.raise_for_status()
+        return r.json()
+    except Exception as e:
+        log(f"  Frontend GET {endpoint} erro: {e}")
+        return None
+
+
+def get_finished_matches():
+    """Get all finished matches from G5API."""
+    data = api_get("/matches")
+    if not data:
+        return []
+    matches = data.get("matches", [])
+    return [m for m in matches if m.get("end_time") and not m.get("cancelled")]
+
+
+def get_match_highlights(match_id):
+    """Check if match already has highlights."""
+    data = api_get_frontend(f"/api/highlights/{match_id}")
+    if not data:
+        return []
+    return data.get("clips", [])
+
+
+def get_map_stats(match_id):
+    """Get map stats for a match."""
+    data = api_get(f"/mapstats/{match_id}")
+    if not data:
+        return []
+    return data.get("mapstats", data.get("mapStats", []))
+
+
+def download_demo(match_id, map_number, map_stats):
+    """Download demo from G5API. Returns path to .dem file or None."""
+    if not map_stats or map_number >= len(map_stats):
+        log(f"  Sem mapstats para match {match_id} map {map_number}")
+        return None
+
+    ms = map_stats[map_number]
+    demo_file = ms.get("demoFile")
+    if not demo_file:
+        log(f"  Sem demo para match {match_id} map {map_number}")
+        return None
+
+    # Check if already downloaded
+    dem_name = demo_file.replace(".zip", ".dem")
+    local_dem = os.path.join(DEMOS_DIR, dem_name)
+    if os.path.exists(local_dem):
+        log(f"  Demo já existe: {dem_name}")
+        return local_dem
+
+    # Download from G5API
+    url = f"{G5API_URL}/demo/{demo_file}"
+    log(f"  Baixando demo: {demo_file}...")
+    try:
+        r = requests.get(url, stream=True, timeout=300)
+        r.raise_for_status()
+
+        zip_path = os.path.join(DEMOS_DIR, demo_file)
+        with open(zip_path, "wb") as f:
+            for chunk in r.iter_content(chunk_size=8192):
+                f.write(chunk)
+
+        # Extract if zip
+        if demo_file.endswith(".zip"):
+            import zipfile
+            with zipfile.ZipFile(zip_path, "r") as zf:
+                zf.extractall(DEMOS_DIR)
+            os.remove(zip_path)
+            if os.path.exists(local_dem):
+                return local_dem
+            # Find extracted .dem
+            for f in os.listdir(DEMOS_DIR):
+                if f.endswith(".dem") and str(match_id) in f:
+                    return os.path.join(DEMOS_DIR, f)
         else:
-            log(f"  Erro buscando pending ({r.status_code}): {r.text}")
-            return []
+            # Already a .dem
+            return zip_path
+
     except Exception as e:
-        log(f"  Erro de conexão: {e}")
+        log(f"  Erro ao baixar demo: {e}")
+        return None
+
+    return None
+
+
+def parse_demo(demo_path, match_id, map_number):
+    """Parse demo and extract highlights. Returns list of highlights."""
+    json_path = os.path.join(PARSED_DIR, f"match_{match_id}_map_{map_number}.json")
+
+    # Check cache
+    if os.path.exists(json_path):
+        with open(json_path) as f:
+            data = json.load(f)
+        log(f"  Parse cache: {len(data.get('highlights', []))} highlights")
+        return data.get("highlights", [])
+
+    log(f"  Parseando demo...")
+    try:
+        highlights = find_highlights(demo_path, top_n=TOP_N)
+        # Save cache
+        data = {
+            "match_id": match_id,
+            "map_number": map_number,
+            "demo": os.path.basename(demo_path),
+            "highlights": highlights,
+        }
+        with open(json_path, "w") as f:
+            json.dump(data, f, indent=2)
+        log(f"  {len(highlights)} highlights encontrados")
+        return highlights
+    except Exception as e:
+        log(f"  Erro ao parsear: {e}")
         return []
 
 
-def download_demo(demo_file):
-    """Baixa demo ZIP do G5API e extrai .dem."""
-    os.makedirs(DEMOS_DIR, exist_ok=True)
-
-    zip_url = f"{G5API_URL}/demo/{demo_file}"
-    zip_path = os.path.join(DEMOS_DIR, demo_file)
-
-    log(f"  Baixando demo: {demo_file}")
-    r = requests.get(zip_url, timeout=300)
-    if r.status_code != 200:
-        log(f"  Erro baixando demo ({r.status_code})")
-        return None
-
-    with open(zip_path, "wb") as f:
-        f.write(r.content)
-
-    # Extrair .dem do ZIP
-    try:
-        with zipfile.ZipFile(zip_path, "r") as z:
-            dem_files = [f for f in z.namelist() if f.endswith(".dem")]
-            if not dem_files:
-                log("  Nenhum .dem encontrado no ZIP")
-                return None
-
-            dem_name = dem_files[0]
-            z.extract(dem_name, DEMOS_DIR)
-            dem_path = os.path.join(DEMOS_DIR, dem_name)
-            log(f"  Demo extraído: {dem_name}")
-            return dem_path
-    except Exception as e:
-        log(f"  Erro extraindo ZIP: {e}")
-        return None
-
-
-def process_match_map(match_id, map_number, demo_file, local_dem=None):
-    """Processa uma partida/mapa: extract → record → process → upload."""
-    log(f"\n{'='*60}")
-    log(f"  Processando: match {match_id} map {map_number}")
-    log(f"  Demo: {local_dem or demo_file}")
-    log(f"{'='*60}")
-
-    # 1. Download demo (ou usar local)
-    if local_dem:
-        dem_path = local_dem
-        log(f"  Usando demo local: {dem_path}")
-    else:
-        dem_path = download_demo(demo_file)
-    if not dem_path:
-        for rank in range(1, TOP_N + 1):
-            update_status(match_id, map_number, rank, "error", "Falha ao baixar/extrair demo")
-        return
-
-    # 2. Extract highlights
-    for rank in range(1, TOP_N + 1):
-        update_status(match_id, map_number, rank, "extracting")
-
-    try:
-        highlights, tick_rate = find_highlights(dem_path, TOP_N)
-    except Exception as e:
-        log(f"  Erro na extração: {e}")
-        for rank in range(1, TOP_N + 1):
-            update_status(match_id, map_number, rank, "error", f"Erro na extração: {str(e)[:200]}")
-        return
-
-    if not highlights:
-        log("  Nenhum highlight encontrado")
-        for rank in range(1, TOP_N + 1):
-            update_status(match_id, map_number, rank, "error", "Nenhum highlight encontrado na demo")
-        return
-
-    # Salvar JSON para referência
-    json_path = os.path.join(CLIPS_DIR, f"match_{match_id}_map_{map_number}_highlights.json")
-    os.makedirs(CLIPS_DIR, exist_ok=True)
-    generate_json(highlights, tick_rate, json_path)
-
-    # Atualizar metadata de cada highlight
-    for i, h in enumerate(highlights):
-        rank = i + 1
-        update_status(match_id, map_number, rank, "extracting",
-                      player_name=h["player"],
-                      steam_id=h["steamid"],
-                      kills_count=h["kills_count"],
-                      score=h["score"],
-                      description=h["description"],
-                      round_number=h["round"] + 1,
-                      tick_start=h["tick_start"],
-                      tick_end=h["tick_end"])
-
-    # 3. Record clips via CSDM
-    log("\n[RECORD] Gravando clips via CSDM...")
-    for rank in range(1, len(highlights) + 1):
-        update_status(match_id, map_number, rank, "recording")
-
+def record_highlight(highlight, demo_path, output_dir):
+    """Record a single highlight clip via CSDM. Returns clip path or None."""
     from orbital_highlights.recorder import record_clips
-    clips_output = os.path.join(CLIPS_DIR, f"match_{match_id}_map_{map_number}")
-    try:
-        record_clips(highlights, dem_path, clips_output)
-    except Exception as e:
-        log(f"  Erro na gravação: {e}")
-        for rank in range(1, len(highlights) + 1):
-            update_status(match_id, map_number, rank, "error", f"Erro na gravação: {str(e)[:200]}")
-        return
 
-    # 4. Post-process cada clip individualmente
-    all_uploaded = True
-    log("\n[PROCESS] Pós-processando clips...")
-    # Buscar MP4s recursivamente (CSDM gera em subdiretórios)
-    clip_files = []
-    for root, dirs, files in os.walk(clips_output):
-        for f in files:
+    rank = highlight.get("rank", 1)
+    player = highlight.get("player_name", "unknown")
+    sub_dir = os.path.join(output_dir, f"highlight_{rank}_r{highlight.get('round', 0)}_{player}")
+
+    # Check if already recorded
+    if os.path.exists(sub_dir):
+        for f in os.listdir(sub_dir):
             if f.endswith(".mp4"):
-                clip_files.append(os.path.relpath(os.path.join(root, f), clips_output))
-    clip_files.sort()
-    log(f"  Clips encontrados: {clip_files}")
+                clip = os.path.join(sub_dir, f)
+                log(f"  Clip já gravado: {os.path.basename(clip)}")
+                return clip
 
-    for i, h in enumerate(highlights):
-        rank = i + 1
-        update_status(match_id, map_number, rank, "processing")
+    log(f"  Gravando clip #{rank} ({player})...")
+    try:
+        record_clips([highlight], demo_path, output_dir)
+        # Find generated clip
+        if os.path.exists(sub_dir):
+            for f in os.listdir(sub_dir):
+                if f.endswith(".mp4"):
+                    return os.path.join(sub_dir, f)
+    except Exception as e:
+        log(f"  Erro ao gravar: {e}")
+    return None
 
-        # Encontrar clip correspondente pelo tick range
-        pattern = f"tick-{h['tick_start']}-to-{h['tick_end']}"
-        matched = next((cf for cf in clip_files if pattern in cf), None)
 
-        if not matched:
-            log(f"  Clip #{rank} não encontrado (pattern: {pattern})")
-            update_status(match_id, map_number, rank, "error", "Clip não encontrado após gravação")
+def postprocess_highlight(clip_path, highlight, match_id, map_number):
+    """Post-process clip with HUD overlay. Returns final video path or None."""
+    rank = highlight.get("rank", 1)
+    player = highlight.get("player_name", "unknown").replace(" ", "_")
+    final_dir = os.path.join(FINAL_DIR, f"match_{match_id}_map_{map_number}")
+    os.makedirs(final_dir, exist_ok=True)
+    final_path = os.path.join(final_dir, f"highlight_m{match_id}_map{map_number}_r{rank}_{player}.mp4")
+
+    if os.path.exists(final_path):
+        log(f"  Final já existe: {os.path.basename(final_path)}")
+        return final_path
+
+    log(f"  Pós-processando #{rank}...")
+    try:
+        # Import postprocess module
+        sys.path.insert(0, BASE_DIR)
+        from postprocess import postprocess_clip
+        result = postprocess_clip(clip_path, highlight, match_id, map_number, rank)
+        if result and os.path.exists(result):
+            return result
+        elif os.path.exists(final_path):
+            return final_path
+    except Exception as e:
+        log(f"  Erro no pós-processamento: {e}")
+    return None
+
+
+def upload_highlight(video_path, highlight, match_id, map_number, rank):
+    """Upload final video to G5API. Returns True on success."""
+    log(f"  Uploading #{rank}...")
+    try:
+        sys.path.insert(0, BASE_DIR)
+        from upload import upload_single
+        success = upload_single(video_path, highlight, match_id, map_number, rank)
+        if success:
+            log(f"  Upload OK: {os.path.basename(video_path)}")
+        return success
+    except Exception as e:
+        log(f"  Erro no upload: {e}")
+        return False
+
+
+def process_match_map(match_id, map_number, map_stats):
+    """Process all highlights for a single match/map."""
+    log(f"\n{'='*50}")
+    log(f"Match {match_id} Map {map_number}")
+    log(f"{'='*50}")
+
+    # 1. Download demo
+    demo_path = download_demo(match_id, map_number, map_stats)
+    if not demo_path:
+        log("  SKIP: demo não disponível")
+        return False
+
+    # 2. Parse
+    highlights = parse_demo(demo_path, match_id, map_number)
+    if not highlights:
+        log("  SKIP: nenhum highlight encontrado")
+        return False
+
+    # 3. Record + Postprocess + Upload each highlight
+    output_dir = os.path.join(RECORDINGS_DIR, f"match_{match_id}_map_{map_number}")
+    os.makedirs(output_dir, exist_ok=True)
+
+    success_count = 0
+    for hl in highlights:
+        rank = hl.get("rank", 1)
+
+        # Record
+        clip_path = record_highlight(hl, demo_path, output_dir)
+        if not clip_path:
+            log(f"  FALHA: gravação #{rank}")
             continue
 
-        input_path = os.path.join(clips_output, matched)
-        processed_path = os.path.join(clips_output, f"processed_clip_{rank}.mp4")
-        thumb_path = os.path.join(clips_output, f"thumb_clip_{rank}.jpg")
-
-        # Dados do highlight para o HUD
-        h_info = {
-            "player": h["player"],
-            "steamid": h["steamid"],
-            "kills_count": h["kills_count"],
-            "round": h["round"] + 1,
-            "rank": rank,
-            "score": h["score"],
-            "kills": h["kills"],
-        }
-
-        try:
-            ok = process_clip(input_path, processed_path, h_info, tick_rate)
-            if not ok:
-                update_status(match_id, map_number, rank, "error", "Falha no pós-processamento FFmpeg")
-                continue
-        except Exception as e:
-            log(f"  Erro no processamento #{rank}: {e}")
-            update_status(match_id, map_number, rank, "error", f"Erro FFmpeg: {str(e)[:200]}")
+        # Postprocess
+        final_path = postprocess_highlight(clip_path, hl, match_id, map_number)
+        if not final_path:
+            log(f"  FALHA: pós-processamento #{rank}")
             continue
 
-        # Gerar thumbnail
-        generate_thumbnail(processed_path, thumb_path)
+        # Upload
+        if upload_highlight(final_path, hl, match_id, map_number, rank):
+            success_count += 1
 
-        # 5. Upload
-        log(f"  Uploading clip #{rank}...")
-        duration = 0
-        try:
-            duration = get_video_duration(processed_path)
-        except Exception:
-            pass
-
-        metadata = {
-            "playerName": h["player"],
-            "steamId": h["steamid"],
-            "killsCount": h["kills_count"],
-            "score": h["score"],
-            "description": h["description"],
-            "roundNumber": h["round"] + 1,
-            "tickStart": h["tick_start"],
-            "tickEnd": h["tick_end"],
-            "durationS": round(duration, 2),
-        }
-
-        if upload_clip(match_id, map_number, rank, processed_path, metadata):
-            log(f"  Clip #{rank} OK!")
-            all_uploaded = True
-            # Upload thumbnail
-            if os.path.exists(thumb_path):
-                upload_thumbnail(match_id, map_number, rank, thumb_path)
-        else:
-            all_uploaded = False
-            update_status(match_id, map_number, rank, "error", "Falha no upload do clip")
-
-    # Cleanup — só limpa se todos os uploads tiveram sucesso
-    if all_uploaded:
-        log("\n[CLEANUP] Limpando arquivos temporários...")
-        try:
-            shutil.rmtree(clips_output, ignore_errors=True)
-        except Exception:
-            pass
-    else:
-        log(f"\n[CLEANUP] Upload falhou — mantendo arquivos em: {clips_output}")
-
-    log(f"\nProcessamento concluído para match {match_id} map {map_number}")
+    log(f"\n  Resultado: {success_count}/{len(highlights)} highlights processados")
+    return success_count > 0
 
 
-def run_loop():
-    """Loop principal do worker."""
-    log("="*60)
-    log("  ORBITAL ROXA - Highlight Worker")
-    log(f"  G5API: {G5API_URL}")
-    log(f"  Poll interval: {POLL_INTERVAL}s")
-    log("="*60)
+def find_pending_matches():
+    """Find matches that are finished but don't have all highlights."""
+    matches = get_finished_matches()
+    pending = []
 
-    while True:
-        pending = fetch_pending()
+    for m in matches:
+        match_id = m["id"]
+        clips = get_match_highlights(match_id)
+        ready_clips = [c for c in clips if c.get("status") == "ready" and c.get("video_file")]
 
-        if pending:
-            log(f"\n{len(pending)} mapa(s) pendente(s) encontrado(s)")
-            for item in pending:
-                process_match_map(
-                    item["match_id"],
-                    item["map_number"],
-                    item["demoFile"]
-                )
-        else:
-            log("Nenhum highlight pendente.")
+        map_stats = get_map_stats(match_id)
+        expected_clips = len(map_stats) * TOP_N if map_stats else TOP_N
 
-        log(f"Aguardando {POLL_INTERVAL}s...")
-        time.sleep(POLL_INTERVAL)
+        if len(ready_clips) < expected_clips:
+            pending.append({
+                "match_id": match_id,
+                "map_stats": map_stats,
+                "existing_clips": len(ready_clips),
+                "expected_clips": expected_clips,
+                "team1": m.get("team1_string", "?"),
+                "team2": m.get("team2_string", "?"),
+            })
+
+    return pending
 
 
 def run_once():
-    """Processa uma vez e sai."""
-    log("Modo: processar uma vez")
-    pending = fetch_pending()
+    """Run one cycle: find pending matches and process them."""
+    log("Buscando partidas pendentes...")
+    pending = find_pending_matches()
 
-    if pending:
-        log(f"{len(pending)} mapa(s) pendente(s)")
-        for item in pending:
-            process_match_map(
-                item["match_id"],
-                item["map_number"],
-                item["demoFile"]
-            )
-    else:
-        log("Nenhum highlight pendente.")
+    if not pending:
+        log("Nenhuma partida pendente.")
+        return
+
+    log(f"{len(pending)} partida(s) com highlights faltando:")
+    for p in pending:
+        log(f"  #{p['match_id']} {p['team1']} vs {p['team2']} — {p['existing_clips']}/{p['expected_clips']} clips")
+
+    for p in pending:
+        if not running:
+            break
+
+        match_id = p["match_id"]
+        map_stats = p["map_stats"]
+
+        if not map_stats:
+            log(f"\n  Match {match_id}: sem mapstats, pulando")
+            continue
+
+        for map_num in range(len(map_stats)):
+            if not running:
+                break
+            process_match_map(match_id, map_num, map_stats)
 
 
-def run_test(demo_path):
-    """Testa o pipeline com um demo local (sem interação com G5API)."""
-    log(f"Modo teste: {demo_path}")
+def daemon_loop():
+    """Run continuously, polling for new matches."""
+    log("="*60)
+    log("  ORBITAL ROXA - Highlights Worker")
+    log(f"  Poll interval: {POLL_INTERVAL}s")
+    log(f"  G5API: {G5API_URL}")
+    log("="*60)
 
-    if not os.path.exists(demo_path):
-        log(f"ERRO: Demo não encontrado: {demo_path}")
-        sys.exit(1)
+    while running:
+        try:
+            run_once()
+        except Exception as e:
+            log(f"ERRO no ciclo: {e}")
 
-    highlights, tick_rate = find_highlights(demo_path, TOP_N)
+        if running:
+            log(f"\nAguardando {POLL_INTERVAL}s...")
+            for _ in range(POLL_INTERVAL):
+                if not running:
+                    break
+                time.sleep(1)
 
-    if not highlights:
-        log("Nenhum highlight encontrado!")
-        sys.exit(1)
-
-    os.makedirs(CLIPS_DIR, exist_ok=True)
-    generate_json(highlights, tick_rate, os.path.join(CLIPS_DIR, "test_highlights.json"))
-
-    log(f"\n{len(highlights)} highlights encontrados:")
-    for i, h in enumerate(highlights, 1):
-        log(f"  #{i} [{h['score']}pts] {h['description']}")
-
-    log("\nPara gravar clips, use: python main.py record \"" + demo_path + "\"")
+    log("Worker finalizado.")
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="ORBITAL ROXA - Highlight Worker")
-    parser.add_argument("--once", action="store_true", help="Processa uma vez e sai")
-    parser.add_argument("--test", type=str, help="Testa pipeline com demo local")
-    parser.add_argument("--local", type=str, help="Processa match com demo local (match_id:map_number:dem_path)")
+    parser = argparse.ArgumentParser(description="ORBITAL ROXA - Highlights Worker")
+    parser.add_argument("--daemon", action="store_true", help="Rodar em loop contínuo")
+    parser.add_argument("--match", type=int, help="Processar match específico")
+    parser.add_argument("--map", type=int, default=None, help="Processar mapa específico (com --match)")
     args = parser.parse_args()
 
-    if args.local:
-        # Formato: match_id:map_number:/path/to/demo.dem
-        parts = args.local.split(":", 2)
-        if len(parts) != 3:
-            print("Uso: --local match_id:map_number:/path/to/demo.dem")
-            sys.exit(1)
-        match_id, map_number, dem_path = int(parts[0]), int(parts[1]), parts[2]
-        process_match_map(match_id, map_number, None, local_dem=dem_path)
-    elif args.test:
-        run_test(args.test)
-    elif args.once:
-        run_once()
+    if args.match:
+        map_stats = get_map_stats(args.match)
+        if args.map is not None:
+            process_match_map(args.match, args.map, map_stats)
+        else:
+            for i in range(len(map_stats)):
+                process_match_map(args.match, i, map_stats)
+    elif args.daemon:
+        daemon_loop()
     else:
-        run_loop()
+        run_once()
