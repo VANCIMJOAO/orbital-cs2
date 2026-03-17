@@ -223,15 +223,15 @@ async function generateCard(
   ctx.fillStyle = textDim;
   drawSpacedText(ctx, "RATING GERAL", W / 2, ratingY, 3);
 
-  ctx.font = "900 52px Orbitron, monospace";
+  ctx.font = "900 42px Orbitron, monospace";
   ctx.fillStyle = rc;
   ctx.shadowColor = rc + "55";
-  ctx.shadowBlur = 30;
-  ctx.fillText(stats.avgRating > 0 ? stats.avgRating.toFixed(2) : "—", W / 2, ratingY + 50);
+  ctx.shadowBlur = 25;
+  ctx.fillText(stats.avgRating > 0 ? stats.avgRating.toFixed(2) : "—", W / 2, ratingY + 40);
   ctx.shadowBlur = 0;
 
   // Tier badge
-  const tierY = ratingY + 70;
+  const tierY = ratingY + 60;
   const tierText = tier.label;
   ctx.font = "700 9px Orbitron, monospace";
   // Measure with spacing
