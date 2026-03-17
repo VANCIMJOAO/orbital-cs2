@@ -29,22 +29,39 @@ interface HighlightClip {
 export function HighlightsContent() {
   const [clips, setClips] = useState<HighlightClip[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const PAGE_SIZE = 30;
 
-  const fetchClips = useCallback(async () => {
+  const fetchClips = useCallback(async (offset = 0, append = false) => {
+    if (append) setLoadingMore(true); else setLoading(true);
     try {
-      const res = await fetch("/api/highlights/all?limit=30");
+      const res = await fetch(`/api/highlights/all?limit=${PAGE_SIZE}&offset=${offset}`);
       const data = await res.json();
-      setClips(data.clips || []);
+      const newClips = data.clips || [];
+      if (append) {
+        setClips(prev => [...prev, ...newClips]);
+      } else {
+        setClips(newClips);
+      }
+      setHasMore(newClips.length >= PAGE_SIZE);
     } catch {
-      setClips([]);
+      if (!append) setClips([]);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   }, []);
 
   useEffect(() => {
     fetchClips();
   }, [fetchClips]);
+
+  const loadMore = () => {
+    if (!loadingMore && hasMore) {
+      fetchClips(clips.length, true);
+    }
+  };
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-20 pt-8">
@@ -96,7 +113,7 @@ export function HighlightsContent() {
               key={clip.id}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.05 * i }}
+              transition={{ delay: i < PAGE_SIZE ? 0.05 * i : 0 }}
               className="bg-orbital-card border border-orbital-border overflow-hidden group hover:border-orbital-purple/30 transition-colors"
             >
               {/* Video with auto-generated thumbnail (ignore server thumb — it's the same generic intro for all clips) */}
@@ -144,6 +161,29 @@ export function HighlightsContent() {
             </motion.div>
           ))}
         </motion.div>
+      )}
+
+      {/* Load more */}
+      {!loading && hasMore && clips.length > 0 && (
+        <div className="mt-8 text-center">
+          <button
+            onClick={loadMore}
+            disabled={loadingMore}
+            className="inline-flex items-center gap-2 px-6 py-2.5 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 hover:bg-orbital-purple/20 transition-all font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-wider text-orbital-purple disabled:opacity-50"
+          >
+            {loadingMore ? <Loader2 size={14} className="animate-spin" /> : null}
+            {loadingMore ? "CARREGANDO..." : "CARREGAR MAIS"}
+          </button>
+        </div>
+      )}
+
+      {/* Total count */}
+      {!loading && clips.length > 0 && (
+        <div className="mt-4 text-center">
+          <span className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim">
+            {clips.length} highlight{clips.length !== 1 ? "s" : ""} carregado{clips.length !== 1 ? "s" : ""}
+          </span>
+        </div>
       )}
     </div>
   );

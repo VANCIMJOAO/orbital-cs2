@@ -159,6 +159,26 @@ export function BracketMatchCard({
         />
       </div>
 
+      {/* BO3+ map scores detail */}
+      {scores && scores.length > 1 && (
+        <div className="mt-2 flex items-center justify-center gap-2 flex-wrap">
+          {scores.map((ms, i) => (
+            <div key={i} className="flex items-center gap-1 px-1.5 py-0.5 bg-white/[0.02] border border-orbital-border/30">
+              <span className="font-[family-name:var(--font-jetbrains)] text-[0.45rem] text-orbital-text-dim">
+                {ms.map_name.replace("de_", "").toUpperCase()}
+              </span>
+              <span className={`font-[family-name:var(--font-jetbrains)] text-[0.45rem] font-bold ${
+                ms.team1_score > ms.team2_score ? "text-orbital-success" : "text-orbital-text-dim"
+              }`}>{ms.team1_score}</span>
+              <span className="text-orbital-text-dim text-[0.35rem]">:</span>
+              <span className={`font-[family-name:var(--font-jetbrains)] text-[0.45rem] font-bold ${
+                ms.team2_score > ms.team1_score ? "text-orbital-success" : "text-orbital-text-dim"
+              }`}>{ms.team2_score}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Admin actions */}
       {admin?.isAdmin && (
         <div className="mt-2 flex gap-1">

@@ -1,550 +1,521 @@
 "use client";
 
-import { useRef } from "react";
 import { motion } from "framer-motion";
-import { Trophy, Crosshair, Swords, Users, Activity, ChevronRight, MapPin, Calendar, DollarSign, Shield, Star } from "lucide-react";
+import { Trophy, Crosshair, Swords, Users, Activity, ChevronRight, Shield, Star, Sparkles, Calendar, MapPin, Zap, BarChart3, Film } from "lucide-react";
 import Link from "next/link";
-import { HudCard, StatBox } from "@/components/hud-card";
-import { MatchCard } from "@/components/match-card";
-import { FullBracket, MapScoresMap } from "@/components/bracket";
-import { BracketExportButton } from "@/components/bracket-export-button";
 import { Match, LeaderboardEntry } from "@/lib/api";
 import { Tournament, getTeamName } from "@/lib/tournament";
-import { MAP_IMAGES } from "@/lib/maps";
+import { MapScoresMap } from "@/components/bracket";
+import { MatchCard } from "@/components/match-card";
 
-function TeamLogo({ logo, size = 32, className = "" }: { logo: string | null | undefined; size?: number; className?: string }) {
+/* ═══════════════════════════════════════════════════════════════════════
+   TYPES
+   ═══════════════════════════════════════════════════════════════════════ */
+
+function TeamLogo({ logo, size = 24 }: { logo: string | null | undefined; size?: number }) {
   if (!logo) return <Shield size={size * 0.6} className="text-orbital-text-dim" />;
-  return <img src={logo} alt="" width={size} height={size} className={`object-contain ${className}`} />;
+  return <img src={logo} alt="" width={size} height={size} className="object-contain" />;
 }
 
-interface HomeContentProps {
-  tournament: Tournament | null;
+export interface HomeContentProps {
+  tournaments: Tournament[];
+  activeTournament: Tournament | null;
   liveMatches: Match[];
   recentMatches: Match[];
   upcomingMatches: Match[];
   totalMatches: number;
   teamCount: number;
+  playerCount: number;
+  topPlayers: LeaderboardEntry[];
   teamsMap?: Record<number, { name: string; logo: string | null; players?: { name: string; steamId: string; captain: number }[] }>;
   mapScoresMap?: MapScoresMap;
-  tournamentMvp?: LeaderboardEntry | null;
 }
 
-export function HomeContent({ tournament, liveMatches, recentMatches, upcomingMatches, totalMatches, teamCount, teamsMap, mapScoresMap, tournamentMvp }: HomeContentProps) {
-  if (tournament) {
-    return <TournamentHome tournament={tournament} liveMatches={liveMatches} recentMatches={recentMatches} teamsMap={teamsMap} mapScoresMap={mapScoresMap} tournamentMvp={tournamentMvp} />;
-  }
+/* ═══════════════════════════════════════════════════════════════════════
+   MAIN COMPONENT — 3 Column HLTV-inspired Layout
+   ═══════════════════════════════════════════════════════════════════════ */
 
-  return <DefaultHome liveMatches={liveMatches} recentMatches={recentMatches} upcomingMatches={upcomingMatches} totalMatches={totalMatches} teamCount={teamCount} teamsMap={teamsMap} mapScoresMap={mapScoresMap} />;
-}
+export function HomeContent({
+  tournaments, activeTournament, liveMatches, recentMatches, upcomingMatches,
+  totalMatches, teamCount, playerCount, topPlayers, teamsMap, mapScoresMap,
+}: HomeContentProps) {
 
-// ── Tournament-focused homepage ──
-function TournamentHome({ tournament: t, liveMatches, recentMatches, teamsMap, mapScoresMap, tournamentMvp }: {
-  tournament: Tournament;
-  liveMatches: Match[];
-  recentMatches: Match[];
-  teamsMap?: Record<number, { name: string; logo: string | null; players?: { name: string; steamId: string; captain: number }[] }>;
-  mapScoresMap?: MapScoresMap;
-  tournamentMvp?: LeaderboardEntry | null;
-}) {
-  const bracketRef = useRef<HTMLDivElement>(null);
-  const finished = t.matches.filter(m => m.status === "finished").length;
-  const total = t.matches.length;
-  const progress = total > 0 ? Math.round((finished / total) * 100) : 0;
-  const isLive = t.status === "active";
-  const isFinished = t.status === "finished";
+  const t = activeTournament;
+  const gf = t?.matches.find(m => m.id === "GF");
+  const champion = t?.status === "finished" && gf?.winner_id
+    ? t.teams.find(tm => tm.id === gf.winner_id) : null;
 
-  const gf = t.matches.find(m => m.id === "GF");
-  const champion = isFinished && gf?.winner_id ? t.teams.find(tm => tm.id === gf.winner_id) : null;
-
-  // Current/next match
-  const liveMatch = t.matches.find(m => m.status === "live");
-  const nextMatch = t.matches.find(m => m.status === "pending" && m.team1_id && m.team2_id);
-
-  // Filter matches: ONLY those created by this tournament (by match_id stored in bracket)
-  const tournamentMatchIds = new Set(t.matches.filter(m => m.match_id).map(m => m.match_id!));
-  const tournamentRecentMatches = recentMatches.filter(m => tournamentMatchIds.has(m.id));
-
-  // Format date (timezone-safe: parse as UTC to avoid server/client mismatch)
-  const formatDate = (d: string | null | undefined) => {
-    if (!d) return null;
-    try {
-      const [year, month, day] = d.split("-").map(Number);
-      const months = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
-      return `${day} de ${months[month - 1]} de ${year}`;
-    } catch { return d; }
-  };
+  const finishedTournaments = tournaments.filter(t => t.status === "finished");
+  const activeTournaments = tournaments.filter(t => t.status === "active" || t.status === "pending");
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-20 overflow-x-hidden">
-      {/* Hero Banner */}
-      <section className="relative py-12 sm:py-20 overflow-hidden rounded-lg">
-        {/* Background image */}
-        <div className="absolute inset-0 pointer-events-none">
-          <img src="https://i.imgur.com/0irj00x.jpeg" alt="" className="w-full h-full object-cover opacity-20" />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#0A0A0A]/60 via-[#0A0A0A]/40 to-[#0A0A0A]" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0A0A0A]/80 via-transparent to-[#0A0A0A]/80" />
-        </div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[min(800px,200vw)] h-[400px] bg-orbital-purple/[0.03] blur-[150px] rounded-full pointer-events-none" />
+    <div className="max-w-[1400px] mx-auto px-3 sm:px-4 lg:px-6 pb-16">
 
-        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }} className="relative text-center">
-          {/* Status badge */}
-          <div className="flex items-center justify-center gap-2 mb-6">
-            {isLive && (
-              <span className="flex items-center gap-2 px-3 py-1.5 bg-orbital-live/10 border border-orbital-live/30 shadow-[0_0_15px_rgba(239,68,68,0.15)] animate-pulse">
-                <span className="w-2 h-2 rounded-full bg-orbital-live shadow-[0_0_8px_rgba(239,68,68,0.6)]" />
-                <span className="font-[family-name:var(--font-orbitron)] text-[0.55rem] tracking-[0.2em] text-orbital-live">AO VIVO</span>
-              </span>
-            )}
-            {isFinished && (
-              <span className="flex items-center gap-2 px-3 py-1.5 bg-orbital-success/10 border border-orbital-success/30">
-                <Trophy size={12} className="text-orbital-success" />
-                <span className="font-[family-name:var(--font-orbitron)] text-[0.55rem] tracking-[0.2em] text-orbital-success">FINALIZADO</span>
-              </span>
-            )}
-            {!isLive && !isFinished && (
-              <span className="flex items-center gap-2 px-3 py-1.5 bg-orbital-warning/10 border border-orbital-warning/30">
-                <span className="font-[family-name:var(--font-orbitron)] text-[0.55rem] tracking-[0.2em] text-orbital-warning">EM BREVE</span>
-              </span>
-            )}
-          </div>
-
-          {/* Tournament name */}
-          <h1 className="font-[family-name:var(--font-orbitron)] text-3xl sm:text-5xl font-black tracking-wider mb-3">
-            <span className="text-orbital-purple glow-purple-text">{t.name}</span>
-          </h1>
-
-          {t.description && (
-            <p className="font-[family-name:var(--font-jetbrains)] text-sm text-orbital-text-dim max-w-xl mx-auto mb-4">
-              {t.description}
-            </p>
-          )}
-
-          {/* Event info pills */}
-          <div className="flex items-center justify-center gap-4 flex-wrap mt-4">
-            {t.start_date && (
-              <div className="flex items-center gap-1.5 font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim">
-                <Calendar size={12} className="text-orbital-purple" />
-                {formatDate(t.start_date)}{t.end_date ? ` — ${formatDate(t.end_date)}` : ""}
+      {/* ── FEATURED TOURNAMENT BANNER ────────────────────────────── */}
+      {t && (
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="mb-6"
+        >
+          <Link href={`/campeonato/${t.id}`} className="block group">
+            <div className="relative overflow-hidden border border-orbital-border hover:border-orbital-purple/30 transition-all">
+              {/* Background */}
+              <div className="absolute inset-0">
+                <img src="https://i.imgur.com/0irj00x.jpeg" alt="" className="w-full h-full object-cover opacity-25" />
+                <div className="absolute inset-0 bg-gradient-to-r from-[#0A0A0A] via-[#0A0A0A]/80 to-[#0A0A0A]" />
               </div>
-            )}
-            {t.prize_pool && (
-              <div className="flex items-center gap-1.5 font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim">
-                <DollarSign size={12} className="text-orbital-purple" />
-                {t.prize_pool}
-              </div>
-            )}
-            {t.location && (
-              <div className="flex items-center gap-1.5 font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim">
-                <MapPin size={12} className="text-orbital-purple" />
-                {t.location}
-              </div>
-            )}
-            <div className="flex items-center gap-1.5 font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim">
-              <Users size={12} className="text-orbital-purple" />
-              {t.teams.length} times
-            </div>
-            <div className="flex items-center gap-1.5 font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim">
-              <Swords size={12} className="text-orbital-purple" />
-              Eliminação Dupla
-            </div>
-          </div>
 
-          {/* Champion banner */}
-          {champion && (
-            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3 }} className="mt-8 relative bg-gradient-to-r from-yellow-500/[0.03] via-yellow-400/[0.08] to-yellow-500/[0.03] border border-yellow-500/20 overflow-hidden">
-              <div className="relative py-6 px-6 flex flex-col items-center gap-3">
-                <div className="flex items-center gap-2">
-                  <div className="h-[1px] w-8 bg-gradient-to-r from-transparent to-yellow-400/50" />
-                  <Trophy size={18} className="text-yellow-400" />
-                  <span className="font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-[0.25em] text-yellow-400/80">
-                    CAMPEÃO
-                  </span>
-                  <Trophy size={18} className="text-yellow-400" />
-                  <div className="h-[1px] w-8 bg-gradient-to-l from-transparent to-yellow-400/50" />
-                </div>
-                <div className="flex items-center gap-4">
-                  {teamsMap?.[champion.id]?.logo && (
-                    <div className="w-12 h-12 sm:w-16 sm:h-16 border border-yellow-500/30 flex items-center justify-center bg-[#0A0A0A]">
-                      <TeamLogo logo={teamsMap[champion.id].logo} size={48} className="w-10 h-10 sm:w-12 sm:h-12" />
-                    </div>
-                  )}
-                  <div>
-                    <h3 className="font-[family-name:var(--font-orbitron)] text-lg sm:text-2xl font-black tracking-wider text-yellow-400" style={{ textShadow: "0 0 20px rgba(234,179,8,0.4)" }}>
-                      {champion.name}
-                    </h3>
-                    <p className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-yellow-400/60 mt-0.5">
-                      {t.name}
-                    </p>
-                    {teamsMap?.[champion.id]?.players && teamsMap[champion.id].players!.length > 0 && (
-                      <p className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-yellow-400/50 mt-1">
-                        {teamsMap[champion.id].players!.map(p => p.name).join(" • ")}
-                      </p>
+              <div className="relative p-5 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                {/* Left: Info */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-2">
+                    {t.status === "active" && (
+                      <span className="flex items-center gap-1.5 px-2 py-0.5 bg-orbital-live/10 border border-orbital-live/30">
+                        <span className="w-1.5 h-1.5 rounded-full bg-orbital-live animate-pulse" />
+                        <span className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.2em] text-orbital-live">AO VIVO</span>
+                      </span>
+                    )}
+                    {t.status === "finished" && (
+                      <span className="flex items-center gap-1.5 px-2 py-0.5 bg-orbital-success/10 border border-orbital-success/30">
+                        <Trophy size={10} className="text-orbital-success" />
+                        <span className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.2em] text-orbital-success">FINALIZADO</span>
+                      </span>
+                    )}
+                    {t.status === "pending" && (
+                      <span className="px-2 py-0.5 bg-orbital-warning/10 border border-orbital-warning/30">
+                        <span className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.2em] text-orbital-warning">EM BREVE</span>
+                      </span>
                     )}
                   </div>
-                </div>
-              </div>
-            </motion.div>
-          )}
 
-          {/* MVP banner */}
-          {tournamentMvp && (
-            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.4 }} className="mt-4 relative bg-gradient-to-r from-red-500/[0.03] via-red-400/[0.08] to-red-500/[0.03] border border-red-500/20 overflow-hidden">
-              <div className="relative py-4 px-6 flex flex-col items-center gap-2">
-                <div className="flex items-center gap-2">
-                  <div className="h-[1px] w-6 bg-gradient-to-r from-transparent to-red-400/50" />
-                  <Star size={14} className="text-red-400 fill-red-400" />
-                  <span className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.25em] text-red-400/80">
-                    MVP DO CAMPEONATO
-                  </span>
-                  <Star size={14} className="text-red-400 fill-red-400" />
-                  <div className="h-[1px] w-6 bg-gradient-to-l from-transparent to-red-400/50" />
-                </div>
-                <Link href={`/perfil/${tournamentMvp.steamId}`} className="group flex items-center gap-4">
-                  <div>
-                    <h3 className="font-[family-name:var(--font-orbitron)] text-base sm:text-lg font-bold tracking-wider text-red-400 group-hover:text-orbital-text transition-colors" style={{ textShadow: "0 0 15px rgba(248,113,113,0.3)" }}>
-                      {tournamentMvp.name}
-                    </h3>
-                    <div className="flex items-center gap-3 font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim mt-0.5">
-                      <span>Rating <span className="text-red-400 font-bold">{(tournamentMvp.average_rating || 0).toFixed(2)}</span></span>
-                      <span>{tournamentMvp.kills}K / {tournamentMvp.deaths}D</span>
-                      <span>HS {Math.round(tournamentMvp.hsp || 0)}%</span>
-                    </div>
+                  <h2 className="font-[family-name:var(--font-orbitron)] text-lg sm:text-2xl font-black tracking-wider text-orbital-purple glow-purple-text mb-1">
+                    {t.name}
+                  </h2>
+
+                  <div className="flex items-center gap-3 flex-wrap">
+                    {t.start_date && (
+                      <span className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim flex items-center gap-1">
+                        <Calendar size={10} className="text-orbital-purple/60" />
+                        {t.start_date}
+                      </span>
+                    )}
+                    {t.location && (
+                      <span className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim flex items-center gap-1">
+                        <MapPin size={10} className="text-orbital-purple/60" />
+                        {t.location}
+                      </span>
+                    )}
+                    <span className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim">
+                      {t.teams.length} times • {t.matches.filter(m => m.status === "finished").length}/{t.matches.length} partidas
+                    </span>
                   </div>
-                </Link>
-              </div>
-            </motion.div>
-          )}
-        </motion.div>
-      </section>
 
-      {/* Live / Next Match */}
-      {(liveMatch || nextMatch) && (
-        <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="mb-8">
-          <SectionHeader icon={Activity} title={liveMatch ? "PARTIDA AO VIVO" : "PRÓXIMA PARTIDA"} accent={liveMatch ? "live" : undefined} />
-          {(() => {
-            const m = liveMatch || nextMatch!;
-            const team1 = getTeamName(t, m.team1_id);
-            const team2 = getTeamName(t, m.team2_id);
-            const team1Logo = m.team1_id ? teamsMap?.[m.team1_id]?.logo : null;
-            const team2Logo = m.team2_id ? teamsMap?.[m.team2_id]?.logo : null;
-            const isPending = !liveMatch;
-            return (
-              <Link href={`/campeonato/${t.id}`}>
-                <div className={`relative overflow-hidden border p-6 hover:border-orbital-purple/30 transition-all ${
-                  liveMatch
-                    ? "border-orbital-live/30 bg-gradient-to-r from-orbital-live/5 via-orbital-card to-orbital-live/5"
-                    : "border-orbital-purple/20 bg-gradient-to-r from-orbital-purple/5 via-orbital-card to-orbital-purple/5"
-                }`}>
-                  <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-orbital-purple/40 to-transparent" />
-                  {liveMatch && <div className="absolute inset-0 bg-orbital-live/[0.02] animate-pulse pointer-events-none" />}
-                  <div className="relative flex items-center justify-between min-w-0">
-                    <div className="flex items-center gap-2 sm:gap-4 flex-1 justify-end min-w-0">
-                      <span className="font-[family-name:var(--font-orbitron)] text-xs sm:text-base font-bold text-orbital-text text-right truncate">{team1}</span>
-                      <div className="w-10 h-10 border border-orbital-border flex items-center justify-center bg-[#0A0A0A] shrink-0">
-                        <TeamLogo logo={team1Logo} size={32} className="w-8 h-8" />
+                  {/* Champion mini */}
+                  {champion && (
+                    <div className="mt-3">
+                      <div className="flex items-center gap-2">
+                        <Trophy size={14} className="text-yellow-400" />
+                        <span className="font-[family-name:var(--font-orbitron)] text-xs text-yellow-400 tracking-wider">{champion.name}</span>
                       </div>
-                    </div>
-                    <div className="px-3 sm:px-6 text-center shrink-0">
-                      <div className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.2em] text-orbital-text-dim mb-1">{m.label}</div>
-                      <div className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text-dim">
-                        {liveMatch ? (
-                          <span className="inline-flex items-center gap-1.5 text-orbital-live font-bold">
-                            <span className="w-2 h-2 rounded-full bg-orbital-live animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.6)]" />
-                            AO VIVO
-                          </span>
-                        ) : isPending ? (
-                          <span className="text-orbital-purple/60 text-[0.6rem] font-[family-name:var(--font-orbitron)] tracking-widest animate-pulse">AGUARDANDO</span>
-                        ) : (
-                          "vs"
-                        )}
-                      </div>
-                      {m.map && (
-                        <div className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-purple mt-1">
-                          {m.map.replace("de_", "").toUpperCase()}
+                      {teamsMap?.[champion.id]?.players && (
+                        <div className="font-[family-name:var(--font-jetbrains)] text-[0.55rem] text-yellow-400/50 mt-1 ml-6">
+                          {teamsMap[champion.id].players!.map(p => p.name).join(" • ")}
                         </div>
                       )}
                     </div>
-                    <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">
-                      <div className="w-10 h-10 border border-orbital-border flex items-center justify-center bg-[#0A0A0A] shrink-0">
-                        <TeamLogo logo={team2Logo} size={32} className="w-8 h-8" />
-                      </div>
-                      <span className="font-[family-name:var(--font-orbitron)] text-xs sm:text-base font-bold text-orbital-text truncate">{team2}</span>
-                    </div>
-                  </div>
+                  )}
                 </div>
-              </Link>
-            );
-          })()}
+
+                {/* Right: CTA */}
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="font-[family-name:var(--font-orbitron)] text-[0.55rem] tracking-wider text-orbital-purple group-hover:text-orbital-text transition-colors">
+                    VER CAMPEONATO
+                  </span>
+                  <ChevronRight size={14} className="text-orbital-purple" />
+                </div>
+              </div>
+
+              {/* Bottom progress bar */}
+              {t.matches.length > 0 && (
+                <div className="h-[2px] bg-orbital-border">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${(t.matches.filter(m => m.status === "finished").length / t.matches.length) * 100}%` }}
+                    transition={{ duration: 1, delay: 0.3 }}
+                    className="h-full bg-gradient-to-r from-orbital-purple to-orbital-purple-bright"
+                  />
+                </div>
+              )}
+            </div>
+          </Link>
         </motion.section>
       )}
 
-      {/* Bracket Preview */}
-      <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="mb-8">
-        <SectionHeader icon={Swords} title="BRACKET" href={`/campeonato/${t.id}`} />
-        <HudCard className="p-5 overflow-hidden">
-          <div ref={bracketRef}>
-            <FullBracket tournament={t} mapScoresMap={mapScoresMap} teamsMap={teamsMap} />
-          </div>
-          <div className="flex items-center justify-center gap-3 mt-4">
-            <Link href={`/campeonato/${t.id}`} className="inline-flex items-center gap-2 px-4 py-2 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 transition-all font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-wider text-orbital-purple">
-              VER BRACKET COMPLETO <ChevronRight size={12} />
+      {/* ── 3-COLUMN GRID ─────────────────────────────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr_260px] gap-4 lg:gap-5">
+
+        {/* ═══════════════════════════════════════════════════════════
+           LEFT SIDEBAR
+           ═══════════════════════════════════════════════════════════ */}
+        <motion.aside
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="space-y-4 order-2 lg:order-1"
+        >
+          {/* Top 5 Ranking */}
+          <SidebarSection icon={BarChart3} title="TOP RANKING">
+            {topPlayers.length > 0 ? (
+              <div className="space-y-0">
+                {topPlayers.map((p, i) => (
+                  <Link key={p.steamId} href={`/perfil/${p.steamId}`} className="flex items-center gap-2 px-3 py-2 hover:bg-orbital-purple/5 transition-colors group">
+                    <span className={`font-[family-name:var(--font-jetbrains)] text-[0.6rem] font-bold w-4 text-center ${
+                      i === 0 ? "text-yellow-400" : i === 1 ? "text-gray-300" : i === 2 ? "text-amber-600" : "text-orbital-text-dim"
+                    }`}>
+                      {i + 1}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <span className="font-[family-name:var(--font-jetbrains)] text-[0.7rem] text-orbital-text group-hover:text-orbital-purple transition-colors truncate block">
+                        {p.name}
+                      </span>
+                    </div>
+                    <span className={`font-[family-name:var(--font-jetbrains)] text-[0.65rem] font-bold ${
+                      (p.average_rating || 0) >= 1.2 ? "text-orbital-success" : (p.average_rating || 0) >= 0.8 ? "text-orbital-text" : "text-orbital-danger"
+                    }`}>
+                      {(p.average_rating || 0).toFixed(2)}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <p className="px-3 py-2 text-orbital-text-dim font-[family-name:var(--font-jetbrains)] text-[0.65rem]">Sem dados</p>
+            )}
+            <Link href="/leaderboard" className="flex items-center justify-center gap-1 py-2 border-t border-orbital-border text-orbital-text-dim hover:text-orbital-purple transition-colors">
+              <span className="font-[family-name:var(--font-jetbrains)] text-[0.6rem]">Ranking completo</span>
+              <ChevronRight size={10} />
             </Link>
-            <BracketExportButton bracketRef={bracketRef} tournamentName={t.name} />
-          </div>
-        </HudCard>
-      </motion.section>
+          </SidebarSection>
 
-      {/* Teams Grid */}
-      <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="mb-8">
-        <SectionHeader icon={Users} title="TIMES PARTICIPANTES" />
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {t.teams.map((team, i) => {
-            const logo = teamsMap?.[team.id]?.logo;
-            const players = teamsMap?.[team.id]?.players || [];
-            const teamMatches = t.matches.filter(m => m.status === "finished" && (m.team1_id === team.id || m.team2_id === team.id));
-            const losses = teamMatches.filter(m => m.winner_id !== null && m.winner_id !== team.id).length;
-            const eliminated = losses >= 2;
-            const isChampion = champion?.id === team.id;
+          {/* Campeonatos */}
+          <SidebarSection icon={Trophy} title="CAMPEONATOS">
+            {tournaments.length > 0 ? (
+              <div className="space-y-0">
+                {tournaments.slice(0, 5).map((tour) => (
+                  <Link key={tour.id} href={`/campeonato/${tour.id}`} className="flex items-center gap-2 px-3 py-2 hover:bg-orbital-purple/5 transition-colors group">
+                    <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                      tour.status === "active" ? "bg-orbital-live animate-pulse" :
+                      tour.status === "finished" ? "bg-orbital-success" : "bg-orbital-warning"
+                    }`} />
+                    <span className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text group-hover:text-orbital-purple transition-colors truncate">
+                      {tour.name}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <p className="px-3 py-2 text-orbital-text-dim font-[family-name:var(--font-jetbrains)] text-[0.65rem]">Nenhum campeonato</p>
+            )}
+            <Link href="/campeonatos" className="flex items-center justify-center gap-1 py-2 border-t border-orbital-border text-orbital-text-dim hover:text-orbital-purple transition-colors">
+              <span className="font-[family-name:var(--font-jetbrains)] text-[0.6rem]">Ver todos</span>
+              <ChevronRight size={10} />
+            </Link>
+          </SidebarSection>
 
-            const borderClass = isChampion ? "border-orbital-success/40" : eliminated ? "border-orbital-border" : "border-orbital-border";
+          {/* Platform Stats */}
+          <SidebarSection icon={Zap} title="PLATAFORMA">
+            <div className="grid grid-cols-2 gap-[1px] bg-orbital-border">
+              <MiniStat label="CAMPEONATOS" value={tournaments.length} />
+              <MiniStat label="PARTIDAS" value={totalMatches} />
+              <MiniStat label="JOGADORES" value={playerCount} />
+              <MiniStat label="TIMES" value={teamCount} />
+            </div>
+          </SidebarSection>
 
-            return (
-              <motion.div
-                key={team.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 + i * 0.05 }}
-                className={`group [perspective:600px] ${eliminated ? "opacity-50" : ""}`}
-              >
-                <div className="relative w-full h-[220px] transition-transform duration-500 [transform-style:preserve-3d] group-hover:[transform:rotateY(180deg)]">
-                  {/* Front */}
-                  <div className={`absolute inset-0 [backface-visibility:hidden] bg-orbital-card border ${borderClass} ${isChampion ? "bg-orbital-success/5" : ""} p-5 flex flex-col items-center justify-center hover:border-orbital-purple/40 hover:scale-[1.02] transition-all duration-300`}>
-                    <div className="w-14 h-14 mb-3 border border-orbital-border flex items-center justify-center bg-[#0A0A0A]">
-                      <TeamLogo logo={logo} size={40} className="w-10 h-10" />
-                    </div>
-                    <div className="font-[family-name:var(--font-orbitron)] text-[0.6rem] sm:text-xs tracking-wide sm:tracking-wider text-orbital-text truncate max-w-full text-center">
-                      {team.name}
-                    </div>
-                    <div className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim mt-1">
-                      [{team.tag}]
-                    </div>
-                    {isChampion && (
-                      <div className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.15em] text-orbital-success mt-2">CAMPEÃO</div>
-                    )}
-                    {eliminated && !isChampion && (
-                      <div className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.15em] text-orbital-danger mt-2">ELIMINADO</div>
-                    )}
-                  </div>
+          {/* Quick Links */}
+          <SidebarSection icon={Crosshair} title="NAVEGAÇÃO">
+            <div className="space-y-0">
+              <SidebarLink href="/campeonatos" icon={Trophy} label="Campeonatos" />
+              <SidebarLink href="/partidas" icon={Swords} label="Partidas" />
+              <SidebarLink href="/leaderboard" icon={BarChart3} label="Ranking" />
+              <SidebarLink href="/highlights" icon={Film} label="Highlights" />
+              <SidebarLink href="/comparar" icon={Swords} label="Comparar" />
+            </div>
+          </SidebarSection>
+        </motion.aside>
 
-                  {/* Back */}
-                  <div className={`absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] bg-[#0D0D0D] border border-orbital-purple/30 flex flex-col`}>
-                    <div className="px-4 py-2 border-b border-orbital-purple/20 bg-orbital-purple/10 flex items-center justify-between">
-                      <span className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.15em] text-orbital-purple">LINEUP</span>
-                      <span className="font-[family-name:var(--font-jetbrains)] text-[0.5rem] text-orbital-text-dim">{team.tag}</span>
-                    </div>
-                    <div className="flex-1 flex flex-col justify-center py-2 gap-1">
-                      {players.map((p) => (
-                        <Link key={p.steamId} href={`/perfil/${p.steamId}`} className="flex items-center gap-2.5 px-4 py-1 hover:bg-orbital-purple/10 transition-colors">
-                          <img src="https://www.hltv.org/img/static/flags/30x20/BR.gif" alt="BR" className="w-5 h-3.5 object-contain" />
-                          <span className={`font-[family-name:var(--font-jetbrains)] text-xs ${p.captain ? "text-orbital-purple font-bold" : "text-orbital-text hover:text-orbital-purple"} transition-colors`}>
-                            {p.name}
-                          </span>
-                          {p.captain === 1 && (
-                            <span className="text-[0.45rem] text-orbital-purple font-[family-name:var(--font-orbitron)] ml-auto">CAP</span>
+        {/* ═══════════════════════════════════════════════════════════
+           CENTER CONTENT
+           ═══════════════════════════════════════════════════════════ */}
+        <motion.main
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.05 }}
+          className="space-y-5 order-1 lg:order-2"
+        >
+          {/* Live Matches */}
+          {liveMatches.length > 0 && (
+            <section>
+              <SectionHeader icon={Activity} title="AO VIVO" accent="live" />
+              <div className="space-y-2">
+                {liveMatches.map((match, i) => (
+                  <MatchCard key={match.id} match={match} teamsMap={teamsMap} mapScores={mapScoresMap?.[match.id]} delay={i * 0.05} />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Recent Results */}
+          <section>
+            <SectionHeader icon={Swords} title="RESULTADOS RECENTES" href="/partidas" />
+            {recentMatches.length > 0 ? (
+              <div className="space-y-2">
+                {recentMatches.slice(0, 5).map((match, i) => (
+                  <MatchCard key={match.id} match={match} teamsMap={teamsMap} mapScores={mapScoresMap?.[match.id]} delay={i * 0.04} />
+                ))}
+              </div>
+            ) : (
+              <div className="border border-orbital-border p-6 text-center">
+                <p className="font-[family-name:var(--font-jetbrains)] text-sm text-orbital-text-dim">Nenhuma partida finalizada</p>
+              </div>
+            )}
+          </section>
+
+          {/* Past Tournaments */}
+          {finishedTournaments.length > 0 && (
+            <section>
+              <SectionHeader icon={Trophy} title="CAMPEONATOS ANTERIORES" href="/campeonatos" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {finishedTournaments.slice(0, 4).map((tour, i) => {
+                  const tourGf = tour.matches.find(m => m.id === "GF");
+                  const tourChampion = tourGf?.winner_id ? tour.teams.find(tm => tm.id === tourGf.winner_id) : null;
+                  return (
+                    <motion.div
+                      key={tour.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.1 + i * 0.05 }}
+                    >
+                      <Link href={`/campeonato/${tour.id}`} className="block group">
+                        <div className="border border-orbital-border hover:border-orbital-purple/30 transition-all p-4 bg-orbital-card">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-wider text-orbital-text group-hover:text-orbital-purple transition-colors truncate">
+                              {tour.name}
+                            </span>
+                            <span className="font-[family-name:var(--font-jetbrains)] text-[0.5rem] text-orbital-text-dim shrink-0">
+                              {tour.teams.length} times
+                            </span>
+                          </div>
+                          {tourChampion && (
+                            <div className="flex items-center gap-2">
+                              <Trophy size={12} className="text-yellow-400" />
+                              <span className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-yellow-400/80">{tourChampion.name}</span>
+                            </div>
                           )}
-                        </Link>
-                      ))}
-                      {players.length === 0 && (
-                        <div className="text-center text-orbital-text-dim font-[family-name:var(--font-jetbrains)] text-xs">
-                          Sem jogadores
                         </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            );
-          })}
-        </div>
-      </motion.section>
+                      </Link>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            </section>
+          )}
+        </motion.main>
 
-      {/* Map Pool */}
-      <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="mb-8">
-        <SectionHeader icon={Crosshair} title="MAP POOL" />
-        <div className="grid grid-cols-3 sm:grid-cols-7 gap-2">
-          {t.map_pool.map((map, i) => (
-            <motion.div
-              key={map}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6 + i * 0.05 }}
-              className="relative border border-orbital-border hover:border-orbital-purple/40 transition-all overflow-hidden group"
-            >
-              <div className="aspect-[16/12] relative bg-[#0A0A0A] overflow-hidden">
-                {MAP_IMAGES[map] ? (
-                  <img
-                    src={MAP_IMAGES[map]}
-                    alt={map}
-                    className="w-full h-full object-cover opacity-60 group-hover:opacity-90 group-hover:scale-110 transition-all duration-500"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <Crosshair size={20} className="text-orbital-purple/30" />
+        {/* ═══════════════════════════════════════════════════════════
+           RIGHT SIDEBAR
+           ═══════════════════════════════════════════════════════════ */}
+        <motion.aside
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 0.15 }}
+          className="space-y-4 order-3"
+        >
+          {/* Upcoming / Live Matches */}
+          <SidebarSection icon={Activity} title={liveMatches.length > 0 ? "PARTIDAS" : "PRÓXIMAS"} accent={liveMatches.length > 0 ? "live" : undefined}>
+            {(liveMatches.length > 0 || upcomingMatches.length > 0) ? (
+              <div className="space-y-0">
+                {liveMatches.map((m) => (
+                  <MatchRow key={m.id} match={m} teamsMap={teamsMap} isLive />
+                ))}
+                {upcomingMatches.map((m) => (
+                  <MatchRow key={m.id} match={m} teamsMap={teamsMap} />
+                ))}
+              </div>
+            ) : (
+              <p className="px-3 py-3 text-orbital-text-dim font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-center">
+                Nenhuma partida agendada
+              </p>
+            )}
+          </SidebarSection>
+
+          {/* Champion Spotlight */}
+          {champion && t && (
+            <SidebarSection icon={Trophy} title="CAMPEÃO" accent="gold">
+              <div className="p-3 text-center">
+                <div className="w-12 h-12 mx-auto mb-2 border border-yellow-500/30 flex items-center justify-center bg-[#0A0A0A]">
+                  <TeamLogo logo={teamsMap?.[champion.id]?.logo} size={36} />
+                </div>
+                <div className="font-[family-name:var(--font-orbitron)] text-sm font-bold text-yellow-400 tracking-wider mb-1">
+                  {champion.name}
+                </div>
+                <div className="font-[family-name:var(--font-jetbrains)] text-[0.55rem] text-orbital-text-dim">
+                  {t.name}
+                </div>
+                {teamsMap?.[champion.id]?.players && (
+                  <div className="font-[family-name:var(--font-jetbrains)] text-[0.5rem] text-yellow-400/40 mt-1">
+                    {teamsMap[champion.id].players!.map(p => p.name).join(" • ")}
                   </div>
                 )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-2 text-center">
-                  <span className="font-[family-name:var(--font-orbitron)] text-[0.55rem] tracking-wider text-white/90 group-hover:text-orbital-purple transition-colors drop-shadow-lg">
-                    {map.replace("de_", "").toUpperCase()}
-                  </span>
-                </div>
               </div>
-            </motion.div>
-          ))}
-        </div>
-      </motion.section>
+            </SidebarSection>
+          )}
 
-      {/* Tournament Matches from G5API */}
-      <section className="mb-8">
-        <SectionHeader icon={Swords} title="RESULTADOS" href="/partidas" />
-        {tournamentRecentMatches.length > 0 ? (
-          <div className="grid gap-3">
-            {tournamentRecentMatches.slice(0, 5).map((match, i) => (
-              <MatchCard key={match.id} match={match} teamsMap={teamsMap} mapScores={mapScoresMap?.[match.id]} delay={i * 0.08} />
-            ))}
-          </div>
-        ) : (
-          <HudCard>
-            <p className="text-center text-orbital-text-dim font-[family-name:var(--font-jetbrains)] text-sm py-4">
-              Nenhuma partida finalizada ainda neste campeonato
-            </p>
-          </HudCard>
-        )}
-      </section>
-
-      {/* Live G5API matches (only tournament ones) */}
-      {(() => {
-        const tournamentLiveMatches = liveMatches.filter(m => tournamentMatchIds.has(m.id));
-        return tournamentLiveMatches.length > 0 ? (
-          <section className="mb-8">
-            <SectionHeader icon={Activity} title="AO VIVO" accent="live" />
-            <div className="grid gap-3">
-              {tournamentLiveMatches.map((match, i) => (
-                <MatchCard key={match.id} match={match} teamsMap={teamsMap} mapScores={mapScoresMap?.[match.id]} delay={i * 0.1} />
-              ))}
+          {/* Highlights Recentes */}
+          <SidebarSection icon={Sparkles} title="HIGHLIGHTS">
+            <div className="p-3 text-center">
+              <Sparkles size={24} className="text-orbital-purple/30 mx-auto mb-2" />
+              <p className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim mb-2">
+                Melhores jogadas do campeonato
+              </p>
+              <Link href="/highlights" className="inline-flex items-center gap-1 font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-wider text-orbital-purple hover:text-orbital-text transition-colors">
+                VER HIGHLIGHTS <ChevronRight size={10} />
+              </Link>
             </div>
-          </section>
-        ) : null;
-      })()}
+          </SidebarSection>
 
-      {/* Quick Links */}
-      <section>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <QuickLink href={`/campeonato/${t.id}`} icon={Trophy} label="VER BRACKET" desc="Bracket completo do campeonato" delay={0.1} />
-          <QuickLink href="/partidas" icon={Swords} label="PARTIDAS" desc="Todas as partidas registradas" delay={0.2} />
-          <QuickLink href="/leaderboard" icon={Activity} label="RANKING" desc="Classificação dos jogadores" delay={0.3} />
-        </div>
-      </section>
+          {/* Recap */}
+          {t?.status === "finished" && (
+            <SidebarSection icon={Star} title="RECAP">
+              <Link href={`/campeonato/${t.id}/recap`} className="block p-3 hover:bg-orbital-purple/5 transition-colors text-center">
+                <Star size={20} className="text-orbital-purple/40 mx-auto mb-2" />
+                <p className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim mb-2">
+                  Reviva o {t.name}
+                </p>
+                <span className="inline-flex items-center gap-1 font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-wider text-orbital-purple">
+                  VER RECAP <ChevronRight size={10} />
+                </span>
+              </Link>
+            </SidebarSection>
+          )}
+        </motion.aside>
+      </div>
     </div>
   );
 }
 
-// ── Default homepage (no tournament) ──
-function DefaultHome({ liveMatches, recentMatches, upcomingMatches, totalMatches, teamCount, teamsMap, mapScoresMap }: Omit<HomeContentProps, "tournament">) {
+/* ═══════════════════════════════════════════════════════════════════════
+   SHARED COMPONENTS
+   ═══════════════════════════════════════════════════════════════════════ */
+
+function SectionHeader({ icon: Icon, title, href, accent }: {
+  icon: React.ElementType; title: string; href?: string; accent?: "live";
+}) {
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-20 overflow-x-hidden">
-      <section className="py-16 sm:py-24 text-center relative overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[min(600px,200vw)] h-[400px] bg-orbital-purple/5 blur-[120px] rounded-full pointer-events-none" />
-        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }} className="relative">
-          <div className="flex items-center justify-center gap-3 mb-6">
-            <div className="h-[1px] w-16 bg-gradient-to-r from-transparent to-orbital-purple/60" />
-            <Crosshair className="text-orbital-purple" size={20} />
-            <div className="h-[1px] w-16 bg-gradient-to-l from-transparent to-orbital-purple/60" />
-          </div>
-          <h1 className="font-[family-name:var(--font-orbitron)] text-4xl sm:text-6xl font-black tracking-wider mb-4">
-            <span className="text-orbital-purple glow-purple-text">ORBITAL</span>{" "}
-            <span className="text-orbital-text">ROXA</span>
-          </h1>
-          <p className="font-[family-name:var(--font-jetbrains)] text-sm text-orbital-text-dim tracking-widest uppercase mb-2">
-            Counter-Strike 2 Tournament Platform
-          </p>
-          <div className="flex items-center justify-center gap-2 mt-4">
-            <span className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim">SYS::ONLINE</span>
-            <span className="status-dot status-live" />
-          </div>
-        </motion.div>
-      </section>
-
-      <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.3 }} className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-12">
-        <HudCard className="text-center" delay={0.1}><StatBox label="Partidas" value={totalMatches} /></HudCard>
-        <HudCard className="text-center" delay={0.2}><StatBox label="Ao Vivo" value={liveMatches.length} /></HudCard>
-        <HudCard className="text-center" delay={0.3}><StatBox label="Times" value={teamCount} /></HudCard>
-        <HudCard className="text-center" delay={0.4}><StatBox label="Pendentes" value={upcomingMatches.length} /></HudCard>
-      </motion.section>
-
-      {liveMatches.length > 0 && (
-        <section className="mb-12">
-          <SectionHeader icon={Activity} title="AO VIVO" accent="live" />
-          <div className="grid gap-4">{liveMatches.map((match, i) => <MatchCard key={match.id} match={match} teamsMap={teamsMap} mapScores={mapScoresMap?.[match.id]} delay={i * 0.1} />)}</div>
-        </section>
-      )}
-
-      <section className="mb-12">
-        <SectionHeader icon={Swords} title="PARTIDAS RECENTES" href="/partidas" />
-        {recentMatches.length > 0 ? (
-          <div className="grid gap-3">{recentMatches.map((match, i) => <MatchCard key={match.id} match={match} teamsMap={teamsMap} mapScores={mapScoresMap?.[match.id]} delay={i * 0.08} />)}</div>
-        ) : (
-          <HudCard><p className="text-center text-orbital-text-dim font-[family-name:var(--font-jetbrains)] text-sm">Nenhuma partida finalizada ainda</p></HudCard>
-        )}
-      </section>
-
-      {upcomingMatches.length > 0 && (
-        <section className="mb-12">
-          <SectionHeader icon={Crosshair} title="PRÓXIMAS PARTIDAS" />
-          <div className="grid gap-3">{upcomingMatches.map((match, i) => <MatchCard key={match.id} match={match} teamsMap={teamsMap} mapScores={mapScoresMap?.[match.id]} delay={i * 0.08} />)}</div>
-        </section>
-      )}
-
-      <section>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <QuickLink href="/partidas" icon={Swords} label="VER PARTIDAS" desc="Todas as partidas do campeonato" delay={0.1} />
-          <QuickLink href="/times" icon={Users} label="VER TIMES" desc="Times registrados" delay={0.2} />
-          <QuickLink href="/leaderboard" icon={Activity} label="RANKING" desc="Classificação dos jogadores" delay={0.3} />
-        </div>
-      </section>
-    </div>
-  );
-}
-
-// ── Shared components ──
-function SectionHeader({ icon: Icon, title, href, accent }: { icon: React.ElementType; title: string; href?: string; accent?: "live" }) {
-  return (
-    <div className="flex items-center justify-between mb-4">
-      <div className="flex items-center gap-3">
-        <Icon size={16} className={accent === "live" ? "text-orbital-live" : "text-orbital-purple"} />
-        <h2 className={`font-[family-name:var(--font-orbitron)] text-xs tracking-[0.2em] ${accent === "live" ? "text-orbital-live" : "text-orbital-purple"}`}>{title}</h2>
-        <div className="h-[1px] w-12 bg-gradient-to-r from-orbital-purple/40 to-transparent" />
+    <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center gap-2">
+        <Icon size={14} className={accent === "live" ? "text-orbital-live" : "text-orbital-purple"} />
+        <h2 className={`font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-[0.15em] ${
+          accent === "live" ? "text-orbital-live" : "text-orbital-purple"
+        }`}>{title}</h2>
+        <div className="h-[1px] w-8 bg-gradient-to-r from-orbital-purple/30 to-transparent" />
       </div>
       {href && (
-        <Link href={href} className="flex items-center gap-1 text-orbital-text-dim hover:text-orbital-purple transition-colors font-[family-name:var(--font-jetbrains)] text-[0.65rem]">
-          Ver mais <ChevronRight size={12} />
+        <Link href={href} className="flex items-center gap-1 text-orbital-text-dim hover:text-orbital-purple transition-colors">
+          <span className="font-[family-name:var(--font-jetbrains)] text-[0.55rem]">Ver mais</span>
+          <ChevronRight size={10} />
         </Link>
       )}
     </div>
   );
 }
 
-function QuickLink({ href, icon: Icon, label, desc, delay }: { href: string; icon: React.ElementType; label: string; desc: string; delay: number }) {
+function SidebarSection({ icon: Icon, title, children, accent }: {
+  icon: React.ElementType; title: string; children: React.ReactNode; accent?: "live" | "gold";
+}) {
+  const borderColor = accent === "live" ? "border-orbital-live/20" : accent === "gold" ? "border-yellow-500/20" : "border-orbital-border";
+  const accentColor = accent === "live" ? "text-orbital-live" : accent === "gold" ? "text-yellow-400" : "text-orbital-purple";
+  const accentBg = accent === "live" ? "via-orbital-live/30" : accent === "gold" ? "via-yellow-400/30" : "via-orbital-purple/40";
+
   return (
-    <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay }}>
-      <Link href={href} className="block group">
-        <div className="bg-orbital-card border border-orbital-border hover:border-orbital-purple/30 transition-all p-5 relative">
-          <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-orbital-purple/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-          <Icon size={20} className="text-orbital-purple mb-3" />
-          <h3 className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.15em] text-orbital-text mb-1">{label}</h3>
-          <p className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim">{desc}</p>
+    <div className={`border ${borderColor} bg-orbital-card overflow-hidden`}>
+      {/* Header */}
+      <div className="relative px-3 py-2 border-b border-orbital-border bg-[#0D0D0D]">
+        <div className={`absolute top-0 left-[10%] right-[10%] h-[1px] bg-gradient-to-r from-transparent ${accentBg} to-transparent`} />
+        <div className="flex items-center gap-2">
+          <Icon size={11} className={accentColor} />
+          <span className={`font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.15em] ${accentColor}`}>
+            {title}
+          </span>
         </div>
-      </Link>
-    </motion.div>
+      </div>
+      {/* Content */}
+      {children}
+    </div>
+  );
+}
+
+function MiniStat({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="bg-orbital-card p-2.5 text-center">
+      <div className="font-[family-name:var(--font-jetbrains)] text-base font-bold text-orbital-text">{value}</div>
+      <div className="font-[family-name:var(--font-orbitron)] text-[0.4rem] tracking-[0.1em] text-orbital-text-dim mt-0.5">{label}</div>
+    </div>
+  );
+}
+
+function SidebarLink({ href, icon: Icon, label }: { href: string; icon: React.ElementType; label: string }) {
+  return (
+    <Link href={href} className="flex items-center gap-2 px-3 py-2 hover:bg-orbital-purple/5 transition-colors group">
+      <Icon size={12} className="text-orbital-text-dim group-hover:text-orbital-purple transition-colors" />
+      <span className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim group-hover:text-orbital-text transition-colors">
+        {label}
+      </span>
+    </Link>
+  );
+}
+
+function MatchRow({ match, teamsMap, isLive }: {
+  match: Match;
+  teamsMap?: Record<number, { name: string; logo: string | null }>;
+  isLive?: boolean;
+}) {
+  return (
+    <Link href={`/partidas/${match.id}`} className="block hover:bg-orbital-purple/5 transition-colors">
+      <div className={`px-3 py-2 border-b border-orbital-border/50 ${isLive ? "bg-orbital-live/[0.03]" : ""}`}>
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5 flex-1 min-w-0">
+            <TeamLogo logo={teamsMap?.[match.team1_id]?.logo} size={14} />
+            <span className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text truncate">
+              {match.team1_string || "TBD"}
+            </span>
+          </div>
+          <div className="shrink-0 px-1">
+            {isLive ? (
+              <span className="flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-orbital-live animate-pulse" />
+                <span className="font-[family-name:var(--font-jetbrains)] text-[0.55rem] font-bold text-orbital-live">
+                  {match.team1_score}:{match.team2_score}
+                </span>
+              </span>
+            ) : (
+              <span className="font-[family-name:var(--font-jetbrains)] text-[0.5rem] text-orbital-text-dim">vs</span>
+            )}
+          </div>
+          <div className="flex items-center gap-1.5 flex-1 min-w-0 justify-end">
+            <span className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text truncate text-right">
+              {match.team2_string || "TBD"}
+            </span>
+            <TeamLogo logo={teamsMap?.[match.team2_id]?.logo} size={14} />
+          </div>
+        </div>
+        {match.title && !match.title.includes("{") && (
+          <div className="font-[family-name:var(--font-jetbrains)] text-[0.45rem] text-orbital-text-dim/60 mt-0.5 text-center">
+            {match.title}
+          </div>
+        )}
+      </div>
+    </Link>
   );
 }

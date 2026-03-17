@@ -10,10 +10,10 @@ import { useAuth } from "@/lib/auth-context";
 
 const navLinks = [
   { href: "/", label: "HOME", icon: Crosshair },
+  { href: "/campeonatos", label: "CAMPEONATOS", icon: Trophy },
   { href: "/partidas", label: "PARTIDAS", icon: Swords },
-  { href: "/leaderboard", label: "RANKING", icon: Trophy },
-  { href: "/highlights", label: "HIGHLIGHTS", icon: Sparkles },
-  { href: "/demos", label: "DEMOS", icon: Film },
+  { href: "/leaderboard", label: "RANKING", icon: Sparkles },
+  { href: "/highlights", label: "HIGHLIGHTS", icon: Film },
 ];
 
 export function Navbar() {

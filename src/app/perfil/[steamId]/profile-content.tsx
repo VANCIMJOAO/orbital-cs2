@@ -3,10 +3,11 @@
 import { motion } from "framer-motion";
 import { ArrowLeft, Target, Skull, Crosshair, Zap, Award, TrendingUp, Flame, Map, BarChart3, Swords } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { HudCard, StatBox } from "@/components/hud-card";
 import { PlayerCardExport } from "@/components/player-card-export";
 import { Match, getStatusText, getStatusType } from "@/lib/api";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 interface ProfileStats {
   steam_id: string;
@@ -27,6 +28,8 @@ interface ProfileStats {
   kast: number;
   contribution_score: number;
   mvp: number;
+  enemies_flashed: number;
+  util_damage: number;
   firstkill_t: number;
   firstkill_ct: number;
   firstdeath_t: number;
@@ -65,6 +68,7 @@ export function ProfileContent({ steamId }: { steamId: string }) {
   const [matchHistory, setMatchHistory] = useState<MatchDataPoint[]>([]);
   const [avatar, setAvatar] = useState<string | null>(null);
   const [userName, setUserName] = useState<string | null>(null);
+  const [playerTeam, setPlayerTeam] = useState<{ id: number; name: string; logo: string | null } | null>(null);
   const [userRole, setUserRole] = useState<{ admin: boolean; superAdmin: boolean }>({ admin: false, superAdmin: false });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -94,7 +98,9 @@ export function ProfileContent({ steamId }: { steamId: string }) {
           const entry = t.auth_name[steamId];
           if (entry) {
             const nick = typeof entry === "string" ? entry : entry.name;
-            if (nick) { setUserName(nick); return; }
+            if (nick) { setUserName(nick); }
+            setPlayerTeam({ id: t.id, name: t.name, logo: t.logo || null });
+            return;
           }
         }
       })
@@ -127,7 +133,7 @@ export function ProfileContent({ steamId }: { steamId: string }) {
             kills: 0, deaths: 0, assists: 0,
             headshot_kills: 0, flash_assists: 0, damage: 0,
             rating: 0, kdr: 0, hsp: 0, average_rating: 0,
-            kast: 0, contribution_score: 0, mvp: 0,
+            kast: 0, contribution_score: 0, mvp: 0, enemies_flashed: 0, util_damage: 0,
             firstkill_t: 0, firstkill_ct: 0, firstdeath_t: 0, firstdeath_ct: 0,
           });
           setLoading(false);
@@ -154,6 +160,8 @@ export function ProfileContent({ steamId }: { steamId: string }) {
           kast: 0,
           contribution_score: 0,
           mvp: 0,
+          enemies_flashed: 0,
+          util_damage: 0,
           firstkill_t: 0,
           firstkill_ct: 0,
           firstdeath_t: 0,
@@ -176,6 +184,8 @@ export function ProfileContent({ steamId }: { steamId: string }) {
           aggregated.assists += (m.assists as number) || 0;
           aggregated.headshot_kills += mHsk;
           aggregated.flash_assists += (m.flashbang_assists as number) || (m.flash_assists as number) || 0;
+          aggregated.enemies_flashed += (m.enemies_flashed as number) || 0;
+          aggregated.util_damage += (m.util_damage as number) || 0;
           aggregated.damage += mDmg;
           aggregated.total_rounds += mRounds;
           aggregated.contribution_score += (m.contribution_score as number) || 0;
@@ -217,7 +227,7 @@ export function ProfileContent({ steamId }: { steamId: string }) {
           kills: 0, deaths: 0, assists: 0,
           headshot_kills: 0, flash_assists: 0, damage: 0,
           rating: 0, kdr: 0, hsp: 0, average_rating: 0,
-          kast: 0, contribution_score: 0, mvp: 0,
+          kast: 0, contribution_score: 0, mvp: 0, enemies_flashed: 0, util_damage: 0,
           firstkill_t: 0, firstkill_ct: 0, firstdeath_t: 0, firstdeath_ct: 0,
         });
       }
@@ -463,6 +473,16 @@ export function ProfileContent({ steamId }: { steamId: string }) {
                 </span>
               )}
             </div>
+            {playerTeam && (
+              <Link href={`/times/${playerTeam.id}`} className="inline-flex items-center gap-2 mt-1.5 group/team">
+                {playerTeam.logo && (
+                  <Image src={playerTeam.logo} alt={playerTeam.name} width={18} height={18} className="object-contain" unoptimized />
+                )}
+                <span className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text-dim group-hover/team:text-orbital-purple transition-colors">
+                  {playerTeam.name}
+                </span>
+              </Link>
+            )}
             <div className="flex items-center gap-2 mt-2 flex-wrap justify-center sm:justify-start">
               <Link
                 href={`/comparar?p1=${steamId}`}
@@ -545,8 +565,8 @@ export function ProfileContent({ steamId }: { steamId: string }) {
           <div className="space-y-3 pt-2">
             <StatRow icon={<Crosshair size={14} className="text-orbital-purple" />} label="HS%" value={`${hsp}%`} />
             <StatRow icon={<Target size={14} className="text-orbital-success" />} label="ADR" value={adr.toString()} />
-            <StatRow icon={<Zap size={14} className="text-orbital-warning" />} label="Flash Assists" value={stats.flash_assists?.toString() || "0"} />
-            <StatRow icon={<Award size={14} className="text-orbital-purple" />} label="KAST" value={stats.kast ? `${stats.kast.toFixed(1)}%` : "N/A"} />
+            <StatRow icon={<Zap size={14} className="text-orbital-warning" />} label="Inimigos Cegados" value={(stats.enemies_flashed || 0).toString()} />
+            <StatRow icon={<Award size={14} className="text-orbital-purple" />} label="Dano Utilitário" value={(stats.util_damage || 0).toString()} />
             <StatRow icon={<Flame size={14} className="text-orbital-warning" />} label="MVPs" value={(stats.mvp || 0).toString()} />
           </div>
         </HudCard>
@@ -649,14 +669,10 @@ export function ProfileContent({ steamId }: { steamId: string }) {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 py-2">
             {playerClips.map(clip => (
               <div key={clip.id} className="bg-[#0A0A0A] border border-orbital-border overflow-hidden group">
-                <video
-                  controls
-                  preload="metadata"
-                  poster={clip.thumbnail_file ? `/api/highlights-proxy/${clip.thumbnail_file}` : undefined}
-                  className="w-full aspect-video bg-black"
-                >
-                  <source src={`/api/highlights-proxy/${clip.video_file}`} type="video/mp4" />
-                </video>
+                <ProfileHighlightPlayer
+                  src={`/api/highlights-proxy/${clip.video_file}`}
+                  clipId={clip.id}
+                />
                 <div className="p-2">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 min-w-0">
@@ -856,6 +872,79 @@ function EvolutionChart({ data, label, color, refLine, format }: {
         {/* Last dot highlight */}
         <circle cx={toX(data.length - 1)} cy={toY(last)} r={4} fill={color} opacity={0.3} />
       </svg>
+    </div>
+  );
+}
+
+// Highlight player with thumbnail (seek to game frame, click to play)
+function ProfileHighlightPlayer({ src, clipId }: { src: string; clipId: number }) {
+  const [playing, setPlaying] = useState(false);
+  const [thumbReady, setThumbReady] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const seekTime = 12 + (clipId % 5);
+
+  useEffect(() => {
+    if (playing) return;
+    const video = videoRef.current;
+    if (!video) return;
+    let cancelled = false;
+
+    const onLoadedData = () => {
+      if (cancelled) return;
+      video.currentTime = Math.min(seekTime, video.duration * 0.5);
+    };
+    const onSeeked = () => {
+      if (cancelled) return;
+      setThumbReady(true);
+    };
+
+    if (video.readyState >= 2) {
+      video.currentTime = Math.min(seekTime, video.duration * 0.5);
+    }
+
+    video.addEventListener("loadeddata", onLoadedData);
+    video.addEventListener("seeked", onSeeked);
+    return () => {
+      cancelled = true;
+      video.removeEventListener("loadeddata", onLoadedData);
+      video.removeEventListener("seeked", onSeeked);
+    };
+  }, [playing, seekTime]);
+
+  const handlePlay = () => {
+    setPlaying(true);
+    setTimeout(() => {
+      const video = videoRef.current;
+      if (video) { video.currentTime = 0; video.play(); }
+    }, 50);
+  };
+
+  return (
+    <div className="relative aspect-video bg-black">
+      <video
+        ref={videoRef}
+        src={src}
+        controls={playing}
+        preload="metadata"
+        muted={!playing}
+        playsInline
+        className="w-full h-full object-cover"
+      />
+      {!playing && (
+        <div
+          className="absolute inset-0 flex items-center justify-center cursor-pointer bg-black/30 hover:bg-black/10 transition-colors"
+          onClick={handlePlay}
+        >
+          {!thumbReady && (
+            <div className="w-6 h-6 border-2 border-orbital-purple border-t-transparent rounded-full animate-spin" />
+          )}
+          {thumbReady && (
+            <div className="w-12 h-12 rounded-full bg-orbital-purple/80 flex items-center justify-center shadow-[0_0_20px_rgba(168,85,247,0.4)]">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21" /></svg>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

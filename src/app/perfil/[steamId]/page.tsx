@@ -8,9 +8,12 @@ export async function generateMetadata({ params }: { params: Promise<{ steamId: 
   const { steamId } = await params;
   try {
     const profile = await getPlayerProfile(steamId);
-    const name = profile?.name || steamId;
+    // profile can be an array of stats per map — get name from first entry
+    const raw = profile as unknown as Record<string, unknown>;
+    const stats = Array.isArray(profile) ? profile : raw?.playerstats;
+    const name = Array.isArray(stats) && stats.length > 0 ? (stats[0] as Record<string, string>).name : raw?.name as string | undefined;
     return {
-      title: `${name} | ORBITAL ROXA`,
+      title: `${name || steamId} | ORBITAL ROXA`,
     };
   } catch {
     return {

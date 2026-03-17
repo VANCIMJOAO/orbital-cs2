@@ -32,12 +32,21 @@ def parse_demo(demo_path):
 
 def detect_knife_round_end(round_ends):
     """Detecta o tick onde o knife round termina.
-    O knife round é o primeiro round_end real (tick > 1).
-    Kills antes deste tick são do knife round e devem ser ignoradas.
+
+    MatchZy flow com always_knife:
+    1. Warmup restart: round_end tick ~1482, total_rounds_played=0
+    2. Knife round end: round_end tick ~5758, total_rounds_played=1
+    3. Pistol round 1 end: round_end tick ~10033, total_rounds_played=1
+    4. Round 2+: total_rounds_played >= 2
+
+    O knife round_end é o PRIMEIRO round_end com total_rounds_played >= 1.
+    Kills ANTES deste tick com knife weapons são knife round kills.
+    Kills DEPOIS deste tick são real game kills (pistol round onwards).
     """
     for _, row in round_ends.iterrows():
         tick = int(row["tick"])
-        if tick > 1:
+        rounds_played = int(row.get("total_rounds_played", 0))
+        if tick > 1 and rounds_played >= 1:
             return tick
     return 0
 

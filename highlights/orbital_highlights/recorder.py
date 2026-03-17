@@ -33,20 +33,14 @@ def record_clips(highlights, demo_path, output_dir="output"):
         clip_output = os.path.abspath(os.path.join(output_dir, clip_name))
         os.makedirs(clip_output, exist_ok=True)
 
-        accountid = _steamid64_to_accountid(h["steamid"])
-
         print(f"\n[CSDM] Gerando video #{i}/{total}: {h['description']}")
         print(f"  Ticks: {h['tick_start']} -> {h['tick_end']}")
-        print(f"  Focus: {h['player']} (steamid={h['steamid']}, accountid={accountid})")
-
-        # spec_lock_to_accountid requer que a conta Steam logada NÃO seja
-        # o jogador alvo. O worker deve rodar com outra conta Steam logada.
-        cfg_cmds = f"spec_lock_to_accountid {accountid}"
+        print(f"  Focus: {h['player']} (steamid={h['steamid']})")
 
         cmd = [
             CSDM, "video", demo_abs,
             str(h["tick_start"]), str(h["tick_end"]),
-            "--cfg", cfg_cmds,
+            "--focus-player", h["steamid"],
             "--recording-system", "HLAE",
             "--encoder-software", "FFmpeg",
             "--framerate", "60",

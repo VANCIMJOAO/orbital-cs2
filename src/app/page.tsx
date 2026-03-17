@@ -10,16 +10,19 @@ export default async function HomePage() {
   let matches: Match[] = [];
   let teams: Team[] = [];
   let tournaments: Tournament[] = [];
+  let leaderboard: LeaderboardEntry[] = [];
 
-  const [tournamentsData, matchesData, teamsData] = await Promise.all([
+  const [tournamentsData, matchesData, teamsData, leaderboardData] = await Promise.all([
     getTournamentsFromDB(),
     getMatches().catch(() => ({ matches: [] as Match[] })),
     getTeams().catch(() => ({ teams: [] as Team[] })),
+    getLeaderboard().catch(() => ({ leaderboard: [] as LeaderboardEntry[] })),
   ]);
 
   tournaments = tournamentsData;
   matches = matchesData.matches || [];
   teams = teamsData.teams || [];
+  leaderboard = leaderboardData.leaderboard || [];
 
   const teamsMap: Record<number, { name: string; logo: string | null; players?: { name: string; steamId: string; captain: number }[] }> = {};
   teams.forEach((t) => {
@@ -34,16 +37,16 @@ export default async function HomePage() {
   const liveMatches = matches.filter((m) => getStatusType(m) === "live");
   const recentMatches = matches
     .filter((m) => getStatusType(m) === "finished")
-    .slice(0, 5);
+    .slice(0, 8);
   const upcomingMatches = matches
     .filter((m) => getStatusType(m) === "upcoming")
-    .slice(0, 3);
+    .slice(0, 5);
 
-  // Fetch map stats for ALL finished + live matches (bracket needs all scores)
-  const allFinishedAndLive = matches.filter((m) => getStatusType(m) === "finished" || getStatusType(m) === "live");
+  // Fetch map stats for displayed matches
+  const displayedMatches = [...liveMatches, ...recentMatches.slice(0, 5)];
   const mapScoresMap: Record<number, { team1_score: number; team2_score: number; map_name: string }[]> = {};
   await Promise.all(
-    allFinishedAndLive.map(async (m) => {
+    displayedMatches.map(async (m) => {
       try {
         const raw = await getMapStats(m.id) as Record<string, unknown>;
         const mapStats = (raw.mapstats || raw.mapStats || []) as { team1_score: number; team2_score: number; map_name: string }[];
@@ -58,13 +61,13 @@ export default async function HomePage() {
     })
   );
 
-  // Find active tournament (priority: active > pending > finished)
+  // Find active tournament
   let activeTournament = tournaments.find(t => t.status === "active")
     || tournaments.find(t => t.status === "pending")
     || tournaments[0]
     || null;
 
-  // Auto-advance: if tournament has live matches that finished in G5API, update bracket
+  // Auto-advance bracket
   if (activeTournament) {
     const serverFetcher = async (matchId: number) => {
       const data = await getMatch(matchId);
@@ -77,28 +80,24 @@ export default async function HomePage() {
     activeTournament = result.tournament;
   }
 
-  // Fetch tournament MVP (top player by rating in tournament season)
-  let tournamentMvp: LeaderboardEntry | null = null;
-  if (activeTournament?.season_id && activeTournament.status === "finished") {
-    try {
-      const lbRes = await getLeaderboard(activeTournament.season_id);
-      const lb = lbRes.leaderboard || [];
-      const sorted = [...lb].sort((a, b) => (b.average_rating || 0) - (a.average_rating || 0));
-      tournamentMvp = sorted[0] || null;
-    } catch { /* ignore */ }
-  }
+  // Top 5 players
+  const topPlayers = [...leaderboard]
+    .sort((a, b) => (b.average_rating || 0) - (a.average_rating || 0))
+    .slice(0, 5);
 
   return (
     <HomeContent
-      tournament={activeTournament}
+      tournaments={tournaments}
+      activeTournament={activeTournament}
       liveMatches={liveMatches}
       recentMatches={recentMatches}
       upcomingMatches={upcomingMatches}
       totalMatches={matches.length}
       teamCount={teams.length}
+      playerCount={leaderboard.length}
+      topPlayers={topPlayers}
       teamsMap={teamsMap}
       mapScoresMap={mapScoresMap}
-      tournamentMvp={tournamentMvp}
     />
   );
 }
