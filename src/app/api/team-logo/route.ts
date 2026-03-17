@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { dbPool } from "@/lib/tournaments-db";
 
 export async function PUT(req: NextRequest) {
+  // Auth check: require admin session cookie
+  const cookie = req.cookies.get("G5API")?.value;
+  if (!cookie) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const { teamId, logoUrl } = await req.json();
 

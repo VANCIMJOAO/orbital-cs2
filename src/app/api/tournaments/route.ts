@@ -30,7 +30,8 @@ async function checkAdmin(req: NextRequest): Promise<NextResponse | null> {
       headers: { Cookie: `G5API=${cookie}` },
     });
     const authData = await authRes.json();
-    if (!authData?.admin && !authData?.super_admin) {
+    const user = authData?.user || authData;
+    if (!user?.admin && !user?.super_admin) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
   } catch {
