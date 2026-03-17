@@ -100,31 +100,19 @@ export function RecapContent({ tournament, leaderboard, matchesData, highlights 
     }
   }
 
-  // Top 5 players by rating
-  const playerAggregates: Record<string, { name: string; steamId: string; totalKills: number; totalDeaths: number; totalHs: number; totalRounds: number; ratingSum: number; mapCount: number }> = {};
-  for (const ps of allPlayerStats) {
-    if (!playerAggregates[ps.steam_id]) {
-      playerAggregates[ps.steam_id] = { name: ps.name, steamId: ps.steam_id, totalKills: 0, totalDeaths: 0, totalHs: 0, totalRounds: 0, ratingSum: 0, mapCount: 0 };
-    }
-    const pa = playerAggregates[ps.steam_id];
-    pa.totalKills += ps.kills;
-    pa.totalDeaths += ps.deaths;
-    pa.totalHs += ps.headshot_kills;
-    pa.totalRounds += ps.roundsplayed;
-    pa.ratingSum += ps.rating;
-    pa.mapCount += 1;
-    if (ps.name) pa.name = ps.name;
-  }
-
-  const topPlayers = Object.values(playerAggregates)
+  // Top 5 players — usar leaderboard (já rankeado por season do campeonato)
+  const topPlayers = [...leaderboard]
+    .sort((a, b) => (b.average_rating || 0) - (a.average_rating || 0))
+    .slice(0, 5)
     .map(p => ({
-      ...p,
-      avgRating: p.mapCount > 0 ? p.ratingSum / p.mapCount : 0,
-      kd: p.totalDeaths > 0 ? p.totalKills / p.totalDeaths : p.totalKills,
-      hsp: p.totalKills > 0 ? (p.totalHs / p.totalKills) * 100 : 0,
-    }))
-    .sort((a, b) => b.avgRating - a.avgRating)
-    .slice(0, 5);
+      name: p.name,
+      steamId: p.steamId,
+      totalKills: p.kills,
+      totalDeaths: p.deaths,
+      avgRating: p.average_rating || 0,
+      kd: p.deaths > 0 ? p.kills / p.deaths : p.kills,
+      hsp: p.hsp || 0,
+    }));
 
   // MVP from leaderboard
   const mvp = leaderboard.length > 0
