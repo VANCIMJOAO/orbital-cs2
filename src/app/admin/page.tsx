@@ -99,36 +99,50 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
 
-      {/* ═══ STATUS BAR (condensed metrics) ═══ */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="flex items-center gap-3 flex-wrap"
-      >
-        <div className="flex items-center gap-1.5">
+      {/* ═══ HEADER ═══ */}
+      <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between">
+        <div>
+          <h1 className="font-[family-name:var(--font-orbitron)] text-lg font-bold text-orbital-text tracking-wider">
+            Dashboard
+          </h1>
+          <p className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim mt-0.5">
+            Visão geral do sistema
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
           <div className={`w-2 h-2 rounded-full ${apiStatus === "online" ? "bg-green-500 shadow-[0_0_6px_rgba(34,197,94,0.6)]" : apiStatus === "offline" ? "bg-red-500" : "bg-yellow-500 animate-pulse"}`} />
           <span className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim">
-            {apiStatus === "online" ? "Online" : apiStatus === "offline" ? "Offline" : "..."}
+            {apiStatus === "online" ? "Sistema online" : apiStatus === "offline" ? "Offline" : "Verificando..."}
           </span>
         </div>
-        <span className="text-orbital-border">|</span>
-        {[
-          { icon: Swords, label: "Partidas", value: matches.length },
-          { icon: Users, label: "Times", value: teams.length },
-          { icon: Globe, label: "Servidores", value: servers.length },
-          { icon: UserCheck, label: "Jogadores", value: playerCount },
-          { icon: Film, label: "Highlights", value: highlightsCount },
-          { icon: Calendar, label: "Seasons", value: seasons.length },
-        ].map(s => (
-          <div key={s.label} className="flex items-center gap-1" title={s.label}>
-            <s.icon size={10} className="text-orbital-text-dim/50" />
-            <span className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim">
-              {s.value}
-            </span>
-          </div>
-        ))}
+      </motion.div>
+
+      {/* ═══ METRICS ROW ═══ */}
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.05 }}>
+        <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+          {[
+            { icon: Swords, label: "Partidas", value: matches.length, color: "text-purple-400" },
+            { icon: Users, label: "Times", value: teams.length, color: "text-violet-400" },
+            { icon: Globe, label: "Servidores", value: servers.length, color: "text-amber-400" },
+            { icon: UserCheck, label: "Jogadores", value: playerCount, color: "text-cyan-400" },
+            { icon: Film, label: "Highlights", value: highlightsCount, color: "text-pink-400" },
+            { icon: Calendar, label: "Seasons", value: seasons.length, color: "text-rose-400" },
+          ].map((s, i) => (
+            <motion.div
+              key={s.label}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.08 + i * 0.04 }}
+              className="bg-white/[0.02] border border-orbital-border/60 p-3 text-center hover:border-orbital-purple/20 transition-colors"
+            >
+              <s.icon size={12} className={`${s.color} mx-auto mb-1.5 opacity-60`} />
+              <div className={`font-[family-name:var(--font-jetbrains)] text-xl font-bold ${s.color}`}>{s.value}</div>
+              <div className="font-[family-name:var(--font-orbitron)] text-[0.4rem] tracking-[0.15em] text-orbital-text-dim/50 mt-0.5">{s.label}</div>
+            </motion.div>
+          ))}
+        </div>
       </motion.div>
 
       {/* ═══ ALERTS (things that need attention) ═══ */}
