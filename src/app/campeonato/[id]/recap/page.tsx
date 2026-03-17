@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getTournamentsFromDB } from "@/lib/tournaments-db";
-import { getLeaderboard, getMatch, getMapStats, getPlayerStats } from "@/lib/api";
-import type { Match, MapStats, PlayerStats, LeaderboardEntry } from "@/lib/api";
+import { getLeaderboard, getMatch, getMapStats, getPlayerStats, parseMapStats } from "@/lib/api";
+import type { Match, MapStats, PlayerStats, LeaderboardEntry, HighlightClip } from "@/lib/api";
 import type { Tournament, BracketMatch } from "@/lib/tournament";
 import { RecapContent } from "./recap-content";
 
@@ -10,26 +10,6 @@ interface MatchData {
   match: Match | null;
   mapStats: MapStats[];
   playerStats: PlayerStats[];
-}
-
-interface HighlightClip {
-  id: number;
-  match_id: number;
-  map_number: number;
-  rank: number;
-  player_name: string;
-  steam_id: string;
-  kills_count: number;
-  score: number;
-  description: string;
-  round_number: number;
-  video_file: string;
-  thumbnail_file: string;
-  duration_s: number;
-  status: string;
-  created_at: string;
-  team1_string: string;
-  team2_string: string;
 }
 
 async function fetchHighlightsForMatches(matchIds: number[]): Promise<HighlightClip[]> {
@@ -78,7 +58,7 @@ export default async function RecapPage({ params }: { params: Promise<{ id: stri
         getPlayerStats(bm.match_id!).then(r => r as Record<string, unknown>),
       ]);
       // G5API returns lowercase keys: mapstats, playerstats
-      const mapStats = (mapRes.mapStats || mapRes.mapstats || []) as MapStats[];
+      const mapStats = parseMapStats(mapRes) as MapStats[];
       const playerStats = (playerRes.playerStats || playerRes.playerstats || []) as PlayerStats[];
       return {
         bracketMatch: bm,

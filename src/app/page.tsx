@@ -1,10 +1,10 @@
-import { getMatches, getTeams, getMatch, getMapStats, getLeaderboard, Match, Team, LeaderboardEntry, getStatusType } from "@/lib/api";
+import { getMatches, getTeams, getMatch, getMapStats, getLeaderboard, parseMapStats, Match, Team, LeaderboardEntry, getStatusType } from "@/lib/api";
 import { Tournament } from "@/lib/tournament";
 import { autoAdvanceTournament } from "@/lib/tournament-utils";
 import { getTournamentsFromDB, saveTournamentToDB } from "@/lib/tournaments-db";
 import { HomeContent } from "./home-content";
 
-export const revalidate = 30;
+export const revalidate = 60;
 
 export default async function HomePage() {
   let matches: Match[] = [];
@@ -49,7 +49,7 @@ export default async function HomePage() {
     displayedMatches.map(async (m) => {
       try {
         const raw = await getMapStats(m.id) as Record<string, unknown>;
-        const mapStats = (raw.mapstats || raw.mapStats || []) as { team1_score: number; team2_score: number; map_name: string }[];
+        const mapStats = parseMapStats(raw);
         if (mapStats?.length > 0) {
           mapScoresMap[m.id] = mapStats.map(ms => ({
             team1_score: ms.team1_score,

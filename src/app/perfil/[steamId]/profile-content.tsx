@@ -6,7 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { HudCard, StatBox } from "@/components/hud-card";
 import { PlayerCardExport } from "@/components/player-card-export";
-import { Match, getStatusText, getStatusType } from "@/lib/api";
+import { Match, getStatusText, getStatusType, parseMapStats } from "@/lib/api";
 import { useEffect, useState, useRef } from "react";
 
 interface ProfileStats {
@@ -247,7 +247,9 @@ export function ProfileContent({ steamId }: { steamId: string }) {
               const r = await fetch(`/api/mapstats/${mid}`);
               if (!r.ok) return [];
               const d = await r.json();
-              return (d.mapstats || d.mapStats || []).map((ms: Record<string, unknown>) => ({ ...ms, _matchId: mid }));
+              const stats = (d.mapstats || d.mapStats || d || []);
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              return (Array.isArray(stats) ? stats : []).map((ms: any) => ({ ...ms, _matchId: mid }));
             } catch { return []; }
           })
         );
@@ -322,7 +324,7 @@ export function ProfileContent({ steamId }: { steamId: string }) {
               ext.player_team_id = pTeamId;
               if (mapRes.ok) {
                 const mapData = await mapRes.json();
-                const maps = mapData.mapstats || mapData.mapStats || [];
+                const maps = parseMapStats(mapData);
                 if (maps.length > 0) {
                   let t1Rounds = 0, t2Rounds = 0;
                   const mapNames: string[] = [];

@@ -14,7 +14,7 @@ import { HudCard } from "@/components/hud-card";
 import { FullBracket, MapScoresMap } from "@/components/bracket";
 import { BracketExportButton } from "@/components/bracket-export-button";
 import { useAuth } from "@/lib/auth-context";
-import { createMatch, getServers, getTeams, getMapStats, getMatches, getLeaderboard, Server, Match, LeaderboardEntry } from "@/lib/api";
+import { createMatch, getServers, getTeams, getMapStats, getMatches, getLeaderboard, parseMapStats, Server, Match, LeaderboardEntry, HighlightClip } from "@/lib/api";
 import { TeamsMap } from "@/components/bracket";
 import { MAP_IMAGES } from "@/lib/maps";
 import {
@@ -31,26 +31,6 @@ import { autoAdvanceTournament } from "@/lib/tournament-utils";
 
 // ── Types ──
 type TabId = "overview" | "partidas" | "ranking" | "highlights";
-
-interface HighlightClip {
-  id: number;
-  match_id: number;
-  map_number: number;
-  rank: number;
-  player_name: string | null;
-  steam_id: string | null;
-  kills_count: number;
-  score: number;
-  description: string | null;
-  round_number: number | null;
-  video_file: string | null;
-  thumbnail_file: string | null;
-  duration_s: number | null;
-  status: string;
-  created_at: string;
-  team1_string?: string;
-  team2_string?: string;
-}
 
 const TABS: { id: TabId; label: string }[] = [
   { id: "overview", label: "OVERVIEW" },
@@ -156,7 +136,7 @@ export default function CampeonatoPage({ params }: { params: Promise<{ id: strin
     Promise.all(matchIds.map(async (mid) => {
       try {
         const raw = await getMapStats(mid) as Record<string, unknown>;
-        const stats = (raw.mapstats || raw.mapStats || []) as { team1_score: number; team2_score: number; map_name: string }[];
+        const stats = parseMapStats(raw);
         return { mid, stats };
       } catch { return { mid, stats: [] as { team1_score: number; team2_score: number; map_name: string }[] }; }
     })).then(results => {

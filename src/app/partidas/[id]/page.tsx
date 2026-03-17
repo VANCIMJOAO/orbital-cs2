@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { getMatch, getPlayerStats, getMapStats, getTeam, getServer } from "@/lib/api";
+import { getMatch, getPlayerStats, getMapStats, getTeam, getServer, parseMapStats } from "@/lib/api";
 import { getTournamentsFromDB } from "@/lib/tournaments-db";
 import { BracketMatch } from "@/lib/tournament";
 import { MatchDetailContent } from "./match-detail-content";
@@ -56,8 +56,8 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
     const playerStatsRaw = Array.isArray(statsRes) ? statsRes : (raw.playerstats || raw.playerStats || []);
     const playerStats = Array.isArray(playerStatsRaw) ? playerStatsRaw : [];
     const rawMap = mapStatsRes as Record<string, unknown>;
-    const mapStatsRaw = Array.isArray(mapStatsRes) ? mapStatsRes : (rawMap.mapstats || rawMap.mapStats || []);
-    const mapStatsArr = Array.isArray(mapStatsRaw) ? mapStatsRaw : [];
+    const rawMapStats = (rawMap.mapstats || rawMap.mapStats || []);
+    const mapStatsArr = Array.isArray(mapStatsRes) ? mapStatsRes : (Array.isArray(rawMapStats) ? rawMapStats : []);
 
     // Find bracket match from tournament (for veto history + map info)
     let bracketMatch: BracketMatch | null = null;

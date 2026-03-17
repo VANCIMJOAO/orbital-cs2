@@ -1,5 +1,23 @@
-import { getTeam, getTeams, getMatches, getPlayerStats, getMapStats, getLeaderboard, Team, Match, PlayerStats, MapStats, LeaderboardEntry } from "@/lib/api";
+import { Metadata } from "next";
+import { getTeam, getTeams, getMatches, getPlayerStats, getMapStats, getLeaderboard, parseMapStats, Team, Match, PlayerStats, MapStats, LeaderboardEntry } from "@/lib/api";
 import { TeamDetailContent } from "./team-detail-content";
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  try {
+    const res = await getTeam(parseInt(id));
+    const teamName = res.team?.name || `Time #${id}`;
+    return {
+      title: `${teamName} | ORBITAL ROXA`,
+      description: `Estatísticas e partidas do time ${teamName} na ORBITAL ROXA.`,
+    };
+  } catch {
+    return {
+      title: `Time #${id} | ORBITAL ROXA`,
+      description: "Detalhes do time de CS2 na ORBITAL ROXA.",
+    };
+  }
+}
 
 export const revalidate = 30;
 
@@ -44,9 +62,8 @@ export default async function TeamPage({ params }: { params: Promise<{ id: strin
         finishedMatches.map(m =>
           getMapStats(m.id)
             .then(r => {
-              const raw = r as Record<string, unknown>;
-              const stats = Array.isArray(r) ? r : (raw.mapstats || raw.mapStats || []);
-              return Array.isArray(stats) ? stats as MapStats[] : [];
+              if (Array.isArray(r)) return r as MapStats[];
+              return parseMapStats(r as Record<string, unknown>) as MapStats[];
             })
             .catch(() => [] as MapStats[])
         )

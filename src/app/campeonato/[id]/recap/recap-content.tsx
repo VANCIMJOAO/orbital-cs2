@@ -5,33 +5,13 @@ import { Trophy, Crosshair, Swords, Users, Star, BarChart3, Clock, Target, Zap, 
 import Link from "next/link";
 import { HudCard, StatBox } from "@/components/hud-card";
 import { Tournament, getTeamName, BracketMatch } from "@/lib/tournament";
-import type { Match, MapStats, PlayerStats, LeaderboardEntry } from "@/lib/api";
+import type { Match, MapStats, PlayerStats, LeaderboardEntry, HighlightClip } from "@/lib/api";
 
 interface MatchData {
   bracketMatch: BracketMatch;
   match: Match | null;
   mapStats: MapStats[];
   playerStats: PlayerStats[];
-}
-
-interface HighlightClip {
-  id: number;
-  match_id: number;
-  map_number: number;
-  rank: number;
-  player_name: string;
-  steam_id: string;
-  kills_count: number;
-  score: number;
-  description: string;
-  round_number: number;
-  video_file: string;
-  thumbnail_file: string;
-  duration_s: number;
-  status: string;
-  created_at: string;
-  team1_string: string;
-  team2_string: string;
 }
 
 interface RecapContentProps {

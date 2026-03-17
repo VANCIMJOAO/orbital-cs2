@@ -188,6 +188,34 @@ function getStatusType(match: Match): "live" | "finished" | "upcoming" | "cancel
   return "upcoming";
 }
 
+export interface HighlightClip {
+  id: number;
+  match_id: number;
+  map_number: number;
+  rank: number;
+  player_name: string | null;
+  steam_id: string | null;
+  kills_count: number;
+  score: number;
+  description: string | null;
+  round_number: number | null;
+  tick_start: number | null;
+  tick_end: number | null;
+  video_file: string | null;
+  thumbnail_file: string | null;
+  duration_s: number | null;
+  status: string;
+  error_message: string | null;
+  created_at: string;
+  team1_string: string;
+  team2_string: string;
+}
+
+export function parseMapStats(raw: Record<string, unknown>): { team1_score: number; team2_score: number; map_name: string }[] {
+  const stats = (raw.mapstats || raw.mapStats || []) as { team1_score: number; team2_score: number; map_name: string }[];
+  return Array.isArray(stats) ? stats : [];
+}
+
 export { getStatusText, getStatusType };
 
 async function apiFetch<T>(endpoint: string, noCache = false): Promise<T> {

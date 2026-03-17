@@ -5,26 +5,7 @@ import { motion } from "framer-motion";
 import { Sparkles, Loader2, Swords, Play } from "lucide-react";
 import Link from "next/link";
 import { HudCard } from "@/components/hud-card";
-
-interface HighlightClip {
-  id: number;
-  match_id: number;
-  map_number: number;
-  rank: number;
-  player_name: string;
-  steam_id: string;
-  kills_count: number;
-  score: number;
-  description: string;
-  round_number: number;
-  video_file: string;
-  thumbnail_file: string;
-  duration_s: number;
-  status: string;
-  created_at: string;
-  team1_string: string;
-  team2_string: string;
-}
+import type { HighlightClip } from "@/lib/api";
 
 export function HighlightsContent() {
   const [clips, setClips] = useState<HighlightClip[]>([]);

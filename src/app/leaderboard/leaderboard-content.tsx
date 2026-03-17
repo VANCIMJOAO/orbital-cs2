@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Trophy, Target, Skull, Crosshair, Medal, Filter, Download } from "lucide-react";
+import { Trophy, Target, Skull, Crosshair, Medal, Filter, Download, Search } from "lucide-react";
 import Link from "next/link";
 import { HudCard } from "@/components/hud-card";
 import { LeaderboardEntry, Season } from "@/lib/api";
@@ -17,6 +17,7 @@ export function LeaderboardContent({ initialLeaderboard, initialSeasons }: Leade
   const [seasons, setSeasons] = useState<Season[]>(initialSeasons || []);
   const [selectedSeason, setSelectedSeason] = useState<string>("");
   const [loading, setLoading] = useState(!initialLeaderboard);
+  const [search, setSearch] = useState("");
 
   const fetchLeaderboard = useCallback(async (seasonId?: number) => {
     setLoading(true);
@@ -70,7 +71,10 @@ export function LeaderboardContent({ initialLeaderboard, initialSeasons }: Leade
     URL.revokeObjectURL(url);
   };
 
-  const sorted = [...leaderboard].sort((a, b) => (b.average_rating || 0) - (a.average_rating || 0));
+  const filtered = search
+    ? leaderboard.filter(p => (p.name || "").toLowerCase().includes(search.toLowerCase()) || (p.steamId || "").includes(search))
+    : leaderboard;
+  const sorted = [...filtered].sort((a, b) => (b.average_rating || 0) - (a.average_rating || 0));
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-20">
@@ -105,6 +109,17 @@ export function LeaderboardContent({ initialLeaderboard, initialSeasons }: Leade
                 </select>
               </div>
             )}
+            {/* Search */}
+            <div className="relative">
+              <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-orbital-text-dim/50" />
+              <input
+                type="text"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Buscar jogador..."
+                className="pl-7 pr-2 py-1.5 w-32 sm:w-40 bg-transparent border border-orbital-border focus:border-orbital-purple/50 font-[family-name:var(--font-jetbrains)] text-[0.6rem] sm:text-xs text-orbital-text placeholder:text-orbital-text-dim/30 outline-none transition-colors"
+              />
+            </div>
             {/* CSV Export */}
             {sorted.length > 0 && (
               <button

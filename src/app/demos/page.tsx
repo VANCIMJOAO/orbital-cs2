@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Download, Film, Map, Calendar, Search } from "lucide-react";
 import { HudCard } from "@/components/hud-card";
-import { Match, MapStats } from "@/lib/api";
+import { Match, MapStats, parseMapStats } from "@/lib/api";
 
 interface DemoEntry {
   demoFile: string;
@@ -45,7 +45,7 @@ export default function DemosPage() {
             try {
               const res = await fetch(`/api/mapstats/${match.id}`);
               const data = await res.json();
-              const mapStats: MapStats[] = data.mapstats || data.mapStats || [];
+              const mapStats: MapStats[] = parseMapStats(data) as MapStats[];
               return mapStats
                 .filter(ms => ms.demoFile)
                 .map(ms => ({

@@ -5,7 +5,7 @@ import { ArrowLeft, Radio, Map, Users, Target, Skull, Crosshair, RefreshCw, Down
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { HudCard } from "@/components/hud-card";
-import { Match, PlayerStats, MapStats, Team, Server, VetoEntry, KillEvent, BombEvent, BackupEntry, getStatusText, getStatusType, getKillEvents, getBombEvents, updateMatch, deleteMatch, pauseMatch, unpauseMatch, restartMatch, addPlayerToMatch, getMatchBackups, restoreMatchBackup, sendMatchRcon } from "@/lib/api";
+import { Match, PlayerStats, MapStats, Team, Server, VetoEntry, KillEvent, BombEvent, BackupEntry, HighlightClip, parseMapStats, getStatusText, getStatusType, getKillEvents, getBombEvents, updateMatch, deleteMatch, pauseMatch, unpauseMatch, restartMatch, addPlayerToMatch, getMatchBackups, restoreMatchBackup, sendMatchRcon } from "@/lib/api";
 import { BracketMatch } from "@/lib/tournament";
 import { useAuth } from "@/lib/auth-context";
 import { useEffect, useState, useCallback, useRef } from "react";
@@ -14,26 +14,6 @@ import { MAP_IMAGES } from "@/lib/maps";
 function TeamLogo({ logo, size = 48, className = "" }: { logo: string | null | undefined; size?: number; className?: string }) {
   if (!logo) return <Shield size={size * 0.5} className="text-orbital-text-dim" />;
   return <img src={logo} alt="" width={size} height={size} className={`object-contain ${className}`} />;
-}
-
-interface HighlightClip {
-  id: number;
-  match_id: number;
-  map_number: number;
-  rank: number;
-  player_name: string | null;
-  steam_id: string | null;
-  kills_count: number;
-  score: number;
-  description: string | null;
-  round_number: number | null;
-  tick_start: number | null;
-  tick_end: number | null;
-  video_file: string | null;
-  thumbnail_file: string | null;
-  duration_s: number | null;
-  status: "pending" | "extracting" | "recording" | "processing" | "ready" | "error";
-  error_message: string | null;
 }
 
 interface Props {
@@ -95,8 +75,9 @@ export function MatchDetailContent({ match: initialMatch, playerStats: initialSt
       if (matchRes.match) setMatch(matchRes.match);
       const stats = matchRes.playerstats || statsRes.playerstats || statsRes.playerStats || [];
       if (Array.isArray(stats) && stats.length > 0) setPlayerStats(stats);
-      const maps = mapRes.mapstats || mapRes.mapStats || [];
-      if (Array.isArray(maps) && maps.length > 0) setMapStats(maps);
+      const rawMaps = (mapRes as Record<string, unknown>).mapstats || (mapRes as Record<string, unknown>).mapStats || [];
+      const maps = Array.isArray(rawMaps) ? rawMaps as MapStats[] : [];
+      if (maps.length > 0) setMapStats(maps);
       setLastUpdate(new Date());
     } catch {
       // silently fail

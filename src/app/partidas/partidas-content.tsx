@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Swords, ChevronLeft, ChevronRight } from "lucide-react";
+import { Swords, ChevronLeft, ChevronRight, Search } from "lucide-react";
 import { MatchCard } from "@/components/match-card";
 import { Match, getStatusType } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
@@ -27,6 +27,7 @@ export function PartidasContent({ matches, teamsMap, mapScoresMap }: {
   mapScoresMap?: MapScoresMap;
 }) {
   const [filter, setFilter] = useState<FilterType>("all");
+  const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const { user } = useAuth();
 
@@ -39,9 +40,18 @@ export function PartidasContent({ matches, teamsMap, mapScoresMap }: {
   };
 
   const filtered = matches.filter((m) => {
-    if (filter === "all") return true;
-    if (filter === "mine") return user && m.user_id === user.id;
-    return getStatusType(m) === filter;
+    if (filter !== "all") {
+      if (filter === "mine") { if (!user || m.user_id !== user.id) return false; }
+      else if (getStatusType(m) !== filter) return false;
+    }
+    if (search) {
+      const q = search.toLowerCase();
+      const t1 = (m.team1_string || "").toLowerCase();
+      const t2 = (m.team2_string || "").toLowerCase();
+      const title = (m.title || "").toLowerCase();
+      if (!t1.includes(q) && !t2.includes(q) && !title.includes(q) && !String(m.id).includes(q)) return false;
+    }
+    return true;
   });
 
   const totalPages = Math.ceil(filtered.length / PER_PAGE);
@@ -121,6 +131,18 @@ export function PartidasContent({ matches, teamsMap, mapScoresMap }: {
           );
         })}
       </motion.div>
+
+      {/* Search */}
+      <div className="relative mb-4">
+        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-orbital-text-dim/50" />
+        <input
+          type="text"
+          value={search}
+          onChange={e => { setSearch(e.target.value); setPage(1); }}
+          placeholder="Buscar por time, título ou ID..."
+          className="w-full pl-9 pr-3 py-2 bg-transparent border border-orbital-border focus:border-orbital-purple/50 font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text placeholder:text-orbital-text-dim/30 outline-none transition-colors"
+        />
+      </div>
 
       {/* Match List */}
       {paged.length > 0 ? (

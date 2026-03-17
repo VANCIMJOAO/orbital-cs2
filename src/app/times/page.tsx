@@ -1,5 +1,11 @@
+import { Metadata } from "next";
 import { getTeams, Team } from "@/lib/api";
 import { TimesContent } from "./times-content";
+
+export const metadata: Metadata = {
+  title: "Times | ORBITAL ROXA",
+  description: "Todos os times de CS2 cadastrados na ORBITAL ROXA. Veja rosters, logos e estatísticas.",
+};
 
 export const revalidate = 60;
 
