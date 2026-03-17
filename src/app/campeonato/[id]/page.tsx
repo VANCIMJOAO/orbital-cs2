@@ -2,14 +2,15 @@
 
 import { useEffect, useState, useCallback, use, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Trophy, Swords, X, Check, ArrowLeft, Loader2, Play, Trash2, BarChart3 } from "lucide-react";
+import { Trophy, Swords, X, Check, ArrowLeft, Loader2, Play, Trash2, BarChart3, Target, Skull, Crosshair, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { HudCard } from "@/components/hud-card";
 import { FullBracket } from "@/components/bracket";
 import { BracketExportButton } from "@/components/bracket-export-button";
 import { useAuth } from "@/lib/auth-context";
-import { createMatch, getServers, getTeams, Server } from "@/lib/api";
+import { createMatch, getServers, getTeams, getMatches, getLeaderboard, Server, Match, LeaderboardEntry } from "@/lib/api";
+import { MatchCard } from "@/components/match-card";
 import { TeamsMap } from "@/components/bracket";
 import {
   Tournament,
@@ -37,6 +38,7 @@ export default function CampeonatoPage({ params }: { params: Promise<{ id: strin
   const [vetoFirstTeam, setVetoFirstTeam] = useState<"team1" | "team2" | null>(null);
   const [teamsMap, setTeamsMap] = useState<TeamsMap>({});
   const bracketRef = useRef<HTMLDivElement>(null);
+  const [activeTab, setActiveTab] = useState<string>("bracket");
 
   const fetchTournament = useCallback(async () => {
     try {
@@ -306,67 +308,392 @@ export default function CampeonatoPage({ params }: { params: Promise<{ id: strin
         </div>
       </motion.div>
 
-      {/* Next Match Banner */}
-      {isAdmin && nextMatch && !vetoMatch && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-6"
-        >
-          <div className="bg-orbital-purple/5 border border-orbital-purple/30 p-4 flex items-center justify-between">
-            <div>
-              <div className="font-[family-name:var(--font-orbitron)] text-[0.55rem] tracking-[0.2em] text-orbital-purple mb-1">PRÓXIMA PARTIDA</div>
-              <div className="font-[family-name:var(--font-jetbrains)] text-sm text-orbital-text">
-                {getTeamName(tournament, nextMatch.team1_id)} <span className="text-orbital-text-dim">vs</span> {getTeamName(tournament, nextMatch.team2_id)}
-              </div>
-              <div className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim mt-0.5">
-                {nextMatch.label} — {nextMatch.num_maps === 1 ? "BO1" : "BO3"}
-              </div>
-            </div>
-            <button
-              onClick={() => openVeto(nextMatch)}
-              className="flex items-center gap-2 px-5 py-2.5 bg-orbital-purple/20 border border-orbital-purple/50 hover:bg-orbital-purple/30 transition-all font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-wider text-orbital-purple"
+      {/* Tab Bar */}
+      <div className="flex gap-1 border-b border-orbital-border mb-6 overflow-x-auto">
+        {[
+          { id: "bracket", label: "BRACKET" },
+          { id: "partidas", label: "PARTIDAS" },
+          { id: "ranking", label: "RANKING" },
+          { id: "highlights", label: "HIGHLIGHTS" },
+        ].map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`px-4 py-2 font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-wider transition-all whitespace-nowrap ${
+              activeTab === tab.id
+                ? "text-orbital-purple border-b-2 border-orbital-purple"
+                : "text-orbital-text-dim hover:text-orbital-text"
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Tab: BRACKET */}
+      {activeTab === "bracket" && (
+        <>
+          {/* Next Match Banner */}
+          {isAdmin && nextMatch && !vetoMatch && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-6"
             >
-              <Swords size={14} /> INICIAR VETO
-            </button>
-          </div>
-        </motion.div>
+              <div className="bg-orbital-purple/5 border border-orbital-purple/30 p-4 flex items-center justify-between">
+                <div>
+                  <div className="font-[family-name:var(--font-orbitron)] text-[0.55rem] tracking-[0.2em] text-orbital-purple mb-1">PRÓXIMA PARTIDA</div>
+                  <div className="font-[family-name:var(--font-jetbrains)] text-sm text-orbital-text">
+                    {getTeamName(tournament, nextMatch.team1_id)} <span className="text-orbital-text-dim">vs</span> {getTeamName(tournament, nextMatch.team2_id)}
+                  </div>
+                  <div className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim mt-0.5">
+                    {nextMatch.label} — {nextMatch.num_maps === 1 ? "BO1" : "BO3"}
+                  </div>
+                </div>
+                <button
+                  onClick={() => openVeto(nextMatch)}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-orbital-purple/20 border border-orbital-purple/50 hover:bg-orbital-purple/30 transition-all font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-wider text-orbital-purple"
+                >
+                  <Swords size={14} /> INICIAR VETO
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Bracket Visualization */}
+          <HudCard className="p-5 overflow-hidden">
+            <div ref={bracketRef}>
+              <FullBracket
+                tournament={tournament}
+                teamsMap={teamsMap}
+                admin={adminActions}
+              />
+            </div>
+            <div className="text-center mt-4">
+              <BracketExportButton bracketRef={bracketRef} tournamentName={tournament.name} />
+            </div>
+          </HudCard>
+
+          {/* Veto Modal */}
+          <AnimatePresence>
+            {vetoMatch && (
+              <VetoModal
+                match={vetoMatch}
+                tournament={tournament}
+                servers={servers}
+                selectedServer={selectedServer}
+                onSelectServer={setSelectedServer}
+                onBan={handleVetoBan}
+                onStartMatch={handleStartMatch}
+                onClose={() => { setVetoMatch(null); setMatchError(null); }}
+                onResetVeto={handleResetVeto}
+                actionLoading={actionLoading}
+                matchError={matchError}
+                vetoFirstTeam={vetoFirstTeam}
+                onSelectVetoFirst={setVetoFirstTeam}
+              />
+            )}
+          </AnimatePresence>
+        </>
       )}
 
-      {/* Bracket Visualization */}
-      <HudCard className="p-5 overflow-hidden">
-        <div ref={bracketRef}>
-          <FullBracket
-            tournament={tournament}
-            teamsMap={teamsMap}
-            admin={adminActions}
-          />
-        </div>
-        <div className="text-center mt-4">
-          <BracketExportButton bracketRef={bracketRef} tournamentName={tournament.name} />
-        </div>
-      </HudCard>
+      {/* Tab: PARTIDAS */}
+      {activeTab === "partidas" && (
+        <TabPartidas tournament={tournament} teamsMap={teamsMap} />
+      )}
 
-      {/* Veto Modal */}
-      <AnimatePresence>
-        {vetoMatch && (
-          <VetoModal
-            match={vetoMatch}
-            tournament={tournament}
-            servers={servers}
-            selectedServer={selectedServer}
-            onSelectServer={setSelectedServer}
-            onBan={handleVetoBan}
-            onStartMatch={handleStartMatch}
-            onClose={() => { setVetoMatch(null); setMatchError(null); }}
-            onResetVeto={handleResetVeto}
-            actionLoading={actionLoading}
-            matchError={matchError}
-            vetoFirstTeam={vetoFirstTeam}
-            onSelectVetoFirst={setVetoFirstTeam}
-          />
-        )}
-      </AnimatePresence>
+      {/* Tab: RANKING */}
+      {activeTab === "ranking" && (
+        <TabRanking seasonId={tournament.season_id} />
+      )}
+
+      {/* Tab: HIGHLIGHTS */}
+      {activeTab === "highlights" && (
+        <TabHighlights tournament={tournament} />
+      )}
+    </div>
+  );
+}
+
+// ── Tab: PARTIDAS ──
+function TabPartidas({ tournament, teamsMap }: { tournament: Tournament; teamsMap: TeamsMap }) {
+  const [matches, setMatches] = useState<Match[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const matchIds = tournament.matches
+    .filter(m => m.match_id !== null)
+    .map(m => m.match_id!);
+
+  useEffect(() => {
+    if (matchIds.length === 0) {
+      setLoading(false);
+      return;
+    }
+    getMatches()
+      .then(r => {
+        const filtered = (r.matches || []).filter(m => matchIds.includes(m.id));
+        // Sort: live first, then by id descending
+        filtered.sort((a, b) => {
+          const aLive = a.start_time && !a.end_time ? 1 : 0;
+          const bLive = b.start_time && !b.end_time ? 1 : 0;
+          if (aLive !== bLive) return bLive - aLive;
+          return b.id - a.id;
+        });
+        setMatches(filtered);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [matchIds.join(",")]);
+
+  const cardTeamsMap: Record<number, { name: string; logo: string | null }> = {};
+  for (const [id, t] of Object.entries(teamsMap)) {
+    cardTeamsMap[Number(id)] = { name: t.name, logo: t.logo };
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="w-8 h-8 border-2 border-orbital-purple border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (matches.length === 0) {
+    return (
+      <HudCard className="text-center py-12">
+        <Swords size={32} className="text-orbital-border mx-auto mb-4" />
+        <p className="font-[family-name:var(--font-jetbrains)] text-sm text-orbital-text-dim">
+          Nenhuma partida criada neste campeonato ainda
+        </p>
+      </HudCard>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 gap-4">
+      {matches.map((m, i) => (
+        <MatchCard key={m.id} match={m} delay={0.05 * i} teamsMap={cardTeamsMap} />
+      ))}
+    </div>
+  );
+}
+
+// ── Tab: RANKING ──
+function TabRanking({ seasonId }: { seasonId: number | null }) {
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getLeaderboard(seasonId || undefined)
+      .then(r => setLeaderboard(r.leaderboard || []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [seasonId]);
+
+  const sorted = [...leaderboard].sort((a, b) => (b.average_rating || 0) - (a.average_rating || 0));
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="w-8 h-8 border-2 border-orbital-purple border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (sorted.length === 0) {
+    return (
+      <HudCard className="text-center py-12">
+        <Trophy size={32} className="text-orbital-border mx-auto mb-4" />
+        <p className="font-[family-name:var(--font-jetbrains)] text-sm text-orbital-text-dim">
+          {seasonId ? "Nenhum dado de ranking para esta season" : "Nenhum dado de ranking disponível"}
+        </p>
+      </HudCard>
+    );
+  }
+
+  return (
+    <div className="bg-orbital-card border border-orbital-border overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Jogador</th>
+              <th><Target size={10} className="inline" /> K</th>
+              <th><Skull size={10} className="inline" /> D</th>
+              <th>K/D</th>
+              <th><Crosshair size={10} className="inline" /> HS%</th>
+              <th>Wins</th>
+              <th>Rounds</th>
+              <th>Rating</th>
+            </tr>
+          </thead>
+          <tbody>
+            {sorted.map((player, i) => {
+              const kd = (player.deaths || 0) > 0 ? ((player.kills || 0) / player.deaths).toFixed(2) : (player.kills || 0).toFixed(2);
+              const rating = player.average_rating || 0;
+              return (
+                <tr key={player.steamId}>
+                  <td>
+                    <span className={`font-bold ${
+                      i === 0 ? "text-yellow-400" :
+                      i === 1 ? "text-gray-300" :
+                      i === 2 ? "text-amber-600" :
+                      "text-orbital-text-dim"
+                    }`}>
+                      {i + 1}
+                    </span>
+                  </td>
+                  <td className="font-semibold">
+                    <Link href={`/perfil/${player.steamId}`} className="hover:text-orbital-purple transition-colors">
+                      {player.name}
+                    </Link>
+                  </td>
+                  <td className="text-orbital-success">{player.kills}</td>
+                  <td className="text-orbital-danger">{player.deaths}</td>
+                  <td>{kd}</td>
+                  <td>{Math.round(player.hsp || 0)}%</td>
+                  <td>{player.wins}</td>
+                  <td>{player.trp}</td>
+                  <td>
+                    <span className={`font-bold ${
+                      rating >= 1.2 ? "text-orbital-success" :
+                      rating >= 0.8 ? "text-orbital-text" :
+                      "text-orbital-danger"
+                    }`}>
+                      {rating.toFixed(2)}
+                    </span>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+// ── Tab: HIGHLIGHTS ──
+interface HighlightClip {
+  id: number;
+  match_id: number;
+  map_number: number;
+  rank: number;
+  player_name: string;
+  steam_id: string;
+  kills_count: number;
+  score: number;
+  description: string;
+  round_number: number;
+  video_file: string;
+  thumbnail_file: string;
+  duration_s: number;
+  status: string;
+  created_at: string;
+  team1_string: string;
+  team2_string: string;
+}
+
+function TabHighlights({ tournament }: { tournament: Tournament }) {
+  const [clips, setClips] = useState<HighlightClip[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const matchIds = tournament.matches
+    .filter(m => m.match_id !== null)
+    .map(m => m.match_id!);
+
+  useEffect(() => {
+    if (matchIds.length === 0) {
+      setLoading(false);
+      return;
+    }
+    fetch("/api/highlights/all?limit=100")
+      .then(r => r.json())
+      .then(data => {
+        const all: HighlightClip[] = data.clips || [];
+        setClips(all.filter(c => matchIds.includes(c.match_id)));
+      })
+      .catch(() => setClips([]))
+      .finally(() => setLoading(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [matchIds.join(",")]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="w-8 h-8 border-2 border-orbital-purple border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (clips.length === 0) {
+    return (
+      <HudCard className="text-center py-12">
+        <Sparkles size={32} className="text-orbital-border mx-auto mb-4" />
+        <p className="font-[family-name:var(--font-jetbrains)] text-sm text-orbital-text-dim">
+          Nenhum highlight disponível neste campeonato
+        </p>
+      </HudCard>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {clips.map((clip, i) => (
+        <motion.div
+          key={clip.id}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 * i }}
+          className="bg-orbital-card border border-orbital-border overflow-hidden group hover:border-orbital-purple/30 transition-colors"
+        >
+          {/* Video thumbnail */}
+          <div className="relative w-full aspect-video bg-black flex items-center justify-center">
+            <video
+              controls
+              preload="metadata"
+              className="w-full h-full"
+              src={`/api/highlights-proxy/${clip.video_file}#t=12`}
+            />
+          </div>
+
+          {/* Info */}
+          <div className="p-2.5">
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="font-[family-name:var(--font-orbitron)] text-[0.5rem] text-orbital-purple shrink-0">
+                #{clip.rank}
+              </span>
+              <Link
+                href={`/perfil/${clip.steam_id}`}
+                className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text hover:text-orbital-purple transition-colors truncate"
+              >
+                {clip.player_name || "Player"}
+              </Link>
+              {clip.kills_count >= 2 && (
+                <span className="font-[family-name:var(--font-orbitron)] text-[0.45rem] text-orbital-purple bg-orbital-purple/10 px-1.5 py-0.5 shrink-0">
+                  {clip.kills_count >= 5 ? "ACE" : `${clip.kills_count}K`}
+                </span>
+              )}
+              {clip.round_number > 0 && (
+                <span className="font-[family-name:var(--font-jetbrains)] text-[0.45rem] text-orbital-text-dim shrink-0 ml-auto">
+                  R{clip.round_number}
+                </span>
+              )}
+            </div>
+            <Link
+              href={`/partidas/${clip.match_id}`}
+              className="flex items-center gap-1.5 group/match"
+            >
+              <Swords size={9} className="text-orbital-text-dim group-hover/match:text-orbital-purple transition-colors shrink-0" />
+              <span className="font-[family-name:var(--font-jetbrains)] text-[0.55rem] text-orbital-text-dim group-hover/match:text-orbital-purple transition-colors truncate">
+                {clip.team1_string || "Time 1"} vs {clip.team2_string || "Time 2"}
+              </span>
+            </Link>
+          </div>
+        </motion.div>
+      ))}
     </div>
   );
 }
