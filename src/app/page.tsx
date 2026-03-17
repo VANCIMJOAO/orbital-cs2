@@ -1,7 +1,6 @@
-import { getMatches, getTeams, getMatch, getMapStats, getLeaderboard, parseMapStats, Match, Team, LeaderboardEntry, getStatusType } from "@/lib/api";
+import { getMatches, getTeams, getMapStats, getLeaderboard, parseMapStats, Match, Team, LeaderboardEntry, getStatusType } from "@/lib/api";
 import { Tournament } from "@/lib/tournament";
-import { autoAdvanceTournament } from "@/lib/tournament-utils";
-import { getTournamentsFromDB, saveTournamentToDB } from "@/lib/tournaments-db";
+import { getTournamentsFromDB } from "@/lib/tournaments-db";
 import { HomeContent } from "./home-content";
 
 export const revalidate = 60;
@@ -66,19 +65,6 @@ export default async function HomePage() {
     || tournaments.find(t => t.status === "pending")
     || tournaments[0]
     || null;
-
-  // Auto-advance bracket
-  if (activeTournament) {
-    const serverFetcher = async (matchId: number) => {
-      const data = await getMatch(matchId);
-      return data.match || null;
-    };
-    const result = await autoAdvanceTournament(activeTournament, serverFetcher);
-    if (result.changed) {
-      await saveTournamentToDB(result.tournament);
-    }
-    activeTournament = result.tournament;
-  }
 
   // Top 5 players
   const topPlayers = [...leaderboard]

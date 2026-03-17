@@ -16,11 +16,15 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL("/", req.url));
   }
 
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 5000);
   try {
     const res = await fetch(`${G5API_URL}/isloggedin`, {
       headers: { Cookie: cookie },
       cache: "no-store",
+      signal: controller.signal,
     });
+    clearTimeout(timeout);
 
     if (!res.ok) {
       return NextResponse.redirect(new URL("/", req.url));
@@ -39,6 +43,8 @@ export async function middleware(req: NextRequest) {
 
     return NextResponse.next();
   } catch {
+    clearTimeout(timeout);
+    // On timeout or error, deny access
     return NextResponse.redirect(new URL("/", req.url));
   }
 }

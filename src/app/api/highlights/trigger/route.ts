@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 const G5API_URL = process.env.NEXT_PUBLIC_G5API_URL || process.env.G5API_URL || "https://g5api-production-998f.up.railway.app";
 
-const HIGHLIGHTS_KEY = process.env.HIGHLIGHTS_API_KEY || "orbital-highlights-2024-secret";
+const HIGHLIGHTS_KEY = process.env.HIGHLIGHTS_API_KEY;
 
 // POST /api/highlights/trigger
 // Body: { matchId: number, mapNumber?: number }
@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
     // Check auth: admin cookie or API key
     const apiKey = req.headers.get("X-Highlights-Key");
     const cookie = req.cookies.get("G5API")?.value;
-    if (!cookie && apiKey !== HIGHLIGHTS_KEY) {
+    if (!cookie && (!HIGHLIGHTS_KEY || apiKey !== HIGHLIGHTS_KEY)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
