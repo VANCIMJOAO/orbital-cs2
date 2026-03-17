@@ -8,7 +8,8 @@ export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
 
 async function proxyRequest(req: NextRequest, path: string) {
-  const url = `${G5API_URL}/${path}`;
+  const queryString = new URL(req.url).search;
+  const url = `${G5API_URL}/${path}${queryString}`;
   const cookie = req.headers.get("cookie") || "";
 
   let body: string | undefined;

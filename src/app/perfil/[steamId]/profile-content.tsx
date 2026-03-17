@@ -102,13 +102,20 @@ export function ProfileContent({ steamId }: { steamId: string }) {
 
   useEffect(() => {
     async function fetchData() {
+      // Fetch playerstats ONCE and reuse across all sections
+      let playerStatsArr: Record<string, unknown>[] = [];
       try {
-        // Buscar stats individuais por partida
         const res = await fetch(`/api/playerstats/${steamId}`);
         if (!res.ok) throw new Error("Not found");
         const data = await res.json();
         const rawStats = data.playerstats || data.playerStats || data;
-        const matches: Record<string, unknown>[] = Array.isArray(rawStats) ? rawStats : [rawStats];
+        playerStatsArr = Array.isArray(rawStats) ? rawStats : [rawStats];
+      } catch {
+        playerStatsArr = [];
+      }
+
+      try {
+        const matches = playerStatsArr;
 
         if (matches.length === 0) {
           // No stats yet — show empty profile instead of error
@@ -214,126 +221,116 @@ export function ProfileContent({ steamId }: { steamId: string }) {
         });
       }
 
-      // Buscar map performance usando os match_ids das playerstats
+      // Buscar map performance usando os match_ids das playerstats (reusing cached data)
       try {
-        const psRes = await fetch(`/api/playerstats/${steamId}`);
-        if (psRes.ok) {
-          const psData = await psRes.json();
-          const rawPS = psData.playerstats || psData.playerStats || psData;
-          const psArr: { match_id: number; map_id: number; team_id: number; kills: number; deaths: number; roundsplayed: number; k1: number; k2: number; k3: number; k4: number; k5: number }[] = Array.isArray(rawPS) ? rawPS : [];
-          const matchIds = [...new Set(psArr.map(s => s.match_id))];
+        const psArr = playerStatsArr as { match_id: number; map_id: number; team_id: number; kills: number; deaths: number; roundsplayed: number; k1: number; k2: number; k3: number; k4: number; k5: number }[];
+        const psMatchIds = [...new Set(psArr.map(s => s.match_id))];
 
-          const mapCount: Record<string, number> = {};
-          const mapPerf: Record<string, { wins: number; total: number; totalRating: number; kills: number; deaths: number }> = {};
+        const mapCount: Record<string, number> = {};
+        const mapPerf: Record<string, { wins: number; total: number; totalRating: number; kills: number; deaths: number }> = {};
 
-          // Fetch mapstats for each match in parallel
-          const mapStatsResults = await Promise.all(
-            matchIds.map(async (mid) => {
-              try {
-                const r = await fetch(`/api/mapstats/${mid}`);
-                if (!r.ok) return [];
-                const d = await r.json();
-                return (d.mapstats || d.mapStats || []).map((ms: Record<string, unknown>) => ({ ...ms, _matchId: mid }));
-              } catch { return []; }
-            })
-          );
+        // Fetch mapstats for each match in parallel
+        const mapStatsResults = await Promise.all(
+          psMatchIds.map(async (mid) => {
+            try {
+              const r = await fetch(`/api/mapstats/${mid}`);
+              if (!r.ok) return [];
+              const d = await r.json();
+              return (d.mapstats || d.mapStats || []).map((ms: Record<string, unknown>) => ({ ...ms, _matchId: mid }));
+            } catch { return []; }
+          })
+        );
 
-          for (const mapStatsList of mapStatsResults) {
-            for (const ms of mapStatsList) {
-              if (!ms.map_name) continue;
-              mapCount[ms.map_name] = (mapCount[ms.map_name] || 0) + 1;
+        for (const mapStatsList of mapStatsResults) {
+          for (const ms of mapStatsList) {
+            if (!ms.map_name) continue;
+            mapCount[ms.map_name] = (mapCount[ms.map_name] || 0) + 1;
 
-              if (!mapPerf[ms.map_name]) {
-                mapPerf[ms.map_name] = { wins: 0, total: 0, totalRating: 0, kills: 0, deaths: 0 };
+            if (!mapPerf[ms.map_name]) {
+              mapPerf[ms.map_name] = { wins: 0, total: 0, totalRating: 0, kills: 0, deaths: 0 };
+            }
+            mapPerf[ms.map_name].total++;
+
+            // Find the player's stats entry for this map
+            const playerEntry = psArr.find(p => p.match_id === ms._matchId && p.map_id === ms.id);
+            if (playerEntry) {
+              if (ms.winner === playerEntry.team_id) {
+                mapPerf[ms.map_name].wins++;
               }
-              mapPerf[ms.map_name].total++;
-
-              // Find the player's stats entry for this map
-              const playerEntry = psArr.find(p => p.match_id === ms._matchId && p.map_id === ms.id);
-              if (playerEntry) {
-                if (ms.winner === playerEntry.team_id) {
-                  mapPerf[ms.map_name].wins++;
-                }
-                const pRating = calcRating(playerEntry.kills || 0, playerEntry.roundsplayed || 0, playerEntry.deaths || 0, playerEntry.k1 || 0, playerEntry.k2 || 0, playerEntry.k3 || 0, playerEntry.k4 || 0, playerEntry.k5 || 0);
-                mapPerf[ms.map_name].totalRating += pRating;
-                mapPerf[ms.map_name].kills += playerEntry.kills || 0;
-                mapPerf[ms.map_name].deaths += playerEntry.deaths || 0;
-              }
+              const pRating = calcRating(playerEntry.kills || 0, playerEntry.roundsplayed || 0, playerEntry.deaths || 0, playerEntry.k1 || 0, playerEntry.k2 || 0, playerEntry.k3 || 0, playerEntry.k4 || 0, playerEntry.k5 || 0);
+              mapPerf[ms.map_name].totalRating += pRating;
+              mapPerf[ms.map_name].kills += playerEntry.kills || 0;
+              mapPerf[ms.map_name].deaths += playerEntry.deaths || 0;
             }
           }
-
-          setMapCounts(
-            Object.entries(mapCount)
-              .map(([map, count]) => ({ map, count }))
-              .sort((a, b) => b.count - a.count)
-          );
-
-          setMapPerformance(
-            Object.entries(mapPerf)
-              .map(([map, d]) => ({
-                map,
-                wins: d.wins,
-                total: d.total,
-                avgRating: d.total > 0 ? d.totalRating / d.total : 0,
-                kills: d.kills,
-                deaths: d.deaths,
-              }))
-              .sort((a, b) => b.total - a.total)
-          );
         }
+
+        setMapCounts(
+          Object.entries(mapCount)
+            .map(([map, count]) => ({ map, count }))
+            .sort((a, b) => b.count - a.count)
+        );
+
+        setMapPerformance(
+          Object.entries(mapPerf)
+            .map(([map, d]) => ({
+              map,
+              wins: d.wins,
+              total: d.total,
+              avgRating: d.total > 0 ? d.totalRating / d.total : 0,
+              kills: d.kills,
+              deaths: d.deaths,
+            }))
+            .sort((a, b) => b.total - a.total)
+        );
       } catch { /* não crítico */ }
 
-      // Buscar partidas recentes onde o jogador participou (via playerstats)
+      // Buscar partidas recentes onde o jogador participou (reusing cached data)
       try {
-        const res = await fetch(`/api/playerstats/${steamId}`);
-        if (res.ok) {
-          const data = await res.json();
-          const rawStats = data.playerstats || data.playerStats || data;
-          const statsArr: { match_id: number; team_id: number }[] = Array.isArray(rawStats) ? rawStats : [];
-          // Map match_id → player's team_id
-          const playerTeamMap: Record<number, number> = {};
-          for (const s of statsArr) {
-            if (!(s.match_id in playerTeamMap)) playerTeamMap[s.match_id] = s.team_id;
-          }
-          const matchIds = [...new Set(statsArr.map(s => s.match_id))].sort((a, b) => b - a).slice(0, 5);
-
-          const matchPromises = matchIds.map(async (id) => {
-            try {
-              const [matchRes, mapRes] = await Promise.all([
-                fetch(`/api/matches/${id}`),
-                fetch(`/api/mapstats/${id}`),
-              ]);
-              if (matchRes.ok) {
-                const d = await matchRes.json();
-                const m = d.match as Match;
-                // Attach player's team_id to determine win/loss
-                const pTeamId = playerTeamMap[id];
-                type MatchExt = Match & { round_score?: string; map_name?: string; player_team_id?: number };
-                const ext = m as MatchExt;
-                ext.player_team_id = pTeamId;
-                if (mapRes.ok) {
-                  const mapData = await mapRes.json();
-                  const maps = mapData.mapstats || mapData.mapStats || [];
-                  if (maps.length > 0) {
-                    let t1Rounds = 0, t2Rounds = 0;
-                    const mapNames: string[] = [];
-                    for (const ms of maps) {
-                      t1Rounds += ms.team1_score || 0;
-                      t2Rounds += ms.team2_score || 0;
-                      if (ms.map_name) mapNames.push(ms.map_name.replace("de_", ""));
-                    }
-                    ext.round_score = `${t1Rounds} - ${t2Rounds}`;
-                    ext.map_name = mapNames.join(", ");
-                  }
-                }
-                return m;
-              }
-            } catch { /* skip */ }
-            return null;
-          });
-          const resolved = await Promise.all(matchPromises);
-          setRecentMatches(resolved.filter((m): m is Match => m !== null));
+        const statsArr = playerStatsArr as { match_id: number; team_id: number }[];
+        // Map match_id → player's team_id
+        const playerTeamMap: Record<number, number> = {};
+        for (const s of statsArr) {
+          if (!(s.match_id in playerTeamMap)) playerTeamMap[s.match_id] = s.team_id;
         }
+        const recentMatchIds = [...new Set(statsArr.map(s => s.match_id))].sort((a, b) => b - a).slice(0, 5);
+
+        const matchPromises = recentMatchIds.map(async (id) => {
+          try {
+            const [matchRes, mapRes] = await Promise.all([
+              fetch(`/api/matches/${id}`),
+              fetch(`/api/mapstats/${id}`),
+            ]);
+            if (matchRes.ok) {
+              const d = await matchRes.json();
+              const m = d.match as Match;
+              // Attach player's team_id to determine win/loss
+              const pTeamId = playerTeamMap[id];
+              type MatchExt = Match & { round_score?: string; map_name?: string; player_team_id?: number };
+              const ext = m as MatchExt;
+              ext.player_team_id = pTeamId;
+              if (mapRes.ok) {
+                const mapData = await mapRes.json();
+                const maps = mapData.mapstats || mapData.mapStats || [];
+                if (maps.length > 0) {
+                  let t1Rounds = 0, t2Rounds = 0;
+                  const mapNames: string[] = [];
+                  for (const ms of maps) {
+                    t1Rounds += ms.team1_score || 0;
+                    t2Rounds += ms.team2_score || 0;
+                    if (ms.map_name) mapNames.push(ms.map_name.replace("de_", ""));
+                  }
+                  ext.round_score = `${t1Rounds} - ${t2Rounds}`;
+                  ext.map_name = mapNames.join(", ");
+                }
+              }
+              return m;
+            }
+          } catch { /* skip */ }
+          return null;
+        });
+        const resolved = await Promise.all(matchPromises);
+        setRecentMatches(resolved.filter((m): m is Match => m !== null));
       } catch { /* não crítico */ }
 
       // Buscar highlights do jogador

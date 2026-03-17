@@ -9,19 +9,7 @@ import { Match, PlayerStats, MapStats, Team, Server, VetoEntry, KillEvent, BombE
 import { BracketMatch } from "@/lib/tournament";
 import { useAuth } from "@/lib/auth-context";
 import { useEffect, useState, useCallback, useRef } from "react";
-
-// Map screenshot URLs (GitHub: ghostcap-gaming/cs2-map-images)
-const MAP_IMAGES: Record<string, string> = {
-  de_ancient: "https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_ancient.png",
-  de_anubis: "https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_anubis.png",
-  de_dust2: "https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_dust2.png",
-  de_inferno: "https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_inferno.png",
-  de_mirage: "https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_mirage.png",
-  de_nuke: "https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_nuke.png",
-  de_overpass: "https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_overpass.png",
-  de_vertigo: "https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_vertigo.png",
-  de_train: "https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_train.png",
-};
+import { MAP_IMAGES } from "@/lib/maps";
 
 function TeamLogo({ logo, size = 48, className = "" }: { logo: string | null | undefined; size?: number; className?: string }) {
   if (!logo) return <Shield size={size * 0.5} className="text-orbital-text-dim" />;

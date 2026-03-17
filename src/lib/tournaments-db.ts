@@ -3,27 +3,23 @@ import { Tournament } from "./tournament";
 
 const DATABASE_URL = process.env.DATABASE_URL || "";
 
+const pool = mysql.createPool(DATABASE_URL);
+
 export async function getTournamentsFromDB(): Promise<Tournament[]> {
-  let connection;
   try {
-    connection = await mysql.createConnection(DATABASE_URL);
-    const [rows] = await connection.execute("SELECT id, data FROM tournament ORDER BY created_at DESC");
+    const [rows] = await pool.execute("SELECT id, data FROM tournament ORDER BY created_at DESC");
     return (rows as { id: string; data: string }[]).map(row =>
       typeof row.data === "string" ? JSON.parse(row.data) : row.data
     );
   } catch (err) {
     console.error("[TOURNAMENTS DB]", err);
     return [];
-  } finally {
-    await connection?.end();
   }
 }
 
 export async function saveTournamentToDB(tournament: Tournament): Promise<boolean> {
-  let connection;
   try {
-    connection = await mysql.createConnection(DATABASE_URL);
-    await connection.execute(
+    await pool.execute(
       "UPDATE tournament SET name = ?, data = ? WHERE id = ?",
       [tournament.name, JSON.stringify(tournament), tournament.id]
     );
@@ -31,7 +27,5 @@ export async function saveTournamentToDB(tournament: Tournament): Promise<boolea
   } catch (err) {
     console.error("[TOURNAMENTS DB SAVE]", err);
     return false;
-  } finally {
-    await connection?.end();
   }
 }

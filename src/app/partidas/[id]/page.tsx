@@ -1,9 +1,34 @@
+import { Metadata } from "next";
 import { getMatch, getPlayerStats, getMapStats, getTeam, getServer } from "@/lib/api";
 import { getTournamentsFromDB } from "@/lib/tournaments-db";
 import { BracketMatch } from "@/lib/tournament";
 import { MatchDetailContent } from "./match-detail-content";
 
 export const revalidate = 5;
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  try {
+    const matchRes = await getMatch(parseInt(id));
+    const match = matchRes.match;
+    const [team1Res, team2Res] = await Promise.all([
+      getTeam(match.team1_id).catch(() => null),
+      getTeam(match.team2_id).catch(() => null),
+    ]);
+    const team1Name = team1Res?.team?.name || match.team1_string || "Time 1";
+    const team2Name = team2Res?.team?.name || match.team2_string || "Time 2";
+    const score = match.end_time
+      ? ` ${match.team1_score}-${match.team2_score}`
+      : "";
+    return {
+      title: `${team1Name} vs ${team2Name}${score} | ORBITAL ROXA`,
+    };
+  } catch {
+    return {
+      title: `Partida #${id} | ORBITAL ROXA`,
+    };
+  }
+}
 
 export default async function MatchPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
