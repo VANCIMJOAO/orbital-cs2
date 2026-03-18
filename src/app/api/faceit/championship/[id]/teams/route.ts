@@ -3,6 +3,7 @@ import { getFaceitChampionship, getFaceitPlayer } from "@/lib/faceit";
 
 const FACEIT_API_KEY = process.env.FACEIT_API_KEY || "";
 const FACEIT_BASE = "https://open.faceit.com/data/v4";
+const FACEIT_INTERNAL = "https://api.faceit.com";
 
 interface FaceitSubscription {
   team: {
@@ -20,6 +21,64 @@ interface FaceitSubscription {
   status: string;
 }
 
+interface InternalSubscription {
+  id: string;
+  name: string;
+  avatar: string;
+  members: {
+    userId: string;
+    nickname: string;
+    avatar: string;
+    country: string;
+    gameSkillLevel: number;
+  }[];
+  substitutes: unknown[];
+  status: string;
+}
+
+// Buscar subscriptions via Data API
+async function fetchSubscriptionsData(id: string): Promise<FaceitSubscription[]> {
+  const res = await fetch(
+    `${FACEIT_BASE}/championships/${id}/subscriptions?offset=0&limit=50`,
+    {
+      headers: {
+        Authorization: `Bearer ${FACEIT_API_KEY}`,
+        Accept: "application/json",
+      },
+    }
+  );
+  if (!res.ok) throw new Error(`Data API ${res.status}`);
+  const data = await res.json();
+  return data.items || [];
+}
+
+// Buscar subscriptions via Internal API (fallback)
+async function fetchSubscriptionsInternal(id: string): Promise<FaceitSubscription[]> {
+  const res = await fetch(
+    `${FACEIT_INTERNAL}/championships/v1/championship/${id}/subscription`,
+    { headers: { Accept: "application/json" } }
+  );
+  if (!res.ok) throw new Error(`Internal API ${res.status}`);
+  const data = await res.json();
+  const items: InternalSubscription[] = data.payload?.items || data.items || [];
+
+  return items.map((item) => ({
+    team: {
+      team_id: item.id,
+      name: item.name,
+      members: (item.members || []).map((m) => ({
+        user_id: m.userId,
+        nickname: m.nickname,
+        avatar: m.avatar || "",
+        country: m.country || "",
+        skill_level: m.gameSkillLevel || 0,
+      })),
+    },
+    roster: (item.members || []).map((m) => m.userId),
+    status: item.status || "joined",
+  }));
+}
+
 // GET — buscar times inscritos num championship da Faceit com Steam IDs
 export async function GET(
   _req: NextRequest,
@@ -31,21 +90,13 @@ export async function GET(
     // 1. Buscar championship info
     const championship = await getFaceitChampionship(id);
 
-    // 2. Buscar subscriptions (times inscritos)
-    const subsRes = await fetch(
-      `${FACEIT_BASE}/championships/${id}/subscriptions?offset=0&limit=50`,
-      {
-        headers: {
-          Authorization: `Bearer ${FACEIT_API_KEY}`,
-          Accept: "application/json",
-        },
-      }
-    );
-    if (!subsRes.ok) {
-      throw new Error(`Faceit subscriptions: ${subsRes.status}`);
+    // 2. Buscar subscriptions (Data API → fallback Internal API)
+    let subscriptions: FaceitSubscription[] = [];
+    try {
+      subscriptions = await fetchSubscriptionsData(id);
+    } catch {
+      subscriptions = await fetchSubscriptionsInternal(id);
     }
-    const subsData = await subsRes.json();
-    const subscriptions: FaceitSubscription[] = subsData.items || [];
 
     // 3. Pra cada time, buscar Steam IDs dos jogadores
     const teams = await Promise.all(

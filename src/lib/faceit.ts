@@ -291,8 +291,45 @@ export async function getFaceitPlayerHistory(
 
 // ── Championship/Tournament endpoints ──
 
+// Internal Faceit API (acessível sem key, funciona pra championships não-publicados)
+const FACEIT_INTERNAL = "https://api.faceit.com";
+
+async function faceitInternalFetch<T>(endpoint: string): Promise<T> {
+  const res = await fetch(`${FACEIT_INTERNAL}${endpoint}`, {
+    headers: { Accept: "application/json" },
+    next: { revalidate: 0 },
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`Faceit Internal API ${res.status}: ${text}`);
+  }
+  return res.json();
+}
+
 export async function getFaceitChampionship(championshipId: string): Promise<FaceitChampionship> {
-  return faceitFetch(`/championships/${championshipId}`);
+  try {
+    // Tenta Data API primeiro
+    return await faceitFetch(`/championships/${championshipId}`);
+  } catch {
+    // Fallback: API interna (funciona pra championships não-publicados/free organizers)
+    const internal = await faceitInternalFetch<{ payload: Record<string, unknown> }>(
+      `/championships/v1/championship/${championshipId}`
+    );
+    const p = internal.payload;
+    return {
+      championship_id: p.id as string,
+      name: p.name as string,
+      description: (p.description as string) || "",
+      game_id: p.game as string,
+      region: p.region as string,
+      status: p.status as string,
+      type: p.type as string,
+      organizer_id: p.organizerId as string,
+      slots: (p.slots as number) || 16,
+      current_subscriptions: (p.currentSubscriptions as number) || 0,
+      faceit_url: `https://www.faceit.com/pt-br/championship/${championshipId}`,
+    };
+  }
 }
 
 export async function getFaceitChampionshipMatches(
