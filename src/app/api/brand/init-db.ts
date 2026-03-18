@@ -84,6 +84,17 @@ export async function ensureBrandTables() {
       )
     `);
 
+    await dbPool.execute(`
+      CREATE TABLE IF NOT EXISTS brand_ai_reports (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        action_id VARCHAR(50) NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        content LONGTEXT,
+        status ENUM('generating','ready','error') DEFAULT 'generating',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
     await seedDefaults();
   } catch (err) {
     console.error("[BRAND INIT]", err);
