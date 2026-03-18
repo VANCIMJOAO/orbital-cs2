@@ -3,7 +3,15 @@ import { dbPool } from "@/lib/tournaments-db";
 let tablesEnsured = false;
 
 export async function ensureBrandTables() {
-  if (tablesEnsured) return;
+  if (tablesEnsured) {
+    // Verify at least one table actually exists (cold start protection)
+    try {
+      await dbPool.execute("SELECT 1 FROM brand_tasks LIMIT 1");
+      return;
+    } catch {
+      tablesEnsured = false; // Table doesn't exist, recreate
+    }
+  }
 
   try {
     await dbPool.execute(`
