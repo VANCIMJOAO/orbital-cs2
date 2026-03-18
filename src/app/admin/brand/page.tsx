@@ -5,7 +5,7 @@ import { useEffect, useState, useCallback } from "react";
 import {
   CalendarDays, CheckSquare, Handshake, FileText,
   Target, Users, Tv, Swords, Clock, Loader2, ExternalLink,
-  Save, CircleDot
+  Save, CircleDot, Brain, AlertCircle
 } from "lucide-react";
 import Link from "next/link";
 
@@ -49,6 +49,9 @@ export default function BrandDashboard() {
   const [savingNote, setSavingNote] = useState(false);
   const [cup2Date, setCup2Date] = useState("2026-05-15");
   const [desbloqueadores, setDesbloqueadores] = useState<Desbloqueador[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [aiAnalysis, setAiAnalysis] = useState<any>(null);
+  const [aiLoading, setAiLoading] = useState(false);
   const [savingDesb, setSavingDesb] = useState(false);
 
   const fetchData = useCallback(async () => {
@@ -138,6 +141,78 @@ export default function BrandDashboard() {
             Painel de gestão de marca da Orbital Roxa
           </p>
         </div>
+      </div>
+
+      {/* AI Analysis Panel */}
+      <div className="bg-orbital-purple/5 border border-orbital-purple/15 p-5">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <Brain size={16} className="text-orbital-purple" />
+            <span className="font-[family-name:var(--font-orbitron)] text-[0.55rem] tracking-[0.15em] text-orbital-purple">ANÁLISE IA</span>
+          </div>
+          <button
+            onClick={async () => {
+              setAiLoading(true);
+              setAiAnalysis(null);
+              try {
+                const res = await fetch("/api/brand/ai/execute", {
+                  method: "POST", credentials: "include",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ action: "analise-geral" }),
+                });
+                const data = await res.json();
+                if (data.analysis) setAiAnalysis(data.analysis);
+              } catch { /* ignore */ }
+              setAiLoading(false);
+            }}
+            disabled={aiLoading}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-orbital-purple/10 border border-orbital-purple/25 text-orbital-purple font-[family-name:var(--font-jetbrains)] text-[0.55rem] hover:bg-orbital-purple/20 disabled:opacity-40 transition-all"
+          >
+            {aiLoading ? <Loader2 size={11} className="animate-spin" /> : <Brain size={11} />}
+            {aiLoading ? "ANALISANDO..." : "ANALISAR MARCA"}
+          </button>
+        </div>
+        {aiAnalysis ? (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-white/60">{aiAnalysis.resumo}</span>
+              <span className="font-[family-name:var(--font-orbitron)] text-lg text-orbital-purple">{aiAnalysis.nota}<span className="text-[0.5rem] text-white/20">/10</span></span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div className="bg-[#0A0A0A] border border-[#1A1A1A] p-3">
+                <div className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.15em] text-green-400 mb-2">PRIORIDADES</div>
+                {aiAnalysis.prioridades?.map((p: string, i: number) => (
+                  <div key={i} className="flex items-start gap-1.5 mb-1">
+                    <span className="text-green-400 text-[0.5rem] mt-0.5">▸</span>
+                    <span className="font-[family-name:var(--font-jetbrains)] text-[0.55rem] text-white/50">{p}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="bg-[#0A0A0A] border border-[#1A1A1A] p-3">
+                <div className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.15em] text-red-400 mb-2">RISCOS</div>
+                {aiAnalysis.riscos?.map((r: string, i: number) => (
+                  <div key={i} className="flex items-start gap-1.5 mb-1">
+                    <AlertCircle size={8} className="text-red-400 mt-0.5 shrink-0" />
+                    <span className="font-[family-name:var(--font-jetbrains)] text-[0.55rem] text-white/50">{r}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="bg-[#0A0A0A] border border-[#1A1A1A] p-3">
+                <div className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.15em] text-amber-400 mb-2">OPORTUNIDADES</div>
+                {aiAnalysis.oportunidades?.map((o: string, i: number) => (
+                  <div key={i} className="flex items-start gap-1.5 mb-1">
+                    <span className="text-amber-400 text-[0.5rem] mt-0.5">★</span>
+                    <span className="font-[family-name:var(--font-jetbrains)] text-[0.55rem] text-white/50">{o}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <p className="font-[family-name:var(--font-jetbrains)] text-[0.55rem] text-white/20">
+            Clique em &quot;ANALISAR MARCA&quot; para a IA avaliar o progresso da ORBITAL ROXA
+          </p>
+        )}
       </div>
 
       {/* Progress + Countdown Row */}

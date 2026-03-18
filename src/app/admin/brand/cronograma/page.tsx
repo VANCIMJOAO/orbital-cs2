@@ -5,6 +5,7 @@ import { useEffect, useState, useCallback } from "react";
 import {
   CalendarDays, Check, Plus, Loader2, Trash2, Filter, X
 } from "lucide-react";
+import { BrandAIButton } from "@/components/brand-ai-button";
 
 interface BrandTask {
   id: number;
@@ -168,6 +169,13 @@ export default function CronogramaPage() {
             Timeline de execução rumo ao Cup #2
           </p>
         </div>
+        <BrandAIButton
+          action="gerar-cronograma"
+          label="GERAR COM IA"
+          variant="compact"
+          confirmMessage="A IA vai substituir todas as tasks atuais por um novo cronograma. Continuar?"
+          onComplete={() => fetchTasks()}
+        />
       </div>
 
       {/* Category Filters */}

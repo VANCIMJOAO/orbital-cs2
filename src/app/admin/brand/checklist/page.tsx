@@ -5,6 +5,7 @@ import { useEffect, useState, useCallback } from "react";
 import {
   CheckSquare, Check, Plus, Loader2, Trash2, X, ChevronDown, ChevronRight
 } from "lucide-react";
+import { BrandAIButton } from "@/components/brand-ai-button";
 
 interface CheckItem {
   id: number;
@@ -113,13 +114,21 @@ export default function ChecklistPage() {
 
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-      <div>
-        <h1 className="font-[family-name:var(--font-orbitron)] text-lg tracking-wider text-orbital-text">
-          CHECKLIST
-        </h1>
-        <p className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text-dim mt-1">
-          Itens essenciais para o lancamento da marca
-        </p>
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h1 className="font-[family-name:var(--font-orbitron)] text-lg tracking-wider text-orbital-text">
+            CHECKLIST
+          </h1>
+          <p className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text-dim mt-1">
+            Itens essenciais para o lancamento da marca
+          </p>
+        </div>
+        <BrandAIButton
+          action="revisar-checklist"
+          label="REVISAR COM IA"
+          variant="compact"
+          onComplete={() => fetchItems()}
+        />
       </div>
 
       <div className="space-y-4">

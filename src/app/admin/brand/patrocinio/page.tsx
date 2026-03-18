@@ -6,6 +6,7 @@ import {
   Handshake, Plus, Loader2, Trash2, X, ArrowRight, Save,
   DollarSign, Users, Phone, Mail, ChevronDown
 } from "lucide-react";
+import { BrandAIButton } from "@/components/brand-ai-button";
 
 interface Sponsor {
   id: number;
@@ -186,12 +187,20 @@ export default function PatrocinioPage() {
             Pipeline de captacao de patrocinio
           </p>
         </div>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-1.5 px-4 py-2 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 font-[family-name:var(--font-jetbrains)] text-xs text-orbital-purple transition-colors"
-        >
-          <Plus size={12} /> Novo Prospect
-        </button>
+        <div className="flex items-center gap-2">
+          <BrandAIButton
+            action="prospectar-sponsors"
+            label="PROSPECTAR COM IA"
+            variant="compact"
+            onComplete={() => fetchData()}
+          />
+          <button
+            onClick={() => setShowForm(!showForm)}
+            className="flex items-center gap-1.5 px-4 py-2 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 font-[family-name:var(--font-jetbrains)] text-xs text-orbital-purple transition-colors"
+          >
+            <Plus size={12} /> Novo Prospect
+          </button>
+        </div>
       </div>
 
       {/* Pipeline Metrics */}

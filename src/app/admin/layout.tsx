@@ -27,7 +27,7 @@ const brandSubLinks = [
   { href: "/admin/brand/proposta", label: "Proposta", icon: FileText },
   { href: "/admin/brand/instagram", label: "Instagram", icon: Camera },
   { href: "/admin/brand/instagram/cards", label: "Cards", icon: LayoutGrid },
-  { href: "/admin/brand/ai", label: "IA Assistant", icon: Bot },
+  { href: "/admin/brand/ai", label: "Relatórios IA", icon: Bot },
 ];
 
 export default function AdminLayout({ children }: { children: ReactNode }) {

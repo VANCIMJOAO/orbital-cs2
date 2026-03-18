@@ -8,6 +8,7 @@ import {
   Sparkles, Target, Trophy, Users, MessageSquare, Megaphone,
   Play, BarChart3, Star, Zap
 } from "lucide-react";
+import { BrandAIButton } from "@/components/brand-ai-button";
 
 interface Post {
   id: number;
@@ -269,6 +270,14 @@ export default function InstagramPage() {
           </div>
         </div>
       </div>
+
+      {/* AI Button */}
+      <BrandAIButton
+        action="gerar-posts"
+        label="GERAR POSTS COM IA"
+        variant="compact"
+        onComplete={() => fetchPosts()}
+      />
 
       {/* Tabs */}
       <div className="flex gap-1 border-b border-[#1A1A1A]">
