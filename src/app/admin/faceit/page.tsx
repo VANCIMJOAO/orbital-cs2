@@ -309,68 +309,83 @@ export default function AdminFaceit() {
                       className="overflow-hidden"
                     >
                       <div className="px-4 pb-4 border-t border-orbital-border/30 pt-3">
-                        {/* Players grid per map */}
-                        {match.maps.map((map, mi) => (
-                          <div key={mi} className="mb-4 last:mb-0">
-                            <div className="font-[family-name:var(--font-orbitron)] text-[0.55rem] tracking-wider text-orbital-text-dim mb-2 flex items-center gap-2">
-                              <Crosshair size={10} className="text-orbital-purple" />
-                              {map.map_name.replace("de_", "").toUpperCase()} — {map.team1_score}:{map.team2_score}
-                            </div>
+                        {/* Players grid per map — separated by team */}
+                        {match.maps.map((map, mi) => {
+                          const team1Ids = new Set(match.players.team1.map(p => p.faceit_id));
+                          const team1Stats = map.player_stats.filter(p => team1Ids.has(p.faceit_id)).sort((a, b) => b.kills - a.kills);
+                          const team2Stats = map.player_stats.filter(p => !team1Ids.has(p.faceit_id)).sort((a, b) => b.kills - a.kills);
 
-                            <div className="overflow-x-auto">
-                              <table className="w-full text-[0.6rem] font-[family-name:var(--font-jetbrains)]">
-                                <thead>
-                                  <tr className="text-orbital-text-dim/50 border-b border-orbital-border/20">
-                                    <th className="text-left py-1 pr-4">Player</th>
-                                    <th className="text-center px-2">K</th>
-                                    <th className="text-center px-2">D</th>
-                                    <th className="text-center px-2">A</th>
-                                    <th className="text-center px-2">ADR</th>
-                                    <th className="text-center px-2">HS%</th>
-                                    <th className="text-center px-2">KDR</th>
-                                    <th className="text-center px-2 hidden sm:table-cell">Entry</th>
-                                    <th className="text-center px-2 hidden sm:table-cell">Clutch</th>
-                                    <th className="text-center px-2 hidden md:table-cell">Flash</th>
-                                    <th className="text-center px-2 hidden md:table-cell">Util DMG</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {map.player_stats
-                                    .sort((a, b) => b.kills - a.kills)
-                                    .map((p, pi) => (
-                                      <tr
-                                        key={pi}
-                                        className={`border-b border-orbital-border/10 ${p.won ? "text-orbital-text" : "text-orbital-text-dim/70"}`}
-                                      >
-                                        <td className="py-1.5 pr-4 flex items-center gap-1.5">
-                                          {p.won ? (
-                                            <span className="w-1 h-1 rounded-full bg-green-500 shrink-0" />
-                                          ) : (
-                                            <span className="w-1 h-1 rounded-full bg-red-500/50 shrink-0" />
-                                          )}
-                                          {p.nickname}
-                                        </td>
-                                        <td className="text-center px-2 text-green-400">{p.kills}</td>
-                                        <td className="text-center px-2 text-red-400/70">{p.deaths}</td>
-                                        <td className="text-center px-2">{p.assists}</td>
-                                        <td className={`text-center px-2 ${p.adr >= 80 ? "text-orbital-purple" : ""}`}>
-                                          {p.adr.toFixed(1)}
-                                        </td>
-                                        <td className="text-center px-2">{p.headshot_pct}%</td>
-                                        <td className={`text-center px-2 ${p.kdr >= 1.2 ? "text-green-400" : p.kdr < 0.8 ? "text-red-400/70" : ""}`}>
-                                          {p.kdr.toFixed(2)}
-                                        </td>
-                                        <td className="text-center px-2 hidden sm:table-cell">{p.first_kills}</td>
-                                        <td className="text-center px-2 hidden sm:table-cell">{p.clutch_kills}</td>
-                                        <td className="text-center px-2 hidden md:table-cell">{p.enemies_flashed}</td>
-                                        <td className="text-center px-2 hidden md:table-cell">{p.utility_damage}</td>
-                                      </tr>
-                                    ))}
-                                </tbody>
-                              </table>
+                          const headerRow = (
+                            <tr className="text-orbital-text-dim/50 border-b border-orbital-border/20">
+                              <th className="text-left py-1 pr-4">Player</th>
+                              <th className="text-center px-2">K</th>
+                              <th className="text-center px-2">D</th>
+                              <th className="text-center px-2">A</th>
+                              <th className="text-center px-2">ADR</th>
+                              <th className="text-center px-2">HS%</th>
+                              <th className="text-center px-2">KDR</th>
+                              <th className="text-center px-2 hidden sm:table-cell">Entry</th>
+                              <th className="text-center px-2 hidden sm:table-cell">Clutch</th>
+                              <th className="text-center px-2 hidden md:table-cell">Flash</th>
+                              <th className="text-center px-2 hidden md:table-cell">Util DMG</th>
+                            </tr>
+                          );
+
+                          const renderPlayerRow = (p: MappedPlayerStats, pi: number) => (
+                            <tr key={pi} className="border-b border-orbital-border/10 text-orbital-text">
+                              <td className="py-1.5 pr-4">{p.nickname}</td>
+                              <td className="text-center px-2 text-green-400">{p.kills}</td>
+                              <td className="text-center px-2 text-red-400/70">{p.deaths}</td>
+                              <td className="text-center px-2">{p.assists}</td>
+                              <td className={`text-center px-2 ${p.adr >= 80 ? "text-orbital-purple" : ""}`}>{p.adr.toFixed(1)}</td>
+                              <td className="text-center px-2">{p.headshot_pct}%</td>
+                              <td className={`text-center px-2 ${p.kdr >= 1.2 ? "text-green-400" : p.kdr < 0.8 ? "text-red-400/70" : ""}`}>{p.kdr.toFixed(2)}</td>
+                              <td className="text-center px-2 hidden sm:table-cell">{p.first_kills}</td>
+                              <td className="text-center px-2 hidden sm:table-cell">{p.clutch_kills}</td>
+                              <td className="text-center px-2 hidden md:table-cell">{p.enemies_flashed}</td>
+                              <td className="text-center px-2 hidden md:table-cell">{p.utility_damage}</td>
+                            </tr>
+                          );
+
+                          return (
+                            <div key={mi} className="mb-4 last:mb-0">
+                              <div className="font-[family-name:var(--font-orbitron)] text-[0.55rem] tracking-wider text-orbital-text-dim mb-3 flex items-center gap-2">
+                                <Crosshair size={10} className="text-orbital-purple" />
+                                {map.map_name.replace("de_", "").toUpperCase()} — {map.team1_score}:{map.team2_score}
+                              </div>
+
+                              {/* Team 1 */}
+                              <div className="mb-3">
+                                <div className={`font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-wider mb-1.5 flex items-center gap-1.5 ${map.winner === "team1" ? "text-green-400" : "text-orbital-text-dim"}`}>
+                                  <span className={`font-[family-name:var(--font-jetbrains)] text-xs font-bold ${map.winner === "team1" ? "text-green-400" : "text-orbital-text"}`}>{map.team1_score}</span>
+                                  {map.winner === "team1" && <Trophy size={9} />}
+                                  {match.team1_name}
+                                </div>
+                                <div className="overflow-x-auto">
+                                  <table className="w-full text-[0.6rem] font-[family-name:var(--font-jetbrains)]">
+                                    <thead>{headerRow}</thead>
+                                    <tbody>{team1Stats.map(renderPlayerRow)}</tbody>
+                                  </table>
+                                </div>
+                              </div>
+
+                              {/* Team 2 */}
+                              <div>
+                                <div className={`font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-wider mb-1.5 flex items-center gap-1.5 ${map.winner === "team2" ? "text-green-400" : "text-orbital-text-dim"}`}>
+                                  <span className={`font-[family-name:var(--font-jetbrains)] text-xs font-bold ${map.winner === "team2" ? "text-green-400" : "text-orbital-text"}`}>{map.team2_score}</span>
+                                  {map.winner === "team2" && <Trophy size={9} />}
+                                  {match.team2_name}
+                                </div>
+                                <div className="overflow-x-auto">
+                                  <table className="w-full text-[0.6rem] font-[family-name:var(--font-jetbrains)]">
+                                    <thead>{headerRow}</thead>
+                                    <tbody>{team2Stats.map(renderPlayerRow)}</tbody>
+                                  </table>
+                                </div>
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
 
                         {/* Actions */}
                         <MatchActions
