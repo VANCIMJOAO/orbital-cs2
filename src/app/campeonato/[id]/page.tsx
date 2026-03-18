@@ -642,10 +642,10 @@ export default function CampeonatoPage({ params }: { params: Promise<{ id: strin
                     const finishedBracketMatches = tournament.matches.filter(m => m.status === "finished" && m.winner_id);
                     if (finishedBracketMatches.length === 0) return null;
 
-                    const standingsMap: Record<number, { teamId: number; wins: number; losses: number; mapWins: number; mapLosses: number }> = {};
+                    const standingsMap: Record<number, { teamId: number; wins: number; losses: number; mapWins: number; mapLosses: number; placement: number }> = {};
 
                     const ensureTeam = (tid: number) => {
-                      if (!standingsMap[tid]) standingsMap[tid] = { teamId: tid, wins: 0, losses: 0, mapWins: 0, mapLosses: 0 };
+                      if (!standingsMap[tid]) standingsMap[tid] = { teamId: tid, wins: 0, losses: 0, mapWins: 0, mapLosses: 0, placement: 99 };
                     };
 
                     for (const m of finishedBracketMatches) {
@@ -674,7 +674,37 @@ export default function CampeonatoPage({ params }: { params: Promise<{ id: strin
                       ensureTeam(team.id);
                     }
 
+                    // Double elimination placement based on bracket position
+                    // 1st = GF winner, 2nd = GF loser, 3rd = LF loser, 4th = LR3 loser
+                    // 5-6th = LR2 losers, 7-8th = LR1 losers
+                    const placementMap: Record<string, number> = {
+                      "GF": 2,       // GF loser = 2nd
+                      "LF": 3,       // LF loser = 3rd
+                      "LR3": 4,      // LR3 loser = 4th (lower SF)
+                      "LR2-A": 5, "LR2-B": 5,  // LR2 losers = 5-6th
+                      "LR1-A": 7, "LR1-B": 7,  // LR1 losers = 7-8th
+                    };
+
+                    // GF winner = 1st
+                    const gfMatch = tournament.matches.find(m => m.id === "GF");
+                    if (gfMatch?.winner_id && standingsMap[gfMatch.winner_id]) {
+                      standingsMap[gfMatch.winner_id].placement = 1;
+                    }
+
+                    // Set placements for losers of each bracket match
+                    for (const m of finishedBracketMatches) {
+                      if (!m.winner_id || !m.team1_id || !m.team2_id) continue;
+                      const loserId = m.winner_id === m.team1_id ? m.team2_id : m.team1_id;
+                      const place = placementMap[m.id];
+                      if (place && standingsMap[loserId]) {
+                        standingsMap[loserId].placement = place;
+                      }
+                    }
+
                     const sorted = Object.values(standingsMap).sort((a, b) => {
+                      // Sort by placement first (lower = better)
+                      if (a.placement !== b.placement) return a.placement - b.placement;
+                      // Then by wins desc, map diff desc
                       if (b.wins !== a.wins) return b.wins - a.wins;
                       return (b.mapWins - b.mapLosses) - (a.mapWins - a.mapLosses);
                     });
