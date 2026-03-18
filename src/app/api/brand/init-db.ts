@@ -67,6 +67,23 @@ export async function ensureBrandTables() {
       )
     `);
 
+    await dbPool.execute(`
+      CREATE TABLE IF NOT EXISTS brand_posts (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        post_type ENUM('feed','story','reel') DEFAULT 'feed',
+        scheduled_date DATE,
+        scheduled_time VARCHAR(10),
+        caption TEXT,
+        hashtags TEXT,
+        published BOOLEAN DEFAULT FALSE,
+        published_at DATETIME,
+        notes TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      )
+    `);
+
     await seedDefaults();
   } catch (err) {
     console.error("[BRAND INIT]", err);
@@ -169,6 +186,39 @@ async function seedDefaults() {
       await dbPool.execute(
         "INSERT INTO brand_sponsors (name, type, estimated_value, status) VALUES (?, ?, ?, ?)",
         [s.name, s.type, s.estimated_value, s.status]
+      );
+    }
+  }
+
+  // Seed posts
+  const [postRows] = await dbPool.execute("SELECT COUNT(*) as cnt FROM brand_posts");
+  const postCount = (postRows as { cnt: number }[])[0].cnt;
+  if (postCount === 0) {
+    const posts = [
+      { title: "Card Resultado Cup #1", type: "feed", date: "2026-03-19", time: "19:30", caption: "🏆 ORBITAL ROXA CUP #1 — CAMPEÃO\n\nCHOPPADAS dominou o campeonato do começo ao fim e levou o título do nosso primeiro evento. 8 times, 40 players, uma noite inteira de CS2 puro.\n\nParabéns @iguizik @hoppe @leoking_ @sabiahzera @linz1k 💜\n\n📊 Stats completas em orbitalroxa.com.br\n🎬 Highlights disponíveis na plataforma", hashtags: "#orbitalroxa #cs2 #cs2brasil #counterstrike2 #ribeiraopreto #esportsbrasil #campeonatocs2 #lanhouse #gamer #cs2highlights #choppadas #orbitalroxacup" },
+      { title: "Bastidores do evento", type: "story", date: "2026-03-20", time: "19:30", caption: "", hashtags: "#orbitalroxa #cs2 #bastidores #cs2brasil" },
+      { title: "Highlight ACE Lcszik444-", type: "reel", date: "2026-03-21", time: "14:00", caption: "🎯 PLAY OF THE TOURNAMENT | ORBITAL ROXA CUP #1\n\nLcszik444- fechou o round 20 com um ACE impossível — 5 kills, 4 headshots, 1 wallbang com AK-47.\n\nScore de highlight: 243 pontos 🔥\n\nMIDWEST vs NOTAG | Dust2 | Round 20\n\nTodos os highlights do campeonato estão em orbitalroxa.com.br 👆", hashtags: "#orbitalroxa #cs2highlights #ace #cs2 #counterstrike2 #highlight #cs2brasil #ribeiraopreto #gaming #clutch #wallbang #ak47" },
+      { title: "Top 5 Stats Cup #1", type: "feed", date: "2026-03-22", time: "19:00", caption: "📊 TOP 5 — ORBITAL ROXA CUP #1\n\nRating, kills e HS% dos melhores jogadores do campeonato. Os números não mentem.\n\n🥇 leoking_ — 1.39 rating | 153K | 54% HS\n🥈 linz1k — 1.22 rating | 136K | 44% HS\n🥉 duum — 1.19 rating | 53K | 49% HS\n4️⃣ pdX — 1.15 rating | 88K | 61% HS\n5️⃣ nastyy — 1.14 rating | 73K | 37% HS\n\nRanking completo em 👉 orbitalroxa.com.br", hashtags: "#orbitalroxa #cs2brasil #cs2stats #counterstrike2 #ribeiraopreto #ranking #campeonatocs2 #gamer #esports #cs2" },
+      { title: "Enquete: qual foi o melhor mapa?", type: "story", date: "2026-03-23", time: "19:30", caption: "", hashtags: "#orbitalroxa #cs2 #enquete" },
+      { title: "Player Spotlight: leoking_", type: "feed", date: "2026-03-24", time: "19:30", caption: "👤 PLAYER SPOTLIGHT | ORBITAL ROXA CUP #1\n\nleoking_ 💜\n\nO melhor jogador do campeonato em números:\n📊 Rating: 1.39\n💀 153 kills | 84 deaths | K/D 1.82\n🎯 54% headshot rate\n⚡ 104 ADR | 6 vitórias\n\nPerfil completo em orbitalroxa.com.br 👆", hashtags: "#orbitalroxa #cs2 #playerspotlight #cs2brasil #ribeiraopreto #counterstrike2 #esports #gamer #cs2stats #rating" },
+      { title: "Highlights compilação Cup #1", type: "reel", date: "2026-03-26", time: "14:00", caption: "", hashtags: "#orbitalroxa #cs2highlights #cs2 #highlight #gaming" },
+      { title: "Stats curiosas do campeonato", type: "feed", date: "2026-03-27", time: "19:30", caption: "", hashtags: "#orbitalroxa #cs2stats #cs2brasil #counterstrike2" },
+      { title: "Em breve... Cup #2", type: "story", date: "2026-03-29", time: "20:00", caption: "", hashtags: "#orbitalroxa #cs2 #breve" },
+      { title: "Teaser Cup #2", type: "feed", date: "2026-03-30", time: "20:00", caption: "🟣 Ele vem aí.\n\nORBITAL ROXA CUP #2 — em breve.\n\nQuem tá dentro? 👇", hashtags: "#orbitalroxa #cs2 #campeonato #ribeiraopreto #cs2brasil #counterstrike2 #orbitalroxacup #esports #breve #lanhouse" },
+      { title: "Recap Cup #1 completo", type: "reel", date: "2026-03-31", time: "14:00", caption: "", hashtags: "#orbitalroxa #cs2 #recap #cs2brasil" },
+      { title: "Inscrições Abertas! Cup #2", type: "feed", date: "2026-04-02", time: "19:30", caption: "", hashtags: "#orbitalroxa #cs2 #inscricoes #campeonatocs2 #ribeiraopreto" },
+      { title: "Times inscritos ao vivo", type: "story", date: "2026-04-03", time: "19:30", caption: "", hashtags: "#orbitalroxa #cs2 #times" },
+      { title: "Time confirmado #1", type: "feed", date: "2026-04-05", time: "19:30", caption: "", hashtags: "#orbitalroxa #cs2 #timeconfirmado" },
+      { title: "Time confirmado #2", type: "feed", date: "2026-04-06", time: "19:30", caption: "", hashtags: "#orbitalroxa #cs2 #timeconfirmado" },
+      { title: "Rivais do Cup #1 — revanche?", type: "reel", date: "2026-04-08", time: "14:00", caption: "", hashtags: "#orbitalroxa #cs2 #revanche #cs2brasil" },
+      { title: "Prize pool anunciado", type: "feed", date: "2026-04-09", time: "19:30", caption: "", hashtags: "#orbitalroxa #cs2 #prizepool #campeonatocs2" },
+      { title: "Patrocinador reveal", type: "story", date: "2026-04-11", time: "19:30", caption: "", hashtags: "#orbitalroxa #patrocinador #cs2" },
+      { title: "Player Spotlight: linz1k", type: "feed", date: "2026-04-12", time: "19:30", caption: "", hashtags: "#orbitalroxa #cs2 #playerspotlight #cs2brasil" },
+    ];
+    for (const p of posts) {
+      await dbPool.execute(
+        "INSERT INTO brand_posts (title, post_type, scheduled_date, scheduled_time, caption, hashtags) VALUES (?, ?, ?, ?, ?, ?)",
+        [p.title, p.type, p.date, p.time, p.caption, p.hashtags]
       );
     }
   }
