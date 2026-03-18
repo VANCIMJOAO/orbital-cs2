@@ -1,53 +1,31 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
-import { dbPool } from "@/lib/tournaments-db";
 import { ensureBrandTables } from "../../init-db";
 import { checkAdmin } from "../../auth";
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY || "" });
 
-const BRAND_CONTEXT = `Você é o agente de marketing da ORBITAL ROXA — crew de campeonatos de CS2 em Ribeirão Preto/SP.
-Cup #1: 40 jogadores, 8 times, CHOPPADAS campeão, 60+ presenciais, 120 pico live, R$4k receita.
-Top 5: leoking_ (1.39), linz1k (1.22), duum (1.19), pdX (1.15), nastyy (1.14).
-Plataforma: orbitalroxa.com.br (stats, highlights, bracket ao vivo).
-Instagram: @orbitalroxa.gg. Visual: cyberpunk, roxo #A855F7, Orbitron.
-Próximo: Cup #2 (~Maio 2026), 16 times, 80 jogadores.
-Pacotes patrocínio: Bronze R$500, Prata R$1000, Ouro R$2000+.
-Região: Ribeirão Preto, Franca, Araraquara (interior SP).
-SEMPRE responda em português brasileiro.`;
-
-async function getBrandState() {
-  const [tasks] = await dbPool.execute("SELECT title, category, done, week FROM brand_tasks ORDER BY week");
-  const [checks] = await dbPool.execute("SELECT title, category, done FROM brand_checklist ORDER BY sort_order");
-  const [sponsors] = await dbPool.execute("SELECT name, type, estimated_value, status FROM brand_sponsors");
-  const [posts] = await dbPool.execute("SELECT title, post_type, scheduled_date, published FROM brand_posts ORDER BY scheduled_date");
-
-  const t = tasks as { title: string; done: boolean; week: number }[];
-  const c = checks as { title: string; done: boolean }[];
-  const s = sponsors as { name: string; status: string }[];
-  const p = posts as { title: string; published: boolean }[];
-
-  return `Estado atual: ${t.filter(x=>x.done).length}/${t.length} tasks, ${c.filter(x=>x.done).length}/${c.length} checklist, ${s.length} sponsors (${s.filter(x=>x.status==="closed").length} fechados), ${p.length} posts (${p.filter(x=>x.published).length} publicados).`;
-}
+const SYSTEM = `Você é um agente de inteligência de marketing. Responda SEMPRE em português brasileiro. Retorne APENAS JSON válido quando solicitado, sem texto extra, sem markdown code blocks.`;
 
 async function callAI(prompt: string): Promise<string> {
   const msg = await client.messages.create({
     model: "claude-haiku-4-5-20251001",
     max_tokens: 4096,
-    system: BRAND_CONTEXT,
+    system: SYSTEM,
     messages: [{ role: "user", content: prompt }],
   });
   const block = msg.content[0];
   return block.type === "text" ? block.text : "";
 }
 
-function parseJSON(text: string): unknown {
-  // Extract JSON from markdown code blocks or raw text
-  const match = text.match(/```(?:json)?\s*([\s\S]*?)```/) || text.match(/(\[[\s\S]*\])/);
-  if (match) {
-    return JSON.parse(match[1].trim());
-  }
-  return JSON.parse(text.trim());
+function extractJSON(text: string): string {
+  // Try to extract JSON from code blocks or raw text
+  const codeBlock = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+  if (codeBlock) return codeBlock[1].trim();
+  // Find first { or [
+  const start = text.search(/[{\[]/);
+  if (start >= 0) return text.substring(start);
+  return text;
 }
 
 export async function POST(req: NextRequest) {
@@ -60,127 +38,134 @@ export async function POST(req: NextRequest) {
 
   try {
     await ensureBrandTables();
-    const { action } = await req.json();
-    const state = await getBrandState();
+    const { action, config } = await req.json();
+
+    const brandInfo = config
+      ? `Marca: Instagram ${config.instagram}, Site: ${config.site}, Região: ${config.region}, Nicho: ${config.niche}. ${config.description}`
+      : "ORBITAL ROXA — crew de CS2 em Ribeirão Preto/SP.";
 
     switch (action) {
-      case "gerar-cronograma": {
-        const raw = await callAI(`${state}
+      // ═══ STEP 2: ANÁLISE (4 sub-steps) ═══
+      case "analise-perfil": {
+        const raw = await callAI(`${brandInfo}
 
-Gere um cronograma de 6 semanas para o Cup #2 da ORBITAL ROXA. Retorne APENAS um JSON array (sem texto extra):
-[
-  {"title":"texto da task","category":"instagram|conteudo|negocio|tech|campeonato","priority":"high|med|low","week":1,"week_label":"Semana 1 — Título","week_date":"18-24 MAR 2026"}
-]
-Gere entre 20 e 30 tasks distribuídas nas 6 semanas. Categorias: instagram, conteudo, negocio, tech, campeonato. Use datas reais começando da semana atual.`);
+Analise o perfil desta marca como analista de marketing. Avalie:
+- Presença digital (Instagram, site)
+- Identidade visual e tom de comunicação
+- Público-alvo aparente
+- Primeiras impressões
 
-        const tasks = parseJSON(raw) as { title: string; category: string; priority: string; week: number; week_label: string; week_date: string }[];
-
-        // Clear existing and insert new
-        await dbPool.execute("DELETE FROM brand_tasks");
-        let count = 0;
-        for (const t of tasks) {
-          await dbPool.execute(
-            "INSERT INTO brand_tasks (title, category, priority, week, week_label, week_date) VALUES (?, ?, ?, ?, ?, ?)",
-            [t.title, t.category || "conteudo", t.priority || "med", t.week || 1, t.week_label || "", t.week_date || ""]
-          );
-          count++;
-        }
-        return NextResponse.json({ ok: true, count, message: `${count} tasks criadas pela IA` });
+Retorne um texto de 3-5 parágrafos com a análise. Texto puro, sem JSON.`);
+        return NextResponse.json({ result: raw });
       }
 
-      case "gerar-posts": {
-        const raw = await callAI(`${state}
+      case "analise-site": {
+        const raw = await callAI(`${brandInfo}
 
-Gere um plano de conteúdo para Instagram da @orbitalroxa.gg para as próximas 2 semanas. Retorne APENAS um JSON array:
-[
-  {"title":"título do post","post_type":"feed|story|reel","scheduled_date":"2026-03-20","scheduled_time":"19:30","caption":"caption completa com emojis e CTA","hashtags":"#orbitalroxa #cs2 ..."}
-]
-Gere entre 10 e 15 posts. Use dados reais do Cup #1 (CHOPPADAS campeão, leoking_ MVP, etc). Horários: Feed 19h30 Ter/Qua/Sex, Reel 14h Sáb, Story outros dias. Max 1 feed/dia.`);
+Analise o site/plataforma desta marca (${config?.site || "orbitalroxa.com.br"}). Avalie:
+- Proposta de valor comunicada
+- Funcionalidades que diferenciam (stats ao vivo, highlights, leaderboard)
+- UX e experiência do visitante
+- Pontos fortes e fracos do site como ferramenta de marketing
 
-        const posts = parseJSON(raw) as { title: string; post_type: string; scheduled_date: string; scheduled_time: string; caption: string; hashtags: string }[];
-
-        let count = 0;
-        for (const p of posts) {
-          await dbPool.execute(
-            "INSERT INTO brand_posts (title, post_type, scheduled_date, scheduled_time, caption, hashtags) VALUES (?, ?, ?, ?, ?, ?)",
-            [p.title, p.post_type || "feed", p.scheduled_date || null, p.scheduled_time || "19:30", p.caption || "", p.hashtags || ""]
-          );
-          count++;
-        }
-        return NextResponse.json({ ok: true, count, message: `${count} posts criados pela IA` });
+Retorne um texto de 3-5 parágrafos com a análise. Texto puro, sem JSON.`);
+        return NextResponse.json({ result: raw });
       }
 
-      case "prospectar-sponsors": {
-        const raw = await callAI(`${state}
+      case "analise-concorrentes": {
+        const raw = await callAI(`${brandInfo}
 
-Gere uma lista de potenciais patrocinadores para a ORBITAL ROXA em Ribeirão Preto/SP. Retorne APENAS um JSON array:
-[
-  {"name":"Nome da Empresa","type":"periferico|energetico|hardware|vestuario|alimentacao|outro","estimated_value":"R$500-1k","notes":"Por que faz sentido + como abordar"}
-]
-Gere entre 10 e 15 prospects. Tipos de empresa: lojas de periféricos, energéticos, hardware, barbearias, academias, fast food, delivery, vestuário streetwear. Valores realistas (Bronze R$500, Prata R$1000, Ouro R$2000).`);
+Identifique os 5 principais concorrentes/referências desta marca no mercado de ${config?.niche || "CS2/Esports"} na região de ${config?.region || "Ribeirão Preto"} e no Brasil. Para cada um, cite:
+- Nome e o que faz
+- Presença digital (Instagram, site)
+- Ponto forte
+- Ponto fraco
 
-        const sponsors = parseJSON(raw) as { name: string; type: string; estimated_value: string; notes: string }[];
-
-        let count = 0;
-        for (const s of sponsors) {
-          await dbPool.execute(
-            "INSERT INTO brand_sponsors (name, type, estimated_value, status, notes) VALUES (?, ?, ?, 'prospect', ?)",
-            [s.name, s.type || "outro", s.estimated_value || "A definir", s.notes || ""]
-          );
-          count++;
-        }
-        return NextResponse.json({ ok: true, count, message: `${count} prospects adicionados pela IA` });
+Retorne um texto organizado. Texto puro, sem JSON.`);
+        return NextResponse.json({ result: raw });
       }
 
-      case "revisar-checklist": {
-        const [checks] = await dbPool.execute("SELECT id, title, category, done FROM brand_checklist ORDER BY sort_order");
-        const checkList = checks as { id: number; title: string; category: string; done: boolean }[];
+      case "analise-mercado": {
+        const raw = await callAI(`${brandInfo}
 
-        const raw = await callAI(`${state}
+Analise o posicionamento desta marca no mercado de ${config?.niche || "esports"} em ${config?.region || "Ribeirão Preto"}:
+- Onde a marca se encaixa (local vs nacional, casual vs competitivo)
+- Tamanho do mercado na região
+- Tendências do setor
+- Oportunidades inexploradas
+- Barreiras de entrada
 
-Checklist atual:
-${checkList.map(c => `- [${c.done ? "x" : " "}] ${c.title} (${c.category})`).join("\n")}
-
-Analise o checklist e sugira itens adicionais que estão faltando. Retorne APENAS um JSON array com os novos itens:
-[
-  {"title":"título do item","category":"visual|digital|patrocinio|campeonato","priority":"high|med|low"}
-]
-Gere entre 5 e 10 novos itens que NÃO existem no checklist atual. Foque no que é mais importante para o Cup #2.`);
-
-        const newItems = parseJSON(raw) as { title: string; category: string; priority: string }[];
-
-        const [maxOrder] = await dbPool.execute("SELECT MAX(sort_order) as m FROM brand_checklist");
-        let order = ((maxOrder as { m: number }[])[0]?.m || 0) + 1;
-        let count = 0;
-        for (const item of newItems) {
-          await dbPool.execute(
-            "INSERT INTO brand_checklist (title, category, priority, sort_order) VALUES (?, ?, ?, ?)",
-            [item.title, item.category || "campeonato", item.priority || "med", order++]
-          );
-          count++;
-        }
-        return NextResponse.json({ ok: true, count, message: `${count} novos itens adicionados ao checklist` });
+Retorne um texto de 3-5 parágrafos. Texto puro, sem JSON.`);
+        return NextResponse.json({ result: raw });
       }
 
-      case "analise-geral": {
-        const raw = await callAI(`${state}
+      // ═══ STEP 3: DIAGNÓSTICO ═══
+      case "diagnostico-completo": {
+        const raw = await callAI(`${brandInfo}
 
-Faça uma análise rápida da ORBITAL ROXA em 5 pontos:
-1. PROGRESSO GERAL (como está o andamento baseado nos dados)
-2. PRÓXIMAS PRIORIDADES (top 3 ações urgentes)
-3. RISCOS (o que pode dar errado)
-4. OPORTUNIDADES (o que aproveitar agora)
-5. NOTA DE 0 A 10 (preparação para o Cup #2)
+Crie um diagnóstico SWOT completo desta marca. Retorne APENAS um JSON válido neste formato exato:
+{
+  "posicionamento": "frase descrevendo o posicionamento atual da marca",
+  "nota": 7,
+  "forcas": ["força 1", "força 2", "força 3", "força 4"],
+  "fraquezas": ["fraqueza 1", "fraqueza 2", "fraqueza 3"],
+  "oportunidades": ["oportunidade 1", "oportunidade 2", "oportunidade 3"],
+  "ameacas": ["ameaça 1", "ameaça 2", "ameaça 3"],
+  "concorrentes": [
+    {"nome": "Nome 1", "pontoForte": "o que fazem bem", "oportunidade": "o que podemos explorar"},
+    {"nome": "Nome 2", "pontoForte": "o que fazem bem", "oportunidade": "o que podemos explorar"},
+    {"nome": "Nome 3", "pontoForte": "o que fazem bem", "oportunidade": "o que podemos explorar"}
+  ],
+  "resumo": "uma frase resumindo o diagnóstico geral"
+}`);
+        const parsed = JSON.parse(extractJSON(raw));
+        return NextResponse.json({ result: JSON.stringify(parsed) });
+      }
 
-Retorne APENAS um JSON:
-{"progresso":"texto","prioridades":["ação 1","ação 2","ação 3"],"riscos":["risco 1","risco 2"],"oportunidades":["oport 1","oport 2"],"nota":7,"resumo":"uma frase resumindo tudo"}`);
+      // ═══ STEP 4: PLANO ═══
+      case "gerar-plano": {
+        const raw = await callAI(`${brandInfo}
 
-        const analysis = parseJSON(raw);
-        return NextResponse.json({ ok: true, analysis });
+Crie um plano estratégico de marketing. Retorne APENAS um JSON válido neste formato exato:
+{
+  "posicionamento": "frase de posicionamento da marca no mercado",
+  "tomDeVoz": "descrição do tom de voz ideal para comunicação",
+  "pilares": ["pilar 1", "pilar 2", "pilar 3", "pilar 4", "pilar 5"],
+  "cronograma": [
+    {"semana": 1, "titulo": "Título da semana", "tarefas": ["tarefa 1", "tarefa 2", "tarefa 3", "tarefa 4", "tarefa 5"]},
+    {"semana": 2, "titulo": "Título", "tarefas": ["tarefa 1", "tarefa 2", "tarefa 3", "tarefa 4"]},
+    {"semana": 3, "titulo": "Título", "tarefas": ["tarefa 1", "tarefa 2", "tarefa 3", "tarefa 4"]},
+    {"semana": 4, "titulo": "Título", "tarefas": ["tarefa 1", "tarefa 2", "tarefa 3", "tarefa 4"]},
+    {"semana": 5, "titulo": "Título", "tarefas": ["tarefa 1", "tarefa 2", "tarefa 3"]},
+    {"semana": 6, "titulo": "Título", "tarefas": ["tarefa 1", "tarefa 2", "tarefa 3"]}
+  ]
+}
+Use 6 semanas. Cada semana com 3-5 tarefas específicas e acionáveis.`);
+        const parsed = JSON.parse(extractJSON(raw));
+        return NextResponse.json({ result: JSON.stringify(parsed) });
+      }
+
+      // ═══ STEP 5: CONTEÚDO ═══
+      case "gerar-conteudo": {
+        const raw = await callAI(`${brandInfo}
+
+Crie 10 posts prontos para Instagram. Retorne APENAS um JSON array neste formato exato:
+[
+  {"title": "Título do post", "type": "feed", "day": "Segunda", "time": "19:30", "caption": "Caption completa com emojis e CTA", "hashtags": "#hashtag1 #hashtag2 #hashtag3"},
+  {"title": "Outro post", "type": "reel", "day": "Sábado", "time": "14:00", "caption": "Caption...", "hashtags": "#tags..."}
+]
+
+Tipos: feed (máx 1/dia), story, reel.
+Horários: Feed 19:30 (Ter/Qua/Sex), Reel 14:00 (Sáb), Story (outros dias).
+Use dados reais quando possível. Captions completas prontas pra copiar e colar.
+Inclua CTA em cada post. Máximo 15 hashtags por post.
+Gere exatamente 10 posts variados.`);
+        const parsed = JSON.parse(extractJSON(raw));
+        return NextResponse.json({ result: JSON.stringify(parsed) });
       }
 
       default:
-        return NextResponse.json({ error: "Ação desconhecida" }, { status: 400 });
+        return NextResponse.json({ error: "Ação desconhecida: " + action }, { status: 400 });
     }
   } catch (err) {
     const message = err instanceof Error ? err.message : "Erro";

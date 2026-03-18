@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-import { Shield, Swords, Users, Server, Calendar, ArrowLeft, Trophy, Home, ChevronRight, Gamepad2, Megaphone, BarChart3, CalendarDays, CheckSquare, Handshake, FileText, Camera, LayoutGrid, Bot } from "lucide-react";
+import { Shield, Swords, Users, Server, Calendar, ArrowLeft, Trophy, Home, ChevronRight, Gamepad2, Megaphone, Bot } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { ReactNode } from "react";
 
@@ -20,14 +20,7 @@ const adminLinks = [
 ];
 
 const brandSubLinks = [
-  { href: "/admin/brand", label: "Dashboard", icon: BarChart3, exact: true },
-  { href: "/admin/brand/cronograma", label: "Cronograma", icon: CalendarDays },
-  { href: "/admin/brand/checklist", label: "Checklist", icon: CheckSquare },
-  { href: "/admin/brand/patrocinio", label: "Patrocinios", icon: Handshake },
-  { href: "/admin/brand/proposta", label: "Proposta", icon: FileText },
-  { href: "/admin/brand/instagram", label: "Instagram", icon: Camera },
-  { href: "/admin/brand/instagram/cards", label: "Cards", icon: LayoutGrid },
-  { href: "/admin/brand/ai", label: "Relatórios IA", icon: Bot },
+  { href: "/admin/brand", label: "Brand Intelligence", icon: Bot, exact: true },
 ];
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
