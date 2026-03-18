@@ -118,7 +118,7 @@ async function seedDefaults() {
   if (taskCount === 0) {
     const tasks = [
       // SEMANA 1
-      { title: "Criar conta @orbitalroxa no Instagram", category: "instagram", priority: "high", week: 1, week_label: "Semana 1 — Presença Digital", week_date: "18-24 MAR 2026" },
+      { title: "Criar conta @orbitalroxa.gg no Instagram", category: "instagram", priority: "high", week: 1, week_label: "Semana 1 — Presença Digital", week_date: "18-24 MAR 2026" },
       { title: "Configurar bio com link do site", category: "instagram", priority: "high", week: 1, week_label: "Semana 1 — Presença Digital", week_date: "18-24 MAR 2026" },
       { title: "Postar card de resultado CHOPPADAS Cup #1", category: "conteudo", priority: "high", week: 1, week_label: "Semana 1 — Presença Digital", week_date: "18-24 MAR 2026" },
       { title: "Postar card Top 5 Jogadores", category: "conteudo", priority: "high", week: 1, week_label: "Semana 1 — Presença Digital", week_date: "18-24 MAR 2026" },
@@ -166,7 +166,7 @@ async function seedDefaults() {
       { title: "Templates de post Instagram criados", category: "visual", priority: "high", done: false, sort_order: 3 },
       { title: "Foto de capa do Instagram (1080x1080 com logo)", category: "visual", priority: "high", done: false, sort_order: 4 },
       // PRESENÇA DIGITAL
-      { title: "Criar @orbitalroxa no Instagram", category: "digital", priority: "high", done: false, sort_order: 5 },
+      { title: "Criar @orbitalroxa.gg no Instagram", category: "digital", priority: "high", done: false, sort_order: 5 },
       { title: "Configurar bio com localização, link do site e descrição", category: "digital", priority: "high", done: false, sort_order: 6 },
       { title: "Site orbitalroxa.com.br no ar e funcionando", category: "digital", priority: "high", done: true, sort_order: 7 },
       { title: "Criar grupo WhatsApp 'Orbital Roxa CS2' para comunicados", category: "digital", priority: "med", done: false, sort_order: 8 },

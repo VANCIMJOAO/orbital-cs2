@@ -249,7 +249,7 @@ export default function InstagramPage() {
         <div>
           <h1 className="font-[family-name:var(--font-orbitron)] text-sm tracking-[0.2em] text-white">INSTAGRAM</h1>
           <p className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-white/40 mt-1">
-            Planejamento de conteúdo @orbitalroxa
+            Planejamento de conteúdo @orbitalroxa.gg
           </p>
         </div>
         <div className="flex items-center gap-4">

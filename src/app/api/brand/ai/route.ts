@@ -19,7 +19,7 @@ CONTEXTO DA MARCA:
 - Play of Tournament: Lcszik444- ACE (5K, 4HS, wallbang AK-47)
 - Receita Cup #1: R$4k (8x R$500), Aluguel R$2k, Premiação R$2k
 - Plataforma própria: orbitalroxa.com.br (stats ao vivo, leaderboard, highlights, bracket)
-- Instagram: @orbitalroxa (em construção)
+- Instagram: @orbitalroxa.gg (em construção)
 - Público: gamers CS2, 18-35 anos, Ribeirão Preto/Franca/Araraquara
 - Visual: sci-fi/cyberpunk, preto + roxo #A855F7, Orbitron + JetBrains Mono
 - Próximo: Cup #2 (~Maio 2026), meta 80 jogadores, 16 times, R$4k+ premiação
@@ -214,7 +214,7 @@ Considere que já temos a plataforma pronta (orbitalroxa.com.br), o servidor CS2
 
   "conteudo-semanal": {
     title: "Plano de Conteúdo Semanal",
-    prompt: `Crie o PLANO DE CONTEÚDO da próxima semana para o Instagram @orbitalroxa. Para cada dia:
+    prompt: `Crie o PLANO DE CONTEÚDO da próxima semana para o Instagram @orbitalroxa.gg. Para cada dia:
 
 ## FORMATO:
 ### [DIA DA SEMANA] — [DATA]
@@ -274,7 +274,7 @@ Top 10 ações pra consolidar o posicionamento nas próximas 4 semanas`,
 
   "analise-instagram": {
     title: "Estratégia de Instagram",
-    prompt: `Crie a ESTRATÉGIA COMPLETA de Instagram para @orbitalroxa, do zero ao primeiro mês.
+    prompt: `Crie a ESTRATÉGIA COMPLETA de Instagram para @orbitalroxa.gg, do zero ao primeiro mês.
 
 ## 1. PERFIL
 - Nome de exibição

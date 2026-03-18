@@ -10,7 +10,7 @@ const BRAND_CONTEXT = `Você é o agente de marketing da ORBITAL ROXA — crew d
 Cup #1: 40 jogadores, 8 times, CHOPPADAS campeão, 60+ presenciais, 120 pico live, R$4k receita.
 Top 5: leoking_ (1.39), linz1k (1.22), duum (1.19), pdX (1.15), nastyy (1.14).
 Plataforma: orbitalroxa.com.br (stats, highlights, bracket ao vivo).
-Instagram: @orbitalroxa. Visual: cyberpunk, roxo #A855F7, Orbitron.
+Instagram: @orbitalroxa.gg. Visual: cyberpunk, roxo #A855F7, Orbitron.
 Próximo: Cup #2 (~Maio 2026), 16 times, 80 jogadores.
 Pacotes patrocínio: Bronze R$500, Prata R$1000, Ouro R$2000+.
 Região: Ribeirão Preto, Franca, Araraquara (interior SP).
@@ -91,7 +91,7 @@ Gere entre 20 e 30 tasks distribuídas nas 6 semanas. Categorias: instagram, con
       case "gerar-posts": {
         const raw = await callAI(`${state}
 
-Gere um plano de conteúdo para Instagram da @orbitalroxa para as próximas 2 semanas. Retorne APENAS um JSON array:
+Gere um plano de conteúdo para Instagram da @orbitalroxa.gg para as próximas 2 semanas. Retorne APENAS um JSON array:
 [
   {"title":"título do post","post_type":"feed|story|reel","scheduled_date":"2026-03-20","scheduled_time":"19:30","caption":"caption completa com emojis e CTA","hashtags":"#orbitalroxa #cs2 ..."}
 ]

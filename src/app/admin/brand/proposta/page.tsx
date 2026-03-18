@@ -362,7 +362,7 @@ export default function PropostaPage() {
                 orbitalroxa.com.br
               </p>
               <p className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text-dim">
-                @orbitalroxa
+                @orbitalroxa.gg
               </p>
             </div>
           </section>
