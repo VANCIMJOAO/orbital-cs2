@@ -1,6 +1,16 @@
 // Calcula awards automáticos baseado nos player stats do campeonato
 import type { PlayerStats } from "./api";
 
+// Calcula rating HLTV 1.0 simplificado quando o campo rating não vem da API
+function calcRating(s: { kills: number; deaths: number; assists: number; roundsplayed: number; damage: number; k3: number; k4: number; k5: number; firstkill_t: number; firstkill_ct: number }): number {
+  const r = s.roundsplayed || 1;
+  const killRating = s.kills / r / 0.679;
+  const survivalRating = (r - s.deaths) / r / 0.317;
+  const multiKillBonus = (s.k3 * 0.5 + s.k4 * 1 + s.k5 * 2) / r;
+  const impactRating = ((s.firstkill_t + s.firstkill_ct) * 0.15 + s.damage / r * 0.003 + multiKillBonus) * 1.2;
+  return (killRating + 0.7 * survivalRating + impactRating) / 2.7;
+}
+
 export interface Award {
   id: string;
   title: string;
@@ -56,7 +66,7 @@ export function calculateAwards(allStats: PlayerStats[]): Award[] {
         mvp: s.mvp,
         flash_assists: s.flash_assists || 0,
         maps: 1,
-        ratingSum: s.rating || 0,
+        ratingSum: s.rating || calcRating(s),
         kast: s.kast || 0,
       });
     } else {
@@ -74,7 +84,7 @@ export function calculateAwards(allStats: PlayerStats[]): Award[] {
       existing.mvp += s.mvp;
       existing.flash_assists += (s.flash_assists || 0);
       existing.maps += 1;
-      existing.ratingSum += (s.rating || 0);
+      existing.ratingSum += (s.rating || calcRating(s));
       existing.kast += (s.kast || 0);
       // Keep latest name
       if (s.name) existing.name = s.name;
