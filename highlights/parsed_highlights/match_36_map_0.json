@@ -1,0 +1,174 @@
+{
+  "tick_rate": 64,
+  "highlights_count": 3,
+  "highlights": [
+    {
+      "rank": 1,
+      "player": "yuzin",
+      "steamid": "76561198445676066",
+      "round": 2,
+      "kills_count": 4,
+      "score": 155,
+      "description": "yuzin: 4K | 1 HS | com m4a1_silencer (Round 2)",
+      "tick_start": 24318,
+      "tick_end": 25333,
+      "time_start_s": 379.97,
+      "time_end_s": 395.83,
+      "duration_s": 15.86,
+      "kills": [
+        {
+          "tick": 24638,
+          "victim": "linz1k",
+          "weapon": "m4a1_silencer",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 24733,
+          "victim": "sabiahzera",
+          "weapon": "m4a1_silencer",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 24773,
+          "victim": "iguizik-",
+          "weapon": "m4a1_silencer",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 25141,
+          "victim": "hoppe",
+          "weapon": "m4a1_silencer",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        }
+      ]
+    },
+    {
+      "rank": 2,
+      "player": "iguizik-",
+      "steamid": "76561198038458503",
+      "round": 18,
+      "kills_count": 4,
+      "score": 135,
+      "description": "iguizik-: 4K | 1 HS | 1 thru smoke | com m4a1_silencer (Round 18)",
+      "tick_start": 121681,
+      "tick_end": 126084,
+      "time_start_s": 1901.27,
+      "time_end_s": 1970.06,
+      "duration_s": 68.8,
+      "kills": [
+        {
+          "tick": 122001,
+          "victim": "dnd",
+          "weapon": "m4a1_silencer",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": true,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 124005,
+          "victim": "LANGO",
+          "weapon": "m4a1_silencer",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 124272,
+          "victim": "Orion",
+          "weapon": "m4a1_silencer",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 125892,
+          "victim": "yuzin",
+          "weapon": "m4a1_silencer",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        }
+      ]
+    },
+    {
+      "rank": 3,
+      "player": "yuzin",
+      "steamid": "76561198445676066",
+      "round": 15,
+      "kills_count": 4,
+      "score": 125,
+      "description": "yuzin: 4K | 1 HS | com ak47 (Round 15)",
+      "tick_start": 103092,
+      "tick_end": 106373,
+      "time_start_s": 1610.81,
+      "time_end_s": 1662.08,
+      "duration_s": 51.27,
+      "kills": [
+        {
+          "tick": 103412,
+          "victim": "linz1k",
+          "weapon": "ak47",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 105279,
+          "victim": "leoking_",
+          "weapon": "ak47",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 105508,
+          "victim": "hoppe",
+          "weapon": "ak47",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 106181,
+          "victim": "iguizik-",
+          "weapon": "ak47",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        }
+      ]
+    }
+  ]
+}

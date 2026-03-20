@@ -1,0 +1,144 @@
+{
+  "tick_rate": 64,
+  "highlights_count": 3,
+  "highlights": [
+    {
+      "rank": 1,
+      "player": "leoking_",
+      "steamid": "76561199074765043",
+      "round": 8,
+      "kills_count": 3,
+      "score": 130,
+      "description": "leoking_: 3K | all HS | 2 thru smoke | com usp_silencer, ak47 (Round 8)",
+      "tick_start": 51190,
+      "tick_end": 52303,
+      "time_start_s": 799.84,
+      "time_end_s": 817.23,
+      "duration_s": 17.39,
+      "kills": [
+        {
+          "tick": 51510,
+          "victim": "Bruxo27",
+          "weapon": "ak47",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": true,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 51922,
+          "victim": "Lcszik444-",
+          "weapon": "ak47",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": true,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 52111,
+          "victim": "LeoziiN",
+          "weapon": "usp_silencer",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        }
+      ]
+    },
+    {
+      "rank": 2,
+      "player": "linz1k",
+      "steamid": "76561198966795881",
+      "round": 17,
+      "kills_count": 3,
+      "score": 107,
+      "description": "linz1k: 3K | 1 HS | 1 noscope | 1 thru smoke | com ak47, awp (Round 17)",
+      "tick_start": 109621,
+      "tick_end": 114439,
+      "time_start_s": 1712.83,
+      "time_end_s": 1788.11,
+      "duration_s": 75.28,
+      "kills": [
+        {
+          "tick": 109941,
+          "victim": "vzrV",
+          "weapon": "awp",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": true,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 112432,
+          "victim": "LeoziiN",
+          "weapon": "awp",
+          "headshot": false,
+          "noscope": true,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 114247,
+          "victim": "felipin do corte",
+          "weapon": "ak47",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        }
+      ]
+    },
+    {
+      "rank": 3,
+      "player": "LeoziiN",
+      "steamid": "76561198351924569",
+      "round": 12,
+      "kills_count": 3,
+      "score": 105,
+      "description": "LeoziiN: 3K | 1 HS | 2 thru smoke | com ak47 (Round 12)",
+      "tick_start": 81790,
+      "tick_end": 83191,
+      "time_start_s": 1277.97,
+      "time_end_s": 1299.86,
+      "duration_s": 21.89,
+      "kills": [
+        {
+          "tick": 82110,
+          "victim": "linz1k",
+          "weapon": "ak47",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": true,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 82358,
+          "victim": "hoppe",
+          "weapon": "ak47",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 82999,
+          "victim": "sabiahzera",
+          "weapon": "ak47",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": true,
+          "attackerblind": false,
+          "penetrated": false
+        }
+      ]
+    }
+  ]
+}

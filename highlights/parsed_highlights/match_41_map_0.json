@@ -1,0 +1,144 @@
+{
+  "tick_rate": 64,
+  "highlights_count": 3,
+  "highlights": [
+    {
+      "rank": 1,
+      "player": "duum",
+      "steamid": "76561197987330156",
+      "round": 19,
+      "kills_count": 3,
+      "score": 143,
+      "description": "duum: 3K | 1 HS | 2 thru smoke | 1 wallbang | com awp (Round 19)",
+      "tick_start": 117217,
+      "tick_end": 118003,
+      "time_start_s": 1831.52,
+      "time_end_s": 1843.8,
+      "duration_s": 12.28,
+      "kills": [
+        {
+          "tick": 117537,
+          "victim": "sabiahzera",
+          "weapon": "awp",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 117653,
+          "victim": "iguizik-",
+          "weapon": "awp",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": true,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 117811,
+          "victim": "leoking_",
+          "weapon": "awp",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": true,
+          "attackerblind": false,
+          "penetrated": true
+        }
+      ]
+    },
+    {
+      "rank": 2,
+      "player": "iguizik-",
+      "steamid": "76561198038458503",
+      "round": 7,
+      "kills_count": 3,
+      "score": 108,
+      "description": "iguizik-: 3K | 1 HS | 1 wallbang | com hegrenade, ak47 (Round 7)",
+      "tick_start": 51003,
+      "tick_end": 53511,
+      "time_start_s": 796.92,
+      "time_end_s": 836.11,
+      "duration_s": 39.19,
+      "kills": [
+        {
+          "tick": 51323,
+          "victim": "NIGHTMAR333Z1K4",
+          "weapon": "ak47",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 51355,
+          "victim": "diguiNNN",
+          "weapon": "ak47",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": true
+        },
+        {
+          "tick": 53319,
+          "victim": "duum",
+          "weapon": "hegrenade",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        }
+      ]
+    },
+    {
+      "rank": 3,
+      "player": "NIGHTMAR333Z1K4",
+      "steamid": "76561198013077509",
+      "round": 2,
+      "kills_count": 3,
+      "score": 105,
+      "description": "NIGHTMAR333Z1K4: 3K | 2 HS | com famas (Round 2)",
+      "tick_start": 16346,
+      "tick_end": 17274,
+      "time_start_s": 255.41,
+      "time_end_s": 269.91,
+      "duration_s": 14.5,
+      "kills": [
+        {
+          "tick": 16666,
+          "victim": "hoppe",
+          "weapon": "famas",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 16976,
+          "victim": "sabiahzera",
+          "weapon": "famas",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 17082,
+          "victim": "leoking_",
+          "weapon": "famas",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        }
+      ]
+    }
+  ]
+}

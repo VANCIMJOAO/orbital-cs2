@@ -1,0 +1,174 @@
+{
+  "tick_rate": 64,
+  "highlights_count": 3,
+  "highlights": [
+    {
+      "rank": 1,
+      "player": "nastyy",
+      "steamid": "76561198330221448",
+      "round": 1,
+      "kills_count": 4,
+      "score": 180,
+      "description": "nastyy: 4K | 3 HS | com usp_silencer (Round 1)",
+      "tick_start": 11883,
+      "tick_end": 12770,
+      "time_start_s": 185.67,
+      "time_end_s": 199.53,
+      "duration_s": 13.86,
+      "kills": [
+        {
+          "tick": 12203,
+          "victim": "Cloudy",
+          "weapon": "usp_silencer",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 12336,
+          "victim": "pedr1tto",
+          "weapon": "usp_silencer",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 12413,
+          "victim": "Ban",
+          "weapon": "usp_silencer",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 12578,
+          "victim": "radz",
+          "weapon": "usp_silencer",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        }
+      ]
+    },
+    {
+      "rank": 2,
+      "player": "vcm",
+      "steamid": "76561198023055702",
+      "round": 21,
+      "kills_count": 4,
+      "score": 150,
+      "description": "vcm: 4K | 3 HS | com ak47 (Round 21)",
+      "tick_start": 151020,
+      "tick_end": 153097,
+      "time_start_s": 2359.69,
+      "time_end_s": 2392.14,
+      "duration_s": 32.45,
+      "kills": [
+        {
+          "tick": 151340,
+          "victim": "vip1",
+          "weapon": "ak47",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 151514,
+          "victim": "Cloudy",
+          "weapon": "ak47",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 151873,
+          "victim": "pedr1tto",
+          "weapon": "ak47",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 152905,
+          "victim": "Ban",
+          "weapon": "ak47",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        }
+      ]
+    },
+    {
+      "rank": 3,
+      "player": "z1k4memo",
+      "steamid": "76561197984561884",
+      "round": 9,
+      "kills_count": 4,
+      "score": 145,
+      "description": "z1k4memo: 4K | 2 HS | com m4a1, ak47 (Round 9)",
+      "tick_start": 72298,
+      "tick_end": 74666,
+      "time_start_s": 1129.66,
+      "time_end_s": 1166.66,
+      "duration_s": 37.0,
+      "kills": [
+        {
+          "tick": 72618,
+          "victim": "vip1",
+          "weapon": "m4a1",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 73614,
+          "victim": "Ban",
+          "weapon": "ak47",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 73737,
+          "victim": "Cloudy",
+          "weapon": "ak47",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 74474,
+          "victim": "radz",
+          "weapon": "ak47",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        }
+      ]
+    }
+  ]
+}

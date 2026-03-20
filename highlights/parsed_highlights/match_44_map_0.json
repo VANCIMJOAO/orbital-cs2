@@ -1,0 +1,164 @@
+{
+  "tick_rate": 64,
+  "highlights_count": 3,
+  "highlights": [
+    {
+      "rank": 1,
+      "player": "linz1k",
+      "steamid": "76561198966795881",
+      "round": 13,
+      "kills_count": 4,
+      "score": 145,
+      "description": "linz1k: 4K | 2 HS | com usp_silencer, glock (Round 13)",
+      "tick_start": 94863,
+      "tick_end": 96602,
+      "time_start_s": 1482.23,
+      "time_end_s": 1509.41,
+      "duration_s": 27.17,
+      "kills": [
+        {
+          "tick": 95183,
+          "victim": "fuzari",
+          "weapon": "glock",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 96056,
+          "victim": "pikachurros-",
+          "weapon": "usp_silencer",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 96292,
+          "victim": "linkzao",
+          "weapon": "usp_silencer",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 96410,
+          "victim": "knz",
+          "weapon": "usp_silencer",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        }
+      ]
+    },
+    {
+      "rank": 2,
+      "player": "leoking_",
+      "steamid": "76561199074765043",
+      "round": 5,
+      "kills_count": 3,
+      "score": 130,
+      "description": "leoking_: 3K | 1 HS | 3 thru smoke | com m4a1_silencer, deagle (Round 5)",
+      "tick_start": 33793,
+      "tick_end": 36250,
+      "time_start_s": 528.02,
+      "time_end_s": 566.41,
+      "duration_s": 38.39,
+      "kills": [
+        {
+          "tick": 34113,
+          "victim": "pikachurros-",
+          "weapon": "m4a1_silencer",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": true,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 34211,
+          "victim": "knz",
+          "weapon": "m4a1_silencer",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": true,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 36058,
+          "victim": "pdX",
+          "weapon": "deagle",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": true,
+          "attackerblind": false,
+          "penetrated": false
+        }
+      ]
+    },
+    {
+      "rank": 3,
+      "player": "linz1k",
+      "steamid": "76561198966795881",
+      "round": 19,
+      "kills_count": 4,
+      "score": 125,
+      "description": "linz1k: 4K | 1 HS | com deagle, awp (Round 19)",
+      "tick_start": 147740,
+      "tick_end": 149695,
+      "time_start_s": 2308.44,
+      "time_end_s": 2338.98,
+      "duration_s": 30.55,
+      "kills": [
+        {
+          "tick": 148060,
+          "victim": "pdX",
+          "weapon": "awp",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 148555,
+          "victim": "fuzari",
+          "weapon": "awp",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 148949,
+          "victim": "pikachurros-",
+          "weapon": "awp",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 149503,
+          "victim": "linkzao",
+          "weapon": "deagle",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        }
+      ]
+    }
+  ]
+}

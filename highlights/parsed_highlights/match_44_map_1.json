@@ -1,0 +1,174 @@
+{
+  "tick_rate": 64,
+  "highlights_count": 3,
+  "highlights": [
+    {
+      "rank": 1,
+      "player": "knz",
+      "steamid": "76561198175705522",
+      "round": 20,
+      "kills_count": 4,
+      "score": 155,
+      "description": "knz: 4K | 1 HS | com ak47 (Round 20)",
+      "tick_start": 152085,
+      "tick_end": 153458,
+      "time_start_s": 2376.33,
+      "time_end_s": 2397.78,
+      "duration_s": 21.45,
+      "kills": [
+        {
+          "tick": 152405,
+          "victim": "iguizik-",
+          "weapon": "ak47",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 153196,
+          "victim": "linz1k",
+          "weapon": "ak47",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 153221,
+          "victim": "leoking_",
+          "weapon": "ak47",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 153266,
+          "victim": "hoppe",
+          "weapon": "ak47",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        }
+      ]
+    },
+    {
+      "rank": 2,
+      "player": "linz1k",
+      "steamid": "76561198966795881",
+      "round": 17,
+      "kills_count": 4,
+      "score": 145,
+      "description": "linz1k: 4K | 2 HS | com ak47 (Round 17)",
+      "tick_start": 133512,
+      "tick_end": 135978,
+      "time_start_s": 2086.12,
+      "time_end_s": 2124.66,
+      "duration_s": 38.53,
+      "kills": [
+        {
+          "tick": 133832,
+          "victim": "linkzao",
+          "weapon": "ak47",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 135048,
+          "victim": "pikachurros-",
+          "weapon": "ak47",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 135232,
+          "victim": "knz",
+          "weapon": "ak47",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 135786,
+          "victim": "pdX",
+          "weapon": "ak47",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        }
+      ]
+    },
+    {
+      "rank": 3,
+      "player": "linkzao",
+      "steamid": "76561197991674802",
+      "round": 4,
+      "kills_count": 4,
+      "score": 140,
+      "description": "linkzao: 4K | all HS | com ak47 (Round 4)",
+      "tick_start": 28932,
+      "tick_end": 33382,
+      "time_start_s": 452.06,
+      "time_end_s": 521.59,
+      "duration_s": 69.53,
+      "kills": [
+        {
+          "tick": 29252,
+          "victim": "hoppe",
+          "weapon": "ak47",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 31656,
+          "victim": "iguizik-",
+          "weapon": "ak47",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 31942,
+          "victim": "leoking_",
+          "weapon": "ak47",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 33190,
+          "victim": "sabiahzera",
+          "weapon": "ak47",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        }
+      ]
+    }
+  ]
+}

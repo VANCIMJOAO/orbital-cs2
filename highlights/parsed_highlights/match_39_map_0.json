@@ -1,0 +1,154 @@
+{
+  "tick_rate": 64,
+  "highlights_count": 3,
+  "highlights": [
+    {
+      "rank": 1,
+      "player": "knz",
+      "steamid": "76561198175705522",
+      "round": 7,
+      "kills_count": 4,
+      "score": 163,
+      "description": "knz: 4K | all HS | 1 wallbang | com ak47 (Round 7)",
+      "tick_start": 55240,
+      "tick_end": 58245,
+      "time_start_s": 863.12,
+      "time_end_s": 910.08,
+      "duration_s": 46.95,
+      "kills": [
+        {
+          "tick": 55560,
+          "victim": "leozinn710",
+          "weapon": "ak47",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 57535,
+          "victim": "diguiNNN",
+          "weapon": "ak47",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": true
+        },
+        {
+          "tick": 57610,
+          "victim": "NIGHTMAR333Z1K4",
+          "weapon": "ak47",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 58053,
+          "victim": "spanikk",
+          "weapon": "ak47",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        }
+      ]
+    },
+    {
+      "rank": 2,
+      "player": "NIGHTMAR333Z1K4",
+      "steamid": "76561198013077509",
+      "round": 2,
+      "kills_count": 3,
+      "score": 115,
+      "description": "NIGHTMAR333Z1K4: 3K | 1 HS | com famas (Round 2)",
+      "tick_start": 16414,
+      "tick_end": 16955,
+      "time_start_s": 256.47,
+      "time_end_s": 264.92,
+      "duration_s": 8.45,
+      "kills": [
+        {
+          "tick": 16734,
+          "victim": "fuzari",
+          "weapon": "famas",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 16757,
+          "victim": "linkzao",
+          "weapon": "famas",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 16763,
+          "victim": "pdX",
+          "weapon": "famas",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        }
+      ]
+    },
+    {
+      "rank": 3,
+      "player": "NIGHTMAR333Z1K4",
+      "steamid": "76561198013077509",
+      "round": 3,
+      "kills_count": 3,
+      "score": 115,
+      "description": "NIGHTMAR333Z1K4: 3K | 1 HS | com famas (Round 3)",
+      "tick_start": 25252,
+      "tick_end": 26107,
+      "time_start_s": 394.56,
+      "time_end_s": 407.92,
+      "duration_s": 13.36,
+      "kills": [
+        {
+          "tick": 25572,
+          "victim": "fuzari",
+          "weapon": "famas",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 25730,
+          "victim": "pdX",
+          "weapon": "famas",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 25915,
+          "victim": "knz",
+          "weapon": "famas",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        }
+      ]
+    }
+  ]
+}

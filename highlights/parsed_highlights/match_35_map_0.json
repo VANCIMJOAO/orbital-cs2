@@ -1,0 +1,154 @@
+{
+  "tick_rate": 64,
+  "highlights_count": 3,
+  "highlights": [
+    {
+      "rank": 1,
+      "player": "Tnkzim",
+      "steamid": "76561198104768859",
+      "round": 3,
+      "kills_count": 3,
+      "score": 123,
+      "description": "Tnkzim: 3K | 1 HS | 1 wallbang | com m4a1, inferno (Round 3)",
+      "tick_start": 27030,
+      "tick_end": 27702,
+      "time_start_s": 422.34,
+      "time_end_s": 432.84,
+      "duration_s": 10.5,
+      "kills": [
+        {
+          "tick": 27350,
+          "victim": "Lcszik444-",
+          "weapon": "m4a1",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": true
+        },
+        {
+          "tick": 27448,
+          "victim": "LeoziiN",
+          "weapon": "inferno",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 27510,
+          "victim": "felipin do corte",
+          "weapon": "m4a1",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        }
+      ]
+    },
+    {
+      "rank": 2,
+      "player": "Bruxo27",
+      "steamid": "76561198382692379",
+      "round": 12,
+      "kills_count": 4,
+      "score": 120,
+      "description": "Bruxo27: 4K | com awp (Round 12)",
+      "tick_start": 112070,
+      "tick_end": 115461,
+      "time_start_s": 1751.09,
+      "time_end_s": 1804.08,
+      "duration_s": 52.98,
+      "kills": [
+        {
+          "tick": 112390,
+          "victim": "Muka",
+          "weapon": "awp",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 113499,
+          "victim": "Naka",
+          "weapon": "awp",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 113921,
+          "victim": "Cabana",
+          "weapon": "awp",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 115269,
+          "victim": "Tnkzim",
+          "weapon": "awp",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        }
+      ]
+    },
+    {
+      "rank": 3,
+      "player": "Naka",
+      "steamid": "76561198101822844",
+      "round": 1,
+      "kills_count": 3,
+      "score": 110,
+      "description": "Naka: 3K | all HS | com usp_silencer (Round 1)",
+      "tick_start": 9581,
+      "tick_end": 10315,
+      "time_start_s": 149.7,
+      "time_end_s": 161.17,
+      "duration_s": 11.47,
+      "kills": [
+        {
+          "tick": 9901,
+          "victim": "felipin do corte",
+          "weapon": "usp_silencer",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 10095,
+          "victim": "Lcszik444-",
+          "weapon": "usp_silencer",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 10123,
+          "victim": "Bruxo27",
+          "weapon": "usp_silencer",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        }
+      ]
+    }
+  ]
+}

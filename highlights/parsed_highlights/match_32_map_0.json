@@ -1,0 +1,154 @@
+{
+  "tick_rate": 64,
+  "highlights_count": 3,
+  "highlights": [
+    {
+      "rank": 1,
+      "player": "radz",
+      "steamid": "76561198451543679",
+      "round": 1,
+      "kills_count": 3,
+      "score": 125,
+      "description": "radz: 3K | all HS | com hkp2000 (Round 1)",
+      "tick_start": 9985,
+      "tick_end": 10673,
+      "time_start_s": 156.02,
+      "time_end_s": 166.77,
+      "duration_s": 10.75,
+      "kills": [
+        {
+          "tick": 10305,
+          "victim": "LeoziiN",
+          "weapon": "hkp2000",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 10409,
+          "victim": "Bruxo27",
+          "weapon": "hkp2000",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 10481,
+          "victim": "vzrV",
+          "weapon": "hkp2000",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        }
+      ]
+    },
+    {
+      "rank": 2,
+      "player": "Bruxo27",
+      "steamid": "76561198382692379",
+      "round": 5,
+      "kills_count": 4,
+      "score": 120,
+      "description": "Bruxo27: 4K | com awp (Round 5)",
+      "tick_start": 34595,
+      "tick_end": 37633,
+      "time_start_s": 540.55,
+      "time_end_s": 588.02,
+      "duration_s": 47.47,
+      "kills": [
+        {
+          "tick": 34915,
+          "victim": "Cloudy",
+          "weapon": "awp",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 35707,
+          "victim": "vip1",
+          "weapon": "awp",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 37096,
+          "victim": "Ban",
+          "weapon": "awp",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 37441,
+          "victim": "pedr1tto",
+          "weapon": "awp",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        }
+      ]
+    },
+    {
+      "rank": 3,
+      "player": "pedr1tto",
+      "steamid": "76561198021456321",
+      "round": 24,
+      "kills_count": 3,
+      "score": 120,
+      "description": "pedr1tto: 3K | 1 HS | 2 thru smoke | com m4a1_silencer (Round 24)",
+      "tick_start": 187022,
+      "tick_end": 188719,
+      "time_start_s": 2922.22,
+      "time_end_s": 2948.73,
+      "duration_s": 26.52,
+      "kills": [
+        {
+          "tick": 187342,
+          "victim": "felipin do corte",
+          "weapon": "m4a1_silencer",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 187443,
+          "victim": "LeoziiN",
+          "weapon": "m4a1_silencer",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": true,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 188527,
+          "victim": "vzrV",
+          "weapon": "m4a1_silencer",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": true,
+          "attackerblind": false,
+          "penetrated": false
+        }
+      ]
+    }
+  ]
+}

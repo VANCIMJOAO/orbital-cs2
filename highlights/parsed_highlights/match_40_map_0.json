@@ -1,0 +1,174 @@
+{
+  "tick_rate": 64,
+  "highlights_count": 3,
+  "highlights": [
+    {
+      "rank": 1,
+      "player": "nastyy",
+      "steamid": "76561198330221448",
+      "round": 2,
+      "kills_count": 4,
+      "score": 180,
+      "description": "nastyy: 4K | 3 HS | com mag7 (Round 2)",
+      "tick_start": 16257,
+      "tick_end": 16967,
+      "time_start_s": 254.02,
+      "time_end_s": 265.11,
+      "duration_s": 11.09,
+      "kills": [
+        {
+          "tick": 16577,
+          "victim": "linkzao",
+          "weapon": "mag7",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 16631,
+          "victim": "pikachurros-",
+          "weapon": "mag7",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 16631,
+          "victim": "fuzari",
+          "weapon": "mag7",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 16775,
+          "victim": "knz",
+          "weapon": "mag7",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        }
+      ]
+    },
+    {
+      "rank": 2,
+      "player": "pdX",
+      "steamid": "76561198174714641",
+      "round": 16,
+      "kills_count": 4,
+      "score": 168,
+      "description": "pdX: 4K | 2 HS | 1 wallbang | com m4a1, tec9 (Round 16)",
+      "tick_start": 122054,
+      "tick_end": 123107,
+      "time_start_s": 1907.09,
+      "time_end_s": 1923.55,
+      "duration_s": 16.45,
+      "kills": [
+        {
+          "tick": 122374,
+          "victim": "reNzo",
+          "weapon": "m4a1",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 122426,
+          "victim": "nastyy",
+          "weapon": "m4a1",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 122570,
+          "victim": "vcm",
+          "weapon": "m4a1",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 122915,
+          "victim": "z1k4memo",
+          "weapon": "tec9",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": true
+        }
+      ]
+    },
+    {
+      "rank": 3,
+      "player": "fuzari",
+      "steamid": "76561198150326787",
+      "round": 6,
+      "kills_count": 4,
+      "score": 155,
+      "description": "fuzari: 4K | 3 HS | 2 thru smoke | com glock, ak47 (Round 6)",
+      "tick_start": 49963,
+      "tick_end": 52045,
+      "time_start_s": 780.67,
+      "time_end_s": 813.2,
+      "duration_s": 32.53,
+      "kills": [
+        {
+          "tick": 50283,
+          "victim": "mur1c4",
+          "weapon": "ak47",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 51119,
+          "victim": "reNzo",
+          "weapon": "ak47",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": true,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 51435,
+          "victim": "vcm",
+          "weapon": "ak47",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 51853,
+          "victim": "nastyy",
+          "weapon": "glock",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": true,
+          "attackerblind": false,
+          "penetrated": false
+        }
+      ]
+    }
+  ]
+}

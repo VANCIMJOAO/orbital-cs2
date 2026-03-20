@@ -1,0 +1,174 @@
+{
+  "tick_rate": 64,
+  "highlights_count": 3,
+  "highlights": [
+    {
+      "rank": 1,
+      "player": "NIGHTMAR333Z1K4",
+      "steamid": "76561198013077509",
+      "round": 2,
+      "kills_count": 4,
+      "score": 160,
+      "description": "NIGHTMAR333Z1K4: 4K | 2 HS | com mp9 (Round 2)",
+      "tick_start": 16305,
+      "tick_end": 18295,
+      "time_start_s": 254.77,
+      "time_end_s": 285.86,
+      "duration_s": 31.09,
+      "kills": [
+        {
+          "tick": 16625,
+          "victim": "yuzin",
+          "weapon": "mp9",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 17832,
+          "victim": "LANGO",
+          "weapon": "mp9",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 17951,
+          "victim": "Orion",
+          "weapon": "mp9",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 18103,
+          "victim": "dnd",
+          "weapon": "mp9",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        }
+      ]
+    },
+    {
+      "rank": 2,
+      "player": "duum",
+      "steamid": "76561197987330156",
+      "round": 5,
+      "kills_count": 4,
+      "score": 155,
+      "description": "duum: 4K | 1 HS | com hegrenade, ak47 (Round 5)",
+      "tick_start": 51537,
+      "tick_end": 54216,
+      "time_start_s": 805.27,
+      "time_end_s": 847.12,
+      "duration_s": 41.86,
+      "kills": [
+        {
+          "tick": 51857,
+          "victim": "Orion",
+          "weapon": "hegrenade",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 51989,
+          "victim": "LANGO",
+          "weapon": "ak47",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 52146,
+          "victim": "pryzera",
+          "weapon": "ak47",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 54024,
+          "victim": "dnd",
+          "weapon": "ak47",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        }
+      ]
+    },
+    {
+      "rank": 3,
+      "player": "LANGO",
+      "steamid": "76561198074905075",
+      "round": 12,
+      "kills_count": 4,
+      "score": 145,
+      "description": "LANGO: 4K | 2 HS | com ak47 (Round 12)",
+      "tick_start": 94830,
+      "tick_end": 97531,
+      "time_start_s": 1481.72,
+      "time_end_s": 1523.92,
+      "duration_s": 42.2,
+      "kills": [
+        {
+          "tick": 95150,
+          "victim": "duum",
+          "weapon": "ak47",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 96505,
+          "victim": "leozinn710",
+          "weapon": "ak47",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 97269,
+          "victim": "spanikk",
+          "weapon": "ak47",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 97339,
+          "victim": "NIGHTMAR333Z1K4",
+          "weapon": "ak47",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        }
+      ]
+    }
+  ]
+}

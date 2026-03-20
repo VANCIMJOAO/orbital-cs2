@@ -1,0 +1,184 @@
+{
+  "tick_rate": 64,
+  "highlights_count": 3,
+  "highlights": [
+    {
+      "rank": 1,
+      "player": "Lcszik444-",
+      "steamid": "76561199215697390",
+      "round": 20,
+      "kills_count": 5,
+      "score": 243,
+      "description": "Lcszik444-: ACE | 4 HS | 1 wallbang | com ak47 (Round 20)",
+      "tick_start": 145676,
+      "tick_end": 148641,
+      "time_start_s": 2276.19,
+      "time_end_s": 2322.52,
+      "duration_s": 46.33,
+      "kills": [
+        {
+          "tick": 145996,
+          "victim": "vip1",
+          "weapon": "ak47",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 147855,
+          "victim": "radz",
+          "weapon": "ak47",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 148125,
+          "victim": "pedr1tto",
+          "weapon": "ak47",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 148125,
+          "victim": "Ban",
+          "weapon": "ak47",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": true
+        },
+        {
+          "tick": 148449,
+          "victim": "Cloudy",
+          "weapon": "ak47",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        }
+      ]
+    },
+    {
+      "rank": 2,
+      "player": "pedr1tto",
+      "steamid": "76561198021456321",
+      "round": 12,
+      "kills_count": 4,
+      "score": 160,
+      "description": "pedr1tto: 4K | 2 HS | com ak47 (Round 12)",
+      "tick_start": 92971,
+      "tick_end": 95627,
+      "time_start_s": 1452.67,
+      "time_end_s": 1494.17,
+      "duration_s": 41.5,
+      "kills": [
+        {
+          "tick": 93291,
+          "victim": "Lcszik444-",
+          "weapon": "ak47",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 93310,
+          "victim": "felipin do corte",
+          "weapon": "ak47",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 95280,
+          "victim": "Bruxo27",
+          "weapon": "ak47",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 95435,
+          "victim": "LeoziiN",
+          "weapon": "ak47",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        }
+      ]
+    },
+    {
+      "rank": 3,
+      "player": "felipin do corte",
+      "steamid": "76561198140403342",
+      "round": 29,
+      "kills_count": 4,
+      "score": 160,
+      "description": "felipin do corte: 4K | 2 HS | com m4a1, ak47 (Round 29)",
+      "tick_start": 216588,
+      "tick_end": 217735,
+      "time_start_s": 3384.19,
+      "time_end_s": 3402.11,
+      "duration_s": 17.92,
+      "kills": [
+        {
+          "tick": 216908,
+          "victim": "vip1",
+          "weapon": "m4a1",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 217313,
+          "victim": "pedr1tto",
+          "weapon": "m4a1",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 217353,
+          "victim": "radz",
+          "weapon": "m4a1",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 217543,
+          "victim": "Cloudy",
+          "weapon": "ak47",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        }
+      ]
+    }
+  ]
+}

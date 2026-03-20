@@ -1,0 +1,164 @@
+{
+  "tick_rate": 64,
+  "highlights_count": 3,
+  "highlights": [
+    {
+      "rank": 1,
+      "player": "leoking_",
+      "steamid": "76561199074765043",
+      "round": 20,
+      "kills_count": 4,
+      "score": 145,
+      "description": "leoking_: 4K | 2 HS | com m4a1_silencer, inferno (Round 20)",
+      "tick_start": 146627,
+      "tick_end": 147812,
+      "time_start_s": 2291.05,
+      "time_end_s": 2309.56,
+      "duration_s": 18.52,
+      "kills": [
+        {
+          "tick": 146947,
+          "victim": "linkzao",
+          "weapon": "inferno",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 147112,
+          "victim": "pdX",
+          "weapon": "m4a1_silencer",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 147385,
+          "victim": "knz",
+          "weapon": "m4a1_silencer",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 147620,
+          "victim": "fuzari",
+          "weapon": "m4a1_silencer",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        }
+      ]
+    },
+    {
+      "rank": 2,
+      "player": "pdX",
+      "steamid": "76561198174714641",
+      "round": 22,
+      "kills_count": 4,
+      "score": 143,
+      "description": "pdX: 4K | 3 HS | 1 wallbang | com ak47 (Round 22)",
+      "tick_start": 155482,
+      "tick_end": 158876,
+      "time_start_s": 2429.41,
+      "time_end_s": 2482.44,
+      "duration_s": 53.03,
+      "kills": [
+        {
+          "tick": 155802,
+          "victim": "hoppe",
+          "weapon": "ak47",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 156288,
+          "victim": "leoking_",
+          "weapon": "ak47",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 158113,
+          "victim": "iguizik-",
+          "weapon": "ak47",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": true
+        },
+        {
+          "tick": 158684,
+          "victim": "linz1k",
+          "weapon": "ak47",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        }
+      ]
+    },
+    {
+      "rank": 3,
+      "player": "hoppe",
+      "steamid": "76561198419329028",
+      "round": 1,
+      "kills_count": 3,
+      "score": 130,
+      "description": "hoppe: 3K | 2 HS | 1 thru smoke | com glock (Round 1)",
+      "tick_start": 13277,
+      "tick_end": 13935,
+      "time_start_s": 207.45,
+      "time_end_s": 217.73,
+      "duration_s": 10.28,
+      "kills": [
+        {
+          "tick": 13597,
+          "victim": "pikachurros-",
+          "weapon": "glock",
+          "headshot": false,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 13663,
+          "victim": "pdX",
+          "weapon": "glock",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": true,
+          "attackerblind": false,
+          "penetrated": false
+        },
+        {
+          "tick": 13743,
+          "victim": "linkzao",
+          "weapon": "glock",
+          "headshot": true,
+          "noscope": false,
+          "thrusmoke": false,
+          "attackerblind": false,
+          "penetrated": false
+        }
+      ]
+    }
+  ]
+}
