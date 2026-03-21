@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-import { Shield, Swords, Users, Server, Calendar, ArrowLeft, Trophy, Home, ChevronRight, Gamepad2, Megaphone, Bot, ClipboardList } from "lucide-react";
+import { Shield, Swords, Users, Server, Calendar, ArrowLeft, Trophy, Home, ChevronRight, Gamepad2, Megaphone, Bot, ClipboardList, ShoppingBag } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { ReactNode } from "react";
 
@@ -16,6 +16,7 @@ const adminLinks = [
   { href: "/admin/seasons", label: "Seasons", icon: Calendar },
   { href: "/admin/campeonatos", label: "Campeonatos", icon: Trophy },
   { href: "/admin/inscricoes", label: "Inscrições", icon: ClipboardList },
+  { href: "/admin/loja", label: "Loja", icon: ShoppingBag },
   { href: "/admin/faceit", label: "Faceit", icon: Gamepad2 },
   { href: "/admin/brand", label: "Brand", icon: Megaphone },
 ];

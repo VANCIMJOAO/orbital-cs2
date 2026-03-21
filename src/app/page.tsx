@@ -1,9 +1,20 @@
+import { Metadata } from "next";
 import { getMatches, getTeams, getMapStats, getLeaderboard, parseMapStats, Match, Team, LeaderboardEntry, getStatusType } from "@/lib/api";
 import { Tournament } from "@/lib/tournament";
 import { getTournamentsFromDB } from "@/lib/tournaments-db";
 import { HomeContent } from "./home-content";
 
 export const revalidate = 60;
+
+export const metadata: Metadata = {
+  title: "ORBITAL ROXA — Campeonatos CS2",
+  description: "Plataforma de campeonatos CS2 presenciais e online com stats em tempo real, highlights automáticos, leaderboard e sistema completo de torneios. Ribeirão Preto/SP.",
+  openGraph: {
+    title: "ORBITAL ROXA — Campeonatos CS2",
+    description: "Plataforma de campeonatos CS2 com stats ao vivo, highlights e ranking.",
+    type: "website",
+  },
+};
 
 export default async function HomePage() {
   let matches: Match[] = [];

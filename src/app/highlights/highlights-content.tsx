@@ -13,6 +13,8 @@ export function HighlightsContent() {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const [search, setSearch] = useState("");
+  const [filterKills, setFilterKills] = useState<"all" | "3k" | "4k" | "ace">("all");
   const PAGE_SIZE = 30;
 
   const fetchClips = useCallback(async (offset = 0, append = false) => {
@@ -65,6 +67,32 @@ export function HighlightsContent() {
         </p>
       </motion.div>
 
+      {/* Filters */}
+      {!loading && clips.length > 0 && (
+        <div className="flex flex-wrap items-center gap-3 mb-6">
+          <input
+            type="text"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Buscar jogador..."
+            className="bg-[#111] border border-orbital-border px-3 py-1.5 text-orbital-text font-[family-name:var(--font-jetbrains)] text-xs placeholder:text-orbital-text-dim/30 focus:outline-none focus:border-orbital-purple/50 w-40"
+          />
+          {(["all", "3k", "4k", "ace"] as const).map(f => (
+            <button
+              key={f}
+              onClick={() => setFilterKills(f)}
+              className={`px-3 py-1.5 font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-wider border transition-colors ${
+                filterKills === f
+                  ? "bg-orbital-purple/10 border-orbital-purple/50 text-orbital-purple"
+                  : "bg-[#0A0A0A] border-orbital-border text-orbital-text-dim hover:text-orbital-text"
+              }`}
+            >
+              {f === "all" ? "TODOS" : f === "ace" ? "ACE (5K)" : f.toUpperCase()}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Loading */}
       {loading && (
         <div className="flex items-center justify-center py-20">
@@ -83,14 +111,24 @@ export function HighlightsContent() {
       )}
 
       {/* Clips grid */}
-      {!loading && clips.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
+      {!loading && clips.length > 0 && (() => {
+        const filtered = clips.filter(clip => {
+          if (search && !clip.player_name?.toLowerCase().includes(search.toLowerCase())) return false;
+          if (filterKills === "3k" && (clip.kills_count || 0) < 3) return false;
+          if (filterKills === "4k" && (clip.kills_count || 0) < 4) return false;
+          if (filterKills === "ace" && (clip.kills_count || 0) < 5) return false;
+          return true;
+        });
+        if (filtered.length === 0) return (
+          <HudCard className="text-center py-8">
+            <p className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text-dim">Nenhum highlight encontrado com esses filtros</p>
+          </HudCard>
+        );
+        return (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
         >
-          {clips.map((clip, i) => (
+          {filtered.map((clip, i) => (
             <motion.div
               key={clip.id}
               initial={{ opacity: 0, y: 10 }}
@@ -149,7 +187,8 @@ export function HighlightsContent() {
             </motion.div>
           ))}
         </motion.div>
-      )}
+        );
+      })()}
 
       {/* Load more */}
       {!loading && hasMore && clips.length > 0 && (

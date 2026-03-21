@@ -23,6 +23,9 @@ export function MatchCardExport({ match, playerStats, mapStats, team1, team2 }: 
     canvas.height = H;
     const ctx = canvas.getContext("2d")!;
 
+    // Wait for fonts to load
+    await document.fonts.ready;
+
     // Background
     ctx.fillStyle = "#0A0A0A";
     ctx.fillRect(0, 0, W, H);
@@ -114,8 +117,6 @@ export function MatchCardExport({ match, playerStats, mapStats, team1, team2 }: 
     ctx.fillText(t2Name.length > 14 ? t2Name.slice(0, 14) : t2Name, W / 2 + 250, logoY + logoSize + 35);
 
     // Scores
-    const score1 = mapStats.reduce((sum, m) => sum + (m.team1_score || 0), 0);
-    const score2 = mapStats.reduce((sum, m) => sum + (m.team2_score || 0), 0);
     const isBO1 = mapStats.length <= 1;
 
     // If BO1, show round score; if BO3+, show map wins

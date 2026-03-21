@@ -25,6 +25,17 @@ async function fetchHighlightsForMatches(matchIds: number[]): Promise<HighlightC
   }
 }
 
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const tournaments = await getTournamentsFromDB();
+  const tournament = tournaments.find((t: Tournament) => t.id === id);
+  const name = tournament?.name || "Campeonato";
+  return {
+    title: `${name} — Recap | ORBITAL ROXA`,
+    description: `Recap completo do ${name}. Campeão, MVP, melhores jogadas, estatísticas e highlights.`,
+  };
+}
+
 export default async function RecapPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
