@@ -163,7 +163,7 @@ export default function PatrocinioPage() {
                           {/* Move stage */}
                           <div className="flex gap-1">
                             {stages.filter(s => s !== stage).map(s => (
-                              <button key={s} onClick={() => updateStatus(sp.id, s)} className={`px-1.5 py-0.5 text-[0.45rem] font-[family-name:var(--font-jetbrains)] ${statusConfig[s].bg} ${statusConfig[s].color}`}>
+                              <button key={s} onClick={() => updateStatus(sp.id, s)} className={`px-1.5 py-0.5 text-[0.5rem] font-[family-name:var(--font-jetbrains)] ${statusConfig[s].bg} ${statusConfig[s].color}`}>
                                 → {statusConfig[s].label}
                               </button>
                             ))}
@@ -187,9 +187,9 @@ export default function PatrocinioPage() {
                             return (
                               <motion.div key={key} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-[#111] border border-orbital-purple/30 p-2">
                                 <div className="flex items-center justify-between mb-1">
-                                  <span className="font-[family-name:var(--font-orbitron)] text-[0.45rem] text-orbital-purple">{type === "abord" ? "MENSAGEM" : "PROPOSTA"}</span>
+                                  <span className="font-[family-name:var(--font-orbitron)] text-[0.5rem] text-orbital-purple">{type === "abord" ? "MENSAGEM" : "PROPOSTA"}</span>
                                   <div className="flex gap-1">
-                                    <button onClick={() => copyText(result, key)} className="text-[0.45rem] font-[family-name:var(--font-jetbrains)] text-orbital-text-dim hover:text-orbital-text flex items-center gap-0.5">
+                                    <button onClick={() => copyText(result, key)} className="text-[0.5rem] font-[family-name:var(--font-jetbrains)] text-orbital-text-dim hover:text-orbital-text flex items-center gap-0.5">
                                       {copied === key ? <Check size={7} className="text-green-400" /> : <Copy size={7} />} {copied === key ? "OK" : "COPIAR"}
                                     </button>
                                     <button onClick={() => setAiResults(p => { const n = { ...p }; delete n[key]; return n; })} className="text-orbital-text-dim hover:text-orbital-text"><X size={8} /></button>

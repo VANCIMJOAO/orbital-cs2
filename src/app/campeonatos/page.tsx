@@ -85,7 +85,7 @@ export default function CampeonatosPage() {
       >
         {/* Status filter */}
         <div className="flex items-center gap-1">
-          <span className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.15em] text-orbital-text-dim mr-2">STATUS</span>
+          <span className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.15em] text-orbital-text-dim mr-2">STATUS</span>
           {([
             { value: "all", label: "Todos" },
             { value: "active", label: "Ao Vivo" },
@@ -108,7 +108,7 @@ export default function CampeonatosPage() {
 
         {/* Format filter */}
         <div className="flex items-center gap-1">
-          <span className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.15em] text-orbital-text-dim mr-2">FORMATO</span>
+          <span className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.15em] text-orbital-text-dim mr-2">FORMATO</span>
           {([
             { value: "all", label: "Todos" },
             { value: "double_elimination", label: "Eliminação Dupla" },
@@ -224,7 +224,7 @@ function TournamentCard({ tournament: t, teamsMap, delay }: { tournament: Tourna
           {t.status === "active" && (
             <div className="absolute top-3 right-3 flex items-center gap-1.5 px-2 py-1 bg-red-500/20 border border-red-500/40">
               <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.6)]" />
-              <span className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.2em] text-red-500">LIVE</span>
+              <span className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.2em] text-red-500">LIVE</span>
             </div>
           )}
 
@@ -235,12 +235,12 @@ function TournamentCard({ tournament: t, teamsMap, delay }: { tournament: Tourna
                 {t.status === "finished" && (
                   <span className="flex items-center gap-1.5 px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/30">
                     <Trophy size={10} className="text-emerald-500" />
-                    <span className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.15em] text-emerald-500">FINALIZADO</span>
+                    <span className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.15em] text-emerald-500">FINALIZADO</span>
                   </span>
                 )}
                 {t.status === "pending" && (
                   <span className="px-2 py-0.5 bg-yellow-500/10 border border-yellow-500/30">
-                    <span className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.15em] text-yellow-500">EM BREVE</span>
+                    <span className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.15em] text-yellow-500">EM BREVE</span>
                   </span>
                 )}
               </div>
@@ -288,7 +288,7 @@ function TournamentCard({ tournament: t, teamsMap, delay }: { tournament: Tourna
                     <Image src={winnerLogo} alt={winnerTeam.name} width={36} height={36} className="object-contain" unoptimized />
                   )}
                   <div>
-                    <div className="font-[family-name:var(--font-orbitron)] text-[0.4rem] tracking-[0.2em] text-amber-500/70">CAMPEÃO</div>
+                    <div className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.2em] text-amber-500/70">CAMPEÃO</div>
                     <div className="font-[family-name:var(--font-orbitron)] text-sm font-bold tracking-wider text-amber-400">{winnerTeam.name}</div>
                   </div>
                   <Crown size={18} className="text-amber-500/40" />

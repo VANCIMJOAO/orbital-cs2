@@ -50,7 +50,7 @@ function BracketTeamRow({ name, teamId, isWinner, isLoser, score, isLive, logo }
       </span>
       <div className="flex items-center gap-1.5 ml-auto">
         {isLive && (
-          <span className="flex items-center gap-1 text-orbital-live text-[0.4rem] font-[family-name:var(--font-orbitron)]">
+          <span className="flex items-center gap-1 text-orbital-live text-[0.5rem] font-[family-name:var(--font-orbitron)]">
             <span className="w-1.5 h-1.5 rounded-full bg-orbital-live animate-pulse shadow-[0_0_6px_rgba(239,68,68,0.6)]" />
             LIVE
           </span>
@@ -117,11 +117,11 @@ export function BracketMatchCard({
     }`}>
       {/* Label row */}
       <div className="flex items-center justify-between mb-2">
-        <span className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.15em] text-orbital-text-dim">
+        <span className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.15em] text-orbital-text-dim">
           {match.label}
         </span>
         {isLive && (
-          <span className="flex items-center gap-1 font-[family-name:var(--font-orbitron)] text-[0.45rem] text-orbital-live animate-pulse">
+          <span className="flex items-center gap-1 font-[family-name:var(--font-orbitron)] text-[0.5rem] text-orbital-live animate-pulse">
             <span className="w-1.5 h-1.5 rounded-full bg-orbital-live shadow-[0_0_6px_rgba(239,68,68,0.6)]" />
             LIVE
           </span>
@@ -164,14 +164,14 @@ export function BracketMatchCard({
         <div className="mt-2 flex items-center justify-center gap-2 flex-wrap">
           {scores.map((ms, i) => (
             <div key={i} className="flex items-center gap-1 px-1.5 py-0.5 bg-white/[0.02] border border-orbital-border/30">
-              <span className="font-[family-name:var(--font-jetbrains)] text-[0.45rem] text-orbital-text-dim">
+              <span className="font-[family-name:var(--font-jetbrains)] text-[0.5rem] text-orbital-text-dim">
                 {ms.map_name.replace("de_", "").toUpperCase()}
               </span>
-              <span className={`font-[family-name:var(--font-jetbrains)] text-[0.45rem] font-bold ${
+              <span className={`font-[family-name:var(--font-jetbrains)] text-[0.5rem] font-bold ${
                 ms.team1_score > ms.team2_score ? "text-orbital-success" : "text-orbital-text-dim"
               }`}>{ms.team1_score}</span>
               <span className="text-orbital-text-dim text-[0.35rem]">:</span>
-              <span className={`font-[family-name:var(--font-jetbrains)] text-[0.45rem] font-bold ${
+              <span className={`font-[family-name:var(--font-jetbrains)] text-[0.5rem] font-bold ${
                 ms.team2_score > ms.team1_score ? "text-orbital-success" : "text-orbital-text-dim"
               }`}>{ms.team2_score}</span>
             </div>
@@ -185,7 +185,7 @@ export function BracketMatchCard({
           {isReady && match.status === "pending" && (
             <button
               onClick={() => admin.onStartVeto(match)}
-              className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 transition-all font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-wider text-orbital-purple"
+              className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 transition-all font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-wider text-orbital-purple"
             >
               <Swords size={10} /> VETO
             </button>

@@ -460,7 +460,7 @@ function MiniStat({ label, value }: { label: string; value: number }) {
   return (
     <div className="bg-orbital-card p-2.5 text-center">
       <div className="font-[family-name:var(--font-jetbrains)] text-base font-bold text-orbital-text">{value}</div>
-      <div className="font-[family-name:var(--font-orbitron)] text-[0.4rem] tracking-[0.1em] text-orbital-text-dim mt-0.5">{label}</div>
+      <div className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.1em] text-orbital-text-dim mt-0.5">{label}</div>
     </div>
   );
 }
@@ -511,7 +511,7 @@ function MatchRow({ match, teamsMap, isLive }: {
           </div>
         </div>
         {match.title && !match.title.includes("{") && (
-          <div className="font-[family-name:var(--font-jetbrains)] text-[0.45rem] text-orbital-text-dim/60 mt-0.5 text-center">
+          <div className="font-[family-name:var(--font-jetbrains)] text-[0.5rem] text-orbital-text-dim/60 mt-0.5 text-center">
             {match.title}
           </div>
         )}

@@ -103,7 +103,8 @@ export async function ensureBrandTables() {
       )
     `);
 
-    await seedDefaults();
+    // Seed removido — usar scripts/seed-brand-tasks.js e scripts/seed-brand-posts.js
+    // para popular dados. O init-db apenas cria as tabelas.
   } catch (err) {
     console.error("[BRAND INIT]", err);
   }
@@ -111,7 +112,9 @@ export async function ensureBrandTables() {
   tablesEnsured = true;
 }
 
-async function seedDefaults() {
+// DEPRECATED: seed inline removido. Dados são populados via scripts manuais.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+async function _seedDefaults_deprecated() {
   // Seed tasks
   const [taskRows] = await dbPool.execute("SELECT COUNT(*) as cnt FROM brand_tasks");
   const taskCount = (taskRows as { cnt: number }[])[0].cnt;

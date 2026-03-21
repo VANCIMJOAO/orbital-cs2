@@ -277,11 +277,11 @@ export default function AdminLojaPage() {
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <div className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-wider text-orbital-purple">CLIENTE</div>
+                      <div className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-wider text-orbital-purple">CLIENTE</div>
                       <div className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text">{o.customer_name}</div>
                     </div>
                     <div>
-                      <div className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-wider text-orbital-purple">WHATSAPP</div>
+                      <div className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-wider text-orbital-purple">WHATSAPP</div>
                       <a href={`https://wa.me/55${o.customer_whatsapp.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer"
                         className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text hover:text-orbital-purple flex items-center gap-1"
                       >
@@ -291,7 +291,7 @@ export default function AdminLojaPage() {
                   </div>
 
                   <div>
-                    <div className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-wider text-orbital-purple mb-1">ITENS</div>
+                    <div className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-wider text-orbital-purple mb-1">ITENS</div>
                     {o.items.map((item, i) => (
                       <div key={i} className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim">
                         {item.qty}x {item.name} ({item.size}) — R$ {item.price}
@@ -304,7 +304,7 @@ export default function AdminLojaPage() {
 
                   {o.address && (
                     <div>
-                      <div className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-wider text-orbital-purple">ENDEREÇO</div>
+                      <div className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-wider text-orbital-purple">ENDEREÇO</div>
                       <div className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim">{o.address}</div>
                     </div>
                   )}

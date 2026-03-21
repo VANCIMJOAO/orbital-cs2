@@ -413,7 +413,7 @@ export function MissionControlContent({ initialTournament }: { initialTournament
                     <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-orbital-live shadow-[0_0_6px_rgba(239,68,68,0.6)]" />
                   )}
                 </div>
-                <span className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-wider">
+                <span className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-wider">
                   {tab.label}
                 </span>
                 {isActive && (
@@ -466,7 +466,7 @@ function BracketTab({
         <div className="flex gap-3 overflow-x-auto pb-3">
           {rounds(winnerMatches).map(([round, matches]) => (
             <div key={round} className="flex flex-col gap-2 min-w-[160px]">
-              <div className="font-[family-name:var(--font-orbitron)] text-[0.4rem] tracking-[0.15em] text-orbital-text-dim text-center">
+              <div className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.15em] text-orbital-text-dim text-center">
                 {round === 1 ? "QUARTAS" : round === 2 ? "SEMI" : "FINAL"}
               </div>
               {matches.map(m => (
@@ -491,7 +491,7 @@ function BracketTab({
         <div className="flex gap-3 overflow-x-auto pb-3">
           {rounds(lowerMatches).map(([round, matches]) => (
             <div key={round} className="flex flex-col gap-2 min-w-[160px]">
-              <div className="font-[family-name:var(--font-orbitron)] text-[0.4rem] tracking-[0.15em] text-orbital-text-dim text-center">
+              <div className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.15em] text-orbital-text-dim text-center">
                 R{round}
               </div>
               {matches.map(m => (
@@ -554,16 +554,16 @@ function MiniMatchCard({
       "bg-orbital-card border-orbital-border"
     }`}>
       <div className="flex items-center justify-between mb-1">
-        <span className="font-[family-name:var(--font-orbitron)] text-[0.4rem] tracking-wider text-orbital-text-dim">
+        <span className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-wider text-orbital-text-dim">
           {match.label}
         </span>
         {isLive && (
-          <span className="flex items-center gap-1 text-[0.4rem] text-orbital-live animate-pulse">
+          <span className="flex items-center gap-1 text-[0.5rem] text-orbital-live animate-pulse">
             <span className="w-1 h-1 rounded-full bg-orbital-live" /> LIVE
           </span>
         )}
         {match.map && (
-          <span className="font-[family-name:var(--font-jetbrains)] text-[0.45rem] text-orbital-purple">
+          <span className="font-[family-name:var(--font-jetbrains)] text-[0.5rem] text-orbital-purple">
             {match.map.replace("de_", "").toUpperCase()}
           </span>
         )}
@@ -596,7 +596,7 @@ function MiniMatchCard({
       {isReady && (
         <button
           onClick={() => onStartVeto(match)}
-          className="w-full mt-1.5 flex items-center justify-center gap-1 px-2 py-1.5 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 transition-all font-[family-name:var(--font-orbitron)] text-[0.4rem] tracking-wider text-orbital-purple"
+          className="w-full mt-1.5 flex items-center justify-center gap-1 px-2 py-1.5 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 transition-all font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-wider text-orbital-purple"
         >
           <Swords size={9} /> VETO
         </button>
@@ -605,13 +605,13 @@ function MiniMatchCard({
         <div className="flex gap-1 mt-1.5">
           <button
             onClick={() => onSetWinner(match.id, match.team1_id!)}
-            className="flex-1 px-1 py-1 border border-orbital-border hover:border-orbital-success/50 hover:bg-orbital-success/10 transition-all font-[family-name:var(--font-jetbrains)] text-[0.45rem] text-orbital-text-dim hover:text-orbital-success truncate"
+            className="flex-1 px-1 py-1 border border-orbital-border hover:border-orbital-success/50 hover:bg-orbital-success/10 transition-all font-[family-name:var(--font-jetbrains)] text-[0.5rem] text-orbital-text-dim hover:text-orbital-success truncate"
           >
             {t1} W
           </button>
           <button
             onClick={() => onSetWinner(match.id, match.team2_id!)}
-            className="flex-1 px-1 py-1 border border-orbital-border hover:border-orbital-success/50 hover:bg-orbital-success/10 transition-all font-[family-name:var(--font-jetbrains)] text-[0.45rem] text-orbital-text-dim hover:text-orbital-success truncate"
+            className="flex-1 px-1 py-1 border border-orbital-border hover:border-orbital-success/50 hover:bg-orbital-success/10 transition-all font-[family-name:var(--font-jetbrains)] text-[0.5rem] text-orbital-text-dim hover:text-orbital-success truncate"
           >
             {t2} W
           </button>
@@ -620,7 +620,7 @@ function MiniMatchCard({
       {match.match_id && (
         <Link
           href={`/partidas/${match.match_id}`}
-          className="block text-center mt-1 font-[family-name:var(--font-jetbrains)] text-[0.45rem] text-orbital-text-dim hover:text-orbital-purple transition-colors"
+          className="block text-center mt-1 font-[family-name:var(--font-jetbrains)] text-[0.5rem] text-orbital-text-dim hover:text-orbital-purple transition-colors"
         >
           #{match.match_id}
         </Link>
@@ -733,7 +733,7 @@ function ControlsTab({
           <button
             onClick={onLoadBackups}
             disabled={controlLoading === "backups"}
-            className="flex items-center gap-1 px-3 py-1.5 border border-orbital-border hover:border-orbital-purple/30 transition-all font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-wider text-orbital-text-dim hover:text-orbital-purple"
+            className="flex items-center gap-1 px-3 py-1.5 border border-orbital-border hover:border-orbital-purple/30 transition-all font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-wider text-orbital-text-dim hover:text-orbital-purple"
           >
             {controlLoading === "backups" ? <Loader2 size={10} className="animate-spin" /> : <RotateCcw size={10} />}
             CARREGAR
@@ -1139,7 +1139,7 @@ function QueueTab({
                     <td className="text-center py-1.5 px-1 text-red-400/70">{s.losses}</td>
                     <td className="text-center py-1.5 px-1 text-orbital-text-dim">{s.buchholz}</td>
                     <td className="text-center py-1.5 px-2">
-                      <span className={`font-[family-name:var(--font-orbitron)] text-[0.4rem] tracking-wider px-1.5 py-0.5 border ${
+                      <span className={`font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-wider px-1.5 py-0.5 border ${
                         s.status === "advanced" ? "text-green-400 border-green-400/20" :
                         s.status === "eliminated" ? "text-red-400/50 border-red-400/10" :
                         "text-orbital-text-dim border-orbital-border"
@@ -1180,7 +1180,7 @@ function QueueTab({
               {tournament.mode === "presencial" && (
                 <button
                   onClick={() => onStartVeto(m)}
-                  className="w-full mt-1 flex items-center justify-center gap-1 px-3 py-2 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 transition-all font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-wider text-orbital-purple"
+                  className="w-full mt-1 flex items-center justify-center gap-1 px-3 py-2 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 transition-all font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-wider text-orbital-purple"
                 >
                   <Swords size={10} /> INICIAR VETO
                 </button>
@@ -1309,7 +1309,7 @@ function OnlineModePanel({
                 <div className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text">
                   {getTeamName(tournament, m.team1_id)} vs {getTeamName(tournament, m.team2_id)}
                 </div>
-                <div className="font-[family-name:var(--font-orbitron)] text-[0.4rem] tracking-wider text-orbital-text-dim mt-0.5">
+                <div className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-wider text-orbital-text-dim mt-0.5">
                   {m.label}
                 </div>
               </div>
@@ -1372,7 +1372,7 @@ function OnlineModePanel({
 
       {/* Info box */}
       <div className="bg-[#0A0A0A] border border-orbital-border p-3 space-y-1">
-        <div className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.2em] text-orbital-text-dim">COMO FUNCIONA</div>
+        <div className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.2em] text-orbital-text-dim">COMO FUNCIONA</div>
         <p className="font-[family-name:var(--font-jetbrains)] text-[0.55rem] text-orbital-text-dim/60">
           1. Crie a partida na Faceit (championship ou manualmente)
         </p>
@@ -1434,11 +1434,11 @@ function QueueItem({ match, tournament }: { match: BracketMatch; tournament: Tou
           {t2}
         </div>
         <div className="flex items-center gap-2 mt-0.5">
-          <span className="font-[family-name:var(--font-orbitron)] text-[0.4rem] tracking-wider text-orbital-text-dim">
+          <span className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-wider text-orbital-text-dim">
             {match.label}
           </span>
           {match.map && (
-            <span className="font-[family-name:var(--font-jetbrains)] text-[0.45rem] text-orbital-purple">
+            <span className="font-[family-name:var(--font-jetbrains)] text-[0.5rem] text-orbital-purple">
               {match.map.replace("de_", "").toUpperCase()}
             </span>
           )}
@@ -1449,7 +1449,7 @@ function QueueItem({ match, tournament }: { match: BracketMatch; tournament: Tou
           )}
         </div>
       </div>
-      <span className={`shrink-0 font-[family-name:var(--font-orbitron)] text-[0.4rem] tracking-wider px-1.5 py-0.5 border ${
+      <span className={`shrink-0 font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-wider px-1.5 py-0.5 border ${
         isLive && isFaceit ? "text-[#FF5500] border-[#FF5500]/30" :
         isLive ? "text-orbital-live border-orbital-live/30" :
         isFinished ? "text-orbital-success border-orbital-success/20" :

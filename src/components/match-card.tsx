@@ -115,7 +115,7 @@ export function MatchCard({ match, delay = 0, teamsMap, mapScores }: MatchCardPr
                     <span className={`font-[family-name:var(--font-jetbrains)] text-[0.55rem] font-bold ${
                       ms.team1_score > ms.team2_score ? "text-orbital-success" : "text-orbital-text-dim"
                     }`}>{ms.team1_score}</span>
-                    <span className="text-orbital-text-dim text-[0.45rem]">:</span>
+                    <span className="text-orbital-text-dim text-[0.5rem]">:</span>
                     <span className={`font-[family-name:var(--font-jetbrains)] text-[0.55rem] font-bold ${
                       ms.team2_score > ms.team1_score ? "text-orbital-success" : "text-orbital-text-dim"
                     }`}>{ms.team2_score}</span>

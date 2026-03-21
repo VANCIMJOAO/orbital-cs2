@@ -128,7 +128,7 @@ export function PartidasContent({ matches, teamsMap, mapScoresMap, faceitMatches
           {liveCount > 0 && (
             <span className="flex items-center gap-1.5 px-2 py-0.5 bg-red-500/10 border border-red-500/30 ml-2">
               <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-              <span className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.15em] text-red-500">
+              <span className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.15em] text-red-500">
                 {liveCount} AO VIVO
               </span>
             </span>

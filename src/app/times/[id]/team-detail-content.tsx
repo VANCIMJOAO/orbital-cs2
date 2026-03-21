@@ -371,12 +371,12 @@ export function TeamDetailContent({ team, matches, playerStats, mapStats, teamsM
                               {p.name}
                             </Link>
                             {players.find(pl => pl.steamId === p.steamId)?.isCaptain && (
-                              <span className="px-1.5 py-0.5 bg-orbital-purple/10 border border-orbital-purple/30 font-[family-name:var(--font-orbitron)] text-[0.4rem] tracking-wider text-orbital-purple">
+                              <span className="px-1.5 py-0.5 bg-orbital-purple/10 border border-orbital-purple/30 font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-wider text-orbital-purple">
                                 CAP
                               </span>
                             )}
                             {players.find(pl => pl.steamId === p.steamId)?.isCoach && (
-                              <span className="px-1.5 py-0.5 bg-orbital-warning/10 border border-orbital-warning/30 font-[family-name:var(--font-orbitron)] text-[0.4rem] tracking-wider text-orbital-warning">
+                              <span className="px-1.5 py-0.5 bg-orbital-warning/10 border border-orbital-warning/30 font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-wider text-orbital-warning">
                                 COACH
                               </span>
                             )}
@@ -453,7 +453,7 @@ export function TeamDetailContent({ team, matches, playerStats, mapStats, teamsM
                 <div className="font-[family-name:var(--font-jetbrains)] text-2xl font-bold text-orbital-text">
                   {streak.count}
                 </div>
-                <div className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.2em] text-orbital-text-dim mt-1">
+                <div className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.2em] text-orbital-text-dim mt-1">
                   {streak.type === "W" ? "SEQUÊNCIA DE VITÓRIAS" : streak.type === "L" ? "SEQUÊNCIA DE DERROTAS" : "NEUTRO"}
                 </div>
               </div>
@@ -461,7 +461,7 @@ export function TeamDetailContent({ team, matches, playerStats, mapStats, teamsM
                 <div className={`font-[family-name:var(--font-jetbrains)] text-2xl font-bold ${parseFloat(winRate) >= 50 ? "text-orbital-success" : "text-orbital-danger"}`}>
                   {winRate}%
                 </div>
-                <div className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.2em] text-orbital-text-dim mt-1">
+                <div className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.2em] text-orbital-text-dim mt-1">
                   WIN RATE
                 </div>
               </div>
@@ -728,7 +728,7 @@ function StatCard({ label, value, color }: { label: string; value: string | numb
       <div className={`font-[family-name:var(--font-jetbrains)] text-2xl font-bold ${color || "text-orbital-text"}`}>
         {value}
       </div>
-      <div className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.2em] text-orbital-text-dim mt-1">
+      <div className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.2em] text-orbital-text-dim mt-1">
         {label}
       </div>
     </div>

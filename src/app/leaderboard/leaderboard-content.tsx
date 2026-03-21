@@ -187,8 +187,9 @@ export function LeaderboardContent({ initialLeaderboard, initialSeasons }: Leade
             transition={{ delay: 0.4 }}
             className="bg-orbital-card border border-orbital-border overflow-hidden"
           >
-            <div className="overflow-x-auto">
-              <table className="data-table">
+            <div className="overflow-x-auto relative">
+              <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-orbital-card to-transparent pointer-events-none lg:hidden z-10" />
+              <table className="data-table min-w-[700px]">
                 <thead>
                   <tr>
                     <th>#</th>

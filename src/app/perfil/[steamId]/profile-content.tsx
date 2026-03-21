@@ -466,12 +466,12 @@ export function ProfileContent({ steamId }: { steamId: string }) {
                 {displayName}
               </h1>
               {steamId === "76561198023055702" && (
-                <span className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.1em] px-2 py-0.5 bg-red-500/20 border border-red-500/50 text-red-400">
+                <span className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.1em] px-2 py-0.5 bg-red-500/20 border border-red-500/50 text-red-400">
                   CRIADOR
                 </span>
               )}
               {userRole.admin && (
-                <span className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.1em] px-2 py-0.5 bg-yellow-500/20 border border-yellow-500/50 text-yellow-400">
+                <span className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.1em] px-2 py-0.5 bg-yellow-500/20 border border-yellow-500/50 text-yellow-400">
                   ADMIN
                 </span>
               )}
@@ -683,18 +683,18 @@ export function ProfileContent({ steamId }: { steamId: string }) {
                         #{clip.rank}
                       </span>
                       {clip.kills_count >= 2 && (
-                        <span className="font-[family-name:var(--font-orbitron)] text-[0.45rem] text-orbital-purple bg-orbital-purple/10 px-1.5 py-0.5 shrink-0">
+                        <span className="font-[family-name:var(--font-orbitron)] text-[0.5rem] text-orbital-purple bg-orbital-purple/10 px-1.5 py-0.5 shrink-0">
                           {clip.kills_count >= 5 ? "ACE" : `${clip.kills_count}K`}
                         </span>
                       )}
                       {clip.score > 0 && (
-                        <span className="font-[family-name:var(--font-jetbrains)] text-[0.45rem] text-orbital-text-dim">
+                        <span className="font-[family-name:var(--font-jetbrains)] text-[0.5rem] text-orbital-text-dim">
                           {clip.score}pts
                         </span>
                       )}
                     </div>
                     {clip.round_number && (
-                      <span className="font-[family-name:var(--font-jetbrains)] text-[0.45rem] text-orbital-text-dim shrink-0">
+                      <span className="font-[family-name:var(--font-jetbrains)] text-[0.5rem] text-orbital-text-dim shrink-0">
                         R{clip.round_number}
                       </span>
                     )}

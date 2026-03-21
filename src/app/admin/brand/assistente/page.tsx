@@ -91,7 +91,7 @@ export default function AssistentePage() {
                     {isLoading ? <Loader2 size={10} className="animate-spin" /> : <Sparkles size={10} />} {isLoading ? "GERANDO..." : "EXECUTAR"}
                   </button>
                   {result && (
-                    <div className="flex items-center gap-1 font-[family-name:var(--font-jetbrains)] text-[0.45rem] text-orbital-text-dim">
+                    <div className="flex items-center gap-1 font-[family-name:var(--font-jetbrains)] text-[0.5rem] text-orbital-text-dim">
                       <Clock size={8} /> {result.time}
                     </div>
                   )}

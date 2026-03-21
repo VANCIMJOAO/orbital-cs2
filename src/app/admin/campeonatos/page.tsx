@@ -307,7 +307,7 @@ export default function AdminCampeonatos() {
                             }`}
                           >
                             <div className="font-[family-name:var(--font-orbitron)] text-[0.55rem] tracking-wider">DOUBLE ELIMINATION</div>
-                            <div className="font-[family-name:var(--font-jetbrains)] text-[0.45rem] opacity-60 mt-0.5">8 times — Winner + Lower bracket</div>
+                            <div className="font-[family-name:var(--font-jetbrains)] text-[0.5rem] opacity-60 mt-0.5">8 times — Winner + Lower bracket</div>
                           </button>
                           <button
                             type="button"
@@ -319,7 +319,7 @@ export default function AdminCampeonatos() {
                             }`}
                           >
                             <div className="font-[family-name:var(--font-orbitron)] text-[0.55rem] tracking-wider">SWISS</div>
-                            <div className="font-[family-name:var(--font-jetbrains)] text-[0.45rem] opacity-60 mt-0.5">8-16 times — Formato Major CS2</div>
+                            <div className="font-[family-name:var(--font-jetbrains)] text-[0.5rem] opacity-60 mt-0.5">8-16 times — Formato Major CS2</div>
                           </button>
                         </div>
                       </div>
@@ -697,7 +697,7 @@ export default function AdminCampeonatos() {
                         {t.name}
                       </Link>
                       {t.mode === "online" && (
-                        <span className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-wider text-[#FF5500]/60 border border-[#FF5500]/20 px-1.5 py-0.5">
+                        <span className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-wider text-[#FF5500]/60 border border-[#FF5500]/20 px-1.5 py-0.5">
                           FACEIT
                         </span>
                       )}

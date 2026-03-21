@@ -162,12 +162,12 @@ export function HighlightsContent() {
                     </span>
                   )}
                   {clip.kills_count >= 2 && (
-                    <span className="font-[family-name:var(--font-orbitron)] text-[0.45rem] text-orbital-purple bg-orbital-purple/10 px-1.5 py-0.5 shrink-0">
+                    <span className="font-[family-name:var(--font-orbitron)] text-[0.5rem] text-orbital-purple bg-orbital-purple/10 px-1.5 py-0.5 shrink-0">
                       {clip.kills_count >= 5 ? "ACE" : `${clip.kills_count}K`}
                     </span>
                   )}
                   {clip.round_number && (
-                    <span className="font-[family-name:var(--font-jetbrains)] text-[0.45rem] text-orbital-text-dim shrink-0 ml-auto">
+                    <span className="font-[family-name:var(--font-jetbrains)] text-[0.5rem] text-orbital-text-dim shrink-0 ml-auto">
                       R{clip.round_number}
                     </span>
                   )}

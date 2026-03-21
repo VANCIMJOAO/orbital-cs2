@@ -157,11 +157,13 @@ export default function CampeonatoPage({ params }: { params: Promise<{ id: strin
   }, [tournament]);
 
   // Auto-advance: poll live G5API matches for completion
-  useEffect(() => {
-    if (!tournament || tournament.status === "finished") return;
+  const tournamentRef = useRef(tournament);
+  tournamentRef.current = tournament;
 
-    const liveMatches = tournament.matches.filter(m => m.status === "live" && m.match_id);
-    if (liveMatches.length === 0) return;
+  const hasLiveMatches = tournament?.status !== "finished" && tournament?.matches.some(m => m.status === "live" && m.match_id);
+
+  useEffect(() => {
+    if (!hasLiveMatches) return;
 
     const clientFetcher = async (matchId: number) => {
       const res = await fetch(`/api/matches/${matchId}`);
@@ -170,16 +172,19 @@ export default function CampeonatoPage({ params }: { params: Promise<{ id: strin
     };
 
     const checkAutoAdvance = async () => {
-      const result = await autoAdvanceTournament(tournament, clientFetcher);
+      if (document.visibilityState === "hidden") return;
+      const t = tournamentRef.current;
+      if (!t || t.status === "finished") return;
+      const result = await autoAdvanceTournament(t, clientFetcher);
       if (result.changed) {
         await saveTournament(result.tournament);
       }
     };
 
     const interval = setInterval(checkAutoAdvance, 10000);
-    checkAutoAdvance(); // run immediately
+    checkAutoAdvance();
     return () => clearInterval(interval);
-  }, [tournament]);
+  }, [hasLiveMatches]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (isAdmin) {
@@ -837,7 +842,7 @@ export default function CampeonatoPage({ params }: { params: Promise<{ id: strin
                             className="bg-[#0A0A0A] border border-orbital-border hover:border-orbital-purple/40 p-3 text-center transition-colors group"
                           >
                             <div className="text-2xl mb-1">{award.emoji}</div>
-                            <div className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.15em] text-orbital-purple mb-1">
+                            <div className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.15em] text-orbital-purple mb-1">
                               {award.title}
                             </div>
                             <div className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text group-hover:text-orbital-purple transition-colors truncate">
@@ -877,7 +882,7 @@ export default function CampeonatoPage({ params }: { params: Promise<{ id: strin
                                 {team.name}
                               </div>
                               {grandFinal?.winner_id === team.id && (
-                                <div className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-wider text-amber-500">CAMPEÃO</div>
+                                <div className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-wider text-amber-500">CAMPEÃO</div>
                               )}
                             </div>
                           </motion.div>
@@ -968,17 +973,17 @@ export default function CampeonatoPage({ params }: { params: Promise<{ id: strin
                                         {/* Status */}
                                         <div className="shrink-0 w-12 text-center">
                                           {isLive ? (
-                                            <span className="inline-flex items-center gap-1 font-[family-name:var(--font-orbitron)] text-[0.45rem] text-red-500">
+                                            <span className="inline-flex items-center gap-1 font-[family-name:var(--font-orbitron)] text-[0.5rem] text-red-500">
                                               <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse shadow-[0_0_6px_rgba(239,68,68,0.6)]" />
                                               LIVE
                                             </span>
                                           ) : isFinished ? (
-                                            <span className="font-[family-name:var(--font-orbitron)] text-[0.45rem] text-emerald-500/70">FIM</span>
+                                            <span className="font-[family-name:var(--font-orbitron)] text-[0.5rem] text-emerald-500/70">FIM</span>
                                           ) : (
-                                            <span className="font-[family-name:var(--font-orbitron)] text-[0.45rem] text-yellow-500/70">TBD</span>
+                                            <span className="font-[family-name:var(--font-orbitron)] text-[0.5rem] text-yellow-500/70">TBD</span>
                                           )}
                                           {bm && (
-                                            <div className="font-[family-name:var(--font-orbitron)] text-[0.4rem] tracking-wider text-orbital-purple/60 mt-0.5">
+                                            <div className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-wider text-orbital-purple/60 mt-0.5">
                                               {bm.num_maps === 1 ? "BO1" : "BO3"}
                                             </div>
                                           )}
@@ -1004,7 +1009,7 @@ export default function CampeonatoPage({ params }: { params: Promise<{ id: strin
                                                 <div key={mi} className="flex items-center">
                                                   {mi > 0 && <div className="w-[1px] h-6 bg-orbital-border/40 mx-2" />}
                                                   <div className="text-center px-1.5">
-                                                    <div className="font-[family-name:var(--font-orbitron)] text-[0.4rem] tracking-[0.15em] text-orbital-purple/50 uppercase mb-0.5">
+                                                    <div className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.15em] text-orbital-purple/50 uppercase mb-0.5">
                                                       {ms.map_name?.replace("de_", "") || `M${mi + 1}`}
                                                     </div>
                                                     <div className="flex items-center justify-center gap-1">
@@ -1265,12 +1270,12 @@ export default function CampeonatoPage({ params }: { params: Promise<{ id: strin
                                 <span className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text truncate">{clip.player_name || "Player"}</span>
                               )}
                               {clip.kills_count >= 2 && (
-                                <span className="font-[family-name:var(--font-orbitron)] text-[0.45rem] text-orbital-purple bg-orbital-purple/10 px-1.5 py-0.5 shrink-0">
+                                <span className="font-[family-name:var(--font-orbitron)] text-[0.5rem] text-orbital-purple bg-orbital-purple/10 px-1.5 py-0.5 shrink-0">
                                   {clip.kills_count >= 5 ? "ACE" : `${clip.kills_count}K`}
                                 </span>
                               )}
                               {clip.round_number && (
-                                <span className="font-[family-name:var(--font-jetbrains)] text-[0.45rem] text-orbital-text-dim shrink-0 ml-auto">R{clip.round_number}</span>
+                                <span className="font-[family-name:var(--font-jetbrains)] text-[0.5rem] text-orbital-text-dim shrink-0 ml-auto">R{clip.round_number}</span>
                               )}
                             </div>
                             <Link href={`/partidas/${clip.match_id}`} className="flex items-center gap-1.5 group/match">
@@ -1317,7 +1322,7 @@ export default function CampeonatoPage({ params }: { params: Promise<{ id: strin
                   <div className="flex items-start gap-3">
                     <Calendar size={14} className="text-orbital-purple mt-0.5 shrink-0" />
                     <div>
-                      <div className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.15em] text-orbital-text-dim mb-0.5">DATAS</div>
+                      <div className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.15em] text-orbital-text-dim mb-0.5">DATAS</div>
                       <div className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text">
                         {new Date(tournament.start_date + "T00:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" })}
                         {tournament.end_date && (
@@ -1333,7 +1338,7 @@ export default function CampeonatoPage({ params }: { params: Promise<{ id: strin
                   <div className="flex items-start gap-3">
                     <DollarSign size={14} className="text-orbital-purple mt-0.5 shrink-0" />
                     <div>
-                      <div className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.15em] text-orbital-text-dim mb-0.5">PREMIACAO</div>
+                      <div className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.15em] text-orbital-text-dim mb-0.5">PREMIACAO</div>
                       <div className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text">{tournament.prize_pool}</div>
                     </div>
                   </div>
@@ -1342,7 +1347,7 @@ export default function CampeonatoPage({ params }: { params: Promise<{ id: strin
                   <div className="flex items-start gap-3">
                     <MapPin size={14} className="text-orbital-purple mt-0.5 shrink-0" />
                     <div>
-                      <div className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.15em] text-orbital-text-dim mb-0.5">LOCAL</div>
+                      <div className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.15em] text-orbital-text-dim mb-0.5">LOCAL</div>
                       <div className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text">{tournament.location}</div>
                     </div>
                   </div>
@@ -1350,7 +1355,7 @@ export default function CampeonatoPage({ params }: { params: Promise<{ id: strin
                 <div className="flex items-start gap-3">
                   <Layers size={14} className="text-orbital-purple mt-0.5 shrink-0" />
                   <div>
-                    <div className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.15em] text-orbital-text-dim mb-0.5">FORMATO</div>
+                    <div className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.15em] text-orbital-text-dim mb-0.5">FORMATO</div>
                     <div className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text">
                       {tournament.format === "double_elimination" ? "Eliminacao Dupla" : tournament.format || "Eliminacao Dupla"}
                     </div>
@@ -1359,7 +1364,7 @@ export default function CampeonatoPage({ params }: { params: Promise<{ id: strin
                 <div className="flex items-start gap-3">
                   <Swords size={14} className="text-orbital-purple mt-0.5 shrink-0" />
                   <div>
-                    <div className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.15em] text-orbital-text-dim mb-0.5">PROGRESSO</div>
+                    <div className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.15em] text-orbital-text-dim mb-0.5">PROGRESSO</div>
                     <div className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text">
                       {finishedCount}/{tournament.matches.length} partidas
                     </div>
@@ -1757,7 +1762,7 @@ function SwissStandingsView({
                     <td className="text-center py-2.5 px-2 text-orbital-text-dim">{s.buchholz}</td>
                     <td className="text-center py-2.5 px-2">
                       <span
-                        className={`font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-wider px-2 py-0.5 border ${
+                        className={`font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-wider px-2 py-0.5 border ${
                           s.status === "advanced"
                             ? "text-green-400 border-green-400/30 bg-green-400/5"
                             : s.status === "eliminated"
@@ -1794,13 +1799,13 @@ function SwissStandingsView({
           <HudCard key={round} className="p-4" label={`ROUND ${round}`}>
             <div className="flex items-center gap-2 mb-3">
               {hasLive && (
-                <span className="flex items-center gap-1 font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-wider text-red-400">
+                <span className="flex items-center gap-1 font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-wider text-red-400">
                   <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
                   AO VIVO
                 </span>
               )}
               {allDone && (
-                <span className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-wider text-green-400/50">
+                <span className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-wider text-green-400/50">
                   CONCLUÍDO
                 </span>
               )}
@@ -1872,7 +1877,7 @@ function SwissStandingsView({
                     </div>
 
                     {/* BO indicator */}
-                    <span className="font-[family-name:var(--font-jetbrains)] text-[0.45rem] text-orbital-text-dim/30 shrink-0">
+                    <span className="font-[family-name:var(--font-jetbrains)] text-[0.5rem] text-orbital-text-dim/30 shrink-0">
                       {m.num_maps > 1 ? "BO3" : "BO1"}
                     </span>
                   </div>

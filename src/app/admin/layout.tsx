@@ -81,7 +81,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
               <div className="font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-[0.15em] text-orbital-purple group-hover:text-orbital-text transition-colors">
                 ORBITAL ROXA
               </div>
-              <div className="font-[family-name:var(--font-jetbrains)] text-[0.45rem] text-orbital-text-dim/50">
+              <div className="font-[family-name:var(--font-jetbrains)] text-[0.5rem] text-orbital-text-dim/50">
                 ADMIN PANEL
               </div>
             </div>

@@ -403,7 +403,7 @@ export default function AdminFaceit() {
                               <Download size={8} /> {match.demo_urls.length} demo(s)
                             </span>
                           )}
-                          <span className="font-[family-name:var(--font-jetbrains)] text-[0.45rem] text-orbital-text-dim/30 ml-auto select-all">
+                          <span className="font-[family-name:var(--font-jetbrains)] text-[0.5rem] text-orbital-text-dim/30 ml-auto select-all">
                             {match.faceit_match_id}
                           </span>
                         </div>

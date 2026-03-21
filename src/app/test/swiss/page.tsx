@@ -149,10 +149,10 @@ export default function TestSwissPage() {
               <span className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.2em] px-3 py-1 border text-[#EF4444] border-[#EF4444]/30 uppercase">
                 AO VIVO
               </span>
-              <span className="flex items-center gap-1.5 px-2.5 py-1 border border-[#FF5500]/30 font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-wider text-[#FF5500]">
+              <span className="flex items-center gap-1.5 px-2.5 py-1 border border-[#FF5500]/30 font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-wider text-[#FF5500]">
                 <Gamepad2 size={10} /> ONLINE — FACEIT
               </span>
-              <span className="flex items-center gap-1.5 px-2.5 py-1 border border-orbital-border font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-wider text-orbital-text-dim">
+              <span className="flex items-center gap-1.5 px-2.5 py-1 border border-orbital-border font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-wider text-orbital-text-dim">
                 SWISS
               </span>
               {liveCount > 0 && (
@@ -297,7 +297,7 @@ export default function TestSwissPage() {
                           <td className="text-center py-2.5 px-2 font-[family-name:var(--font-jetbrains)] text-[0.7rem] text-red-400/70">{s.losses}</td>
                           <td className="text-center py-2.5 px-2 font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim">{s.buchholz}</td>
                           <td className="text-center py-2.5 px-2">
-                            <span className={`font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-wider px-2.5 py-1 border ${
+                            <span className={`font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-wider px-2.5 py-1 border ${
                               s.status === "advanced" ? "text-green-400 border-green-400/30 bg-green-400/5" :
                               s.status === "eliminated" ? "text-red-400/60 border-red-400/20" :
                               "text-orbital-text-dim border-orbital-border"
@@ -333,7 +333,7 @@ export default function TestSwissPage() {
                         <div className="flex-1 min-w-0">
                           <div className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text truncate">{team.name}</div>
                           {record && (
-                            <div className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-wider mt-0.5">
+                            <div className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-wider mt-0.5">
                               <span className="text-green-400">{record.wins}</span>
                               <span className="text-orbital-text-dim/20">-</span>
                               <span className="text-red-400/70">{record.losses}</span>
@@ -369,12 +369,12 @@ export default function TestSwissPage() {
                   <HudCard key={round} className="p-5" label={`ROUND ${round}`}>
                     <div className="flex items-center gap-3 mb-4 mt-1">
                       {hasLive && (
-                        <span className="flex items-center gap-1.5 px-2.5 py-1 bg-red-500/10 border border-red-500/30 font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-wider text-red-400">
+                        <span className="flex items-center gap-1.5 px-2.5 py-1 bg-red-500/10 border border-red-500/30 font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-wider text-red-400">
                           <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" /> AO VIVO
                         </span>
                       )}
                       {allDone && (
-                        <span className="flex items-center gap-1.5 px-2.5 py-1 bg-green-500/10 border border-green-500/20 font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-wider text-green-400/60">
+                        <span className="flex items-center gap-1.5 px-2.5 py-1 bg-green-500/10 border border-green-500/20 font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-wider text-green-400/60">
                           <Check size={8} /> CONCLUÍDO
                         </span>
                       )}
@@ -385,7 +385,7 @@ export default function TestSwissPage() {
 
                     {Array.from(pools.entries()).map(([poolLabel, poolMatches]) => (
                       <div key={poolLabel} className="mb-4 last:mb-0">
-                        <div className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.2em] text-orbital-text-dim/40 mb-2 flex items-center gap-2">
+                        <div className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.2em] text-orbital-text-dim/40 mb-2 flex items-center gap-2">
                           <span className={`px-2 py-0.5 border ${
                             poolLabel.startsWith("2-0") || poolLabel.startsWith("3") ? "border-green-400/20 text-green-400/60" :
                             poolLabel.startsWith("0-2") || poolLabel.startsWith("0-3") ? "border-red-400/20 text-red-400/40" :
@@ -430,7 +430,7 @@ export default function TestSwissPage() {
                                 </div>
                                 <div className="flex items-center gap-2 shrink-0">
                                   {m.map && <span className="font-[family-name:var(--font-jetbrains)] text-[0.5rem] text-orbital-text-dim/40">{m.map.replace("de_", "")}</span>}
-                                  {m.num_maps > 1 && <span className="font-[family-name:var(--font-orbitron)] text-[0.4rem] text-[#FF5500]/40 border border-[#FF5500]/20 px-1.5 py-0.5">BO3</span>}
+                                  {m.num_maps > 1 && <span className="font-[family-name:var(--font-orbitron)] text-[0.5rem] text-[#FF5500]/40 border border-[#FF5500]/20 px-1.5 py-0.5">BO3</span>}
                                   {m.faceit_match_id && <Gamepad2 size={10} className="text-[#FF5500]/30" />}
                                 </div>
                               </div>

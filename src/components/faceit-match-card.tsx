@@ -47,7 +47,7 @@ export function FaceitMatchCard({ match, delay = 0 }: FaceitMatchCardProps) {
               </div>
               <div className="flex items-center gap-1.5">
                 <Gamepad2 size={10} className="text-[#FF5500]/50" />
-                <span className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.15em] text-[#FF5500]/50">
+                <span className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.15em] text-[#FF5500]/50">
                   FACEIT
                 </span>
               </div>
@@ -99,7 +99,7 @@ export function FaceitMatchCard({ match, delay = 0 }: FaceitMatchCardProps) {
                     <span className={`font-[family-name:var(--font-jetbrains)] text-[0.55rem] font-bold ${
                       ms.team1_score > ms.team2_score ? "text-orbital-success" : "text-orbital-text-dim"
                     }`}>{ms.team1_score}</span>
-                    <span className="text-orbital-text-dim text-[0.45rem]">:</span>
+                    <span className="text-orbital-text-dim text-[0.5rem]">:</span>
                     <span className={`font-[family-name:var(--font-jetbrains)] text-[0.55rem] font-bold ${
                       ms.team2_score > ms.team1_score ? "text-orbital-success" : "text-orbital-text-dim"
                     }`}>{ms.team2_score}</span>

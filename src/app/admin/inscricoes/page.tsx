@@ -187,24 +187,24 @@ export default function InscricoesAdminPage() {
                   {/* Contact */}
                   <div className="grid grid-cols-3 gap-3">
                     <div>
-                      <div className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-wider text-orbital-purple mb-0.5">WHATSAPP</div>
+                      <div className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-wider text-orbital-purple mb-0.5">WHATSAPP</div>
                       <a href={`https://wa.me/55${insc.captain_whatsapp.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer" className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text hover:text-orbital-purple flex items-center gap-1">
                         {insc.captain_whatsapp} <ExternalLink size={10} />
                       </a>
                     </div>
                     <div>
-                      <div className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-wider text-orbital-purple mb-0.5">STEAM ID CAPITÃO</div>
+                      <div className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-wider text-orbital-purple mb-0.5">STEAM ID CAPITÃO</div>
                       <span className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text">{insc.captain_steam_id}</span>
                     </div>
                     <div>
-                      <div className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-wider text-orbital-purple mb-0.5">LOGO</div>
+                      <div className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-wider text-orbital-purple mb-0.5">LOGO</div>
                       <span className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text-dim">{insc.logo_url ? "Sim" : "Não"}</span>
                     </div>
                   </div>
 
                   {/* Players */}
                   <div>
-                    <div className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-wider text-orbital-purple mb-1">JOGADORES</div>
+                    <div className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-wider text-orbital-purple mb-1">JOGADORES</div>
                     <div className="space-y-1">
                       {insc.players.map((p, i) => (
                         <div key={i} className="flex items-center gap-2 font-[family-name:var(--font-jetbrains)] text-xs">

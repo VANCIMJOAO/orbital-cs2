@@ -143,7 +143,7 @@ export default function AdminDashboard() {
             >
               <s.icon size={12} className={`${s.color} mx-auto mb-1.5 opacity-60`} />
               <div className={`font-[family-name:var(--font-jetbrains)] text-xl font-bold ${s.color}`}>{s.value}</div>
-              <div className="font-[family-name:var(--font-orbitron)] text-[0.4rem] tracking-[0.15em] text-orbital-text-dim/50 mt-0.5">{s.label}</div>
+              <div className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.15em] text-orbital-text-dim/50 mt-0.5">{s.label}</div>
             </motion.div>
           ))}
         </div>
@@ -381,7 +381,7 @@ export default function AdminDashboard() {
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
           <div className="flex items-center gap-2 mb-2">
             <Trophy size={12} className="text-orbital-text-dim/40" />
-            <span className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.2em] text-orbital-text-dim/60">CAMPEONATOS FINALIZADOS</span>
+            <span className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.2em] text-orbital-text-dim/60">CAMPEONATOS FINALIZADOS</span>
           </div>
           <div className="space-y-1">
             {finishedTournaments.map(t => {

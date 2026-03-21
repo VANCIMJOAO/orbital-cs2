@@ -73,7 +73,7 @@ export function BrandAIButton({ action, label, onComplete, confirmMessage, varia
           <Brain size={16} className="text-orbital-purple" />
           <div>
             <div className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.15em] text-orbital-purple">{label}</div>
-            <div className="font-[family-name:var(--font-jetbrains)] text-[0.45rem] text-white/25 mt-0.5">Powered by Claude AI</div>
+            <div className="font-[family-name:var(--font-jetbrains)] text-[0.5rem] text-white/25 mt-0.5">Powered by Claude AI</div>
           </div>
         </div>
         <button

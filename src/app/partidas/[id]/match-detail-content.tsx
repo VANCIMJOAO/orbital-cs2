@@ -315,7 +315,7 @@ export function MatchDetailContent({ match: initialMatch, playerStats: initialSt
                   {match.team1_string || team1?.name || `Time ${match.team1_id}`}
                 </h2>
                 {match.winner === match.team1_id && (
-                  <span className="flex items-center gap-1 font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.15em] text-orbital-success">
+                  <span className="flex items-center gap-1 font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.15em] text-orbital-success">
                     <Trophy size={10} /> VENCEDOR
                   </span>
                 )}
@@ -379,7 +379,7 @@ export function MatchDetailContent({ match: initialMatch, playerStats: initialSt
                   {match.team2_string || team2?.name || `Time ${match.team2_id}`}
                 </h2>
                 {match.winner === match.team2_id && (
-                  <span className="flex items-center gap-1 font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.15em] text-orbital-success">
+                  <span className="flex items-center gap-1 font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.15em] text-orbital-success">
                     <Trophy size={10} /> VENCEDOR
                   </span>
                 )}
@@ -593,7 +593,7 @@ export function MatchDetailContent({ match: initialMatch, playerStats: initialSt
                       {isCurrentMap && (
                         <div className="absolute top-2 right-2 flex items-center gap-1 px-1.5 py-0.5 bg-orbital-live/20 border border-orbital-live/40">
                           <span className="w-1.5 h-1.5 rounded-full bg-orbital-live animate-pulse" />
-                          <span className="font-[family-name:var(--font-orbitron)] text-[0.4rem] tracking-wider text-orbital-live">LIVE</span>
+                          <span className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-wider text-orbital-live">LIVE</span>
                         </div>
                       )}
                       <div className="absolute bottom-2 left-3 font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.15em] text-orbital-text-dim">
@@ -724,7 +724,7 @@ export function MatchDetailContent({ match: initialMatch, playerStats: initialSt
                             {clip.player_name || "Highlight"}
                           </Link>
                           {clip.kills_count >= 2 && (
-                            <span className={`font-[family-name:var(--font-orbitron)] text-[0.45rem] px-1.5 py-0.5 shrink-0 ${
+                            <span className={`font-[family-name:var(--font-orbitron)] text-[0.5rem] px-1.5 py-0.5 shrink-0 ${
                               clip.kills_count >= 5
                                 ? "text-yellow-400 bg-yellow-400/10 border border-yellow-400/20"
                                 : "text-orbital-purple bg-orbital-purple/10"
@@ -858,7 +858,7 @@ export function MatchDetailContent({ match: initialMatch, playerStats: initialSt
                             {v.map.replace("de_", "").toUpperCase()}
                           </span>
                           {isCurrentMap && (
-                            <span className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.1em] px-2 py-0.5 text-orbital-success bg-orbital-success/10 border border-orbital-success/20 ml-auto">
+                            <span className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.1em] px-2 py-0.5 text-orbital-success bg-orbital-success/10 border border-orbital-success/20 ml-auto">
                               AO VIVO
                             </span>
                           )}
@@ -873,11 +873,11 @@ export function MatchDetailContent({ match: initialMatch, playerStats: initialSt
                           <span className={`font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider font-bold ${isCurrentMap ? "text-orbital-success" : "text-orbital-text-dim"}`}>
                             {mapName.replace("de_", "").toUpperCase()}
                           </span>
-                          <span className={`font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.1em] px-2 py-0.5 ${isCurrentMap ? "text-orbital-success bg-orbital-success/10 border border-orbital-success/20" : "text-orbital-text-dim bg-orbital-card border border-orbital-border"}`}>
+                          <span className={`font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.1em] px-2 py-0.5 ${isCurrentMap ? "text-orbital-success bg-orbital-success/10 border border-orbital-success/20" : "text-orbital-text-dim bg-orbital-card border border-orbital-border"}`}>
                             {isBO1 ? "JOGADO" : "DECIDER"}
                           </span>
                           {isCurrentMap && (
-                            <span className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.1em] px-2 py-0.5 text-orbital-success bg-orbital-success/10 border border-orbital-success/20 ml-auto">
+                            <span className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.1em] px-2 py-0.5 text-orbital-success bg-orbital-success/10 border border-orbital-success/20 ml-auto">
                               AO VIVO
                             </span>
                           )}
@@ -890,7 +890,7 @@ export function MatchDetailContent({ match: initialMatch, playerStats: initialSt
                         <span className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-success font-bold">
                           {leftoverMap.replace("de_", "").toUpperCase()}
                         </span>
-                        <span className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.1em] px-2 py-0.5 text-orbital-success bg-orbital-success/10 border border-orbital-success/20">
+                        <span className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.1em] px-2 py-0.5 text-orbital-success bg-orbital-success/10 border border-orbital-success/20">
                           JOGADO
                         </span>
                       </div>
@@ -1182,7 +1182,7 @@ function GameLog({
                         ROUND {roundNum}
                       </span>
                       {mapStats.length > 1 && (
-                        <span className="font-[family-name:var(--font-jetbrains)] text-[0.45rem] text-orbital-text-dim">
+                        <span className="font-[family-name:var(--font-jetbrains)] text-[0.5rem] text-orbital-text-dim">
                           {mapName(mapId)}
                         </span>
                       )}
@@ -1222,7 +1222,7 @@ function GameLog({
                                   {getWeaponName(k.weapon)}
                                 </span>
                                 {badges.map(b => (
-                                  <span key={b} className={`text-[0.4rem] px-0.5 font-bold ${
+                                  <span key={b} className={`text-[0.5rem] px-0.5 font-bold ${
                                     b === "HS" ? "text-orbital-danger" : "text-orbital-warning"
                                   }`}>
                                     {b}
@@ -1294,7 +1294,7 @@ function GameLog({
 function InfoItem({ label, value }: { label: string; value: string | number }) {
   return (
     <div>
-      <div className="font-[family-name:var(--font-orbitron)] text-[0.45rem] tracking-[0.2em] text-orbital-text-dim mb-1">{label}</div>
+      <div className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-[0.2em] text-orbital-text-dim mb-1">{label}</div>
       <div className="font-[family-name:var(--font-jetbrains)] text-sm text-orbital-text">{value}</div>
     </div>
   );
@@ -1353,8 +1353,9 @@ function PlayerStatsTable({ teamName, teamLogo, stats, isWinner, delay }: {
         </div>
 
         {/* Stats table */}
-        <div className="overflow-x-auto">
-          <table className="w-full">
+        <div className="overflow-x-auto relative">
+          <div className="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-[#0A0A0A] to-transparent pointer-events-none lg:hidden z-10" />
+          <table className="w-full min-w-[600px]">
             <thead>
               <tr className="border-b border-orbital-border/50">
                 <th className="text-left px-4 py-2.5 font-[family-name:var(--font-jetbrains)] text-[0.55rem] text-orbital-text-dim font-normal tracking-wider">Jogador</th>
@@ -1386,7 +1387,7 @@ function PlayerStatsTable({ teamName, teamLogo, stats, isWinner, delay }: {
                   }`}>
                     <td className="px-4 py-2.5">
                       <div className="flex items-center gap-2">
-                        {isMvp && <span className="text-[0.45rem] text-yellow-400/80">★</span>}
+                        {isMvp && <span className="text-[0.5rem] text-yellow-400/80">★</span>}
                         <Link
                           href={`/perfil/${player.steam_id}`}
                           className={`font-[family-name:var(--font-jetbrains)] text-[0.7rem] hover:text-orbital-purple transition-colors font-medium ${
