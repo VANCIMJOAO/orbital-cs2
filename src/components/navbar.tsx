@@ -14,7 +14,8 @@ const navLinks = [
   { href: "/partidas", label: "PARTIDAS", icon: Swords },
   { href: "/leaderboard", label: "RANKING", icon: Sparkles },
   { href: "/highlights", label: "HIGHLIGHTS", icon: Film },
-  { href: "/inscricao", label: "INSCRIÇÃO", icon: Trophy },
+  { href: "/demos", label: "DEMOS", icon: Film },
+  { href: "/inscricao", label: "INSCRIÇÃO", icon: Sparkles },
   { href: "/loja", label: "LOJA", icon: ShoppingBag },
 ];
 
