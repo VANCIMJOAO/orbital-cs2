@@ -43,6 +43,7 @@ export default function AdminLojaPage() {
   const [showForm, setShowForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; msg: string } | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
 
   // Product form
   const [pName, setPName] = useState("");
@@ -51,6 +52,47 @@ export default function AdminLojaPage() {
   const [pImage, setPImage] = useState("");
   const [pSizes, setPSizes] = useState("P,M,G,GG");
   const [pStock, setPStock] = useState("10");
+
+  const startEdit = (p: Product) => {
+    setEditingId(p.id);
+    setPName(p.name);
+    setPDesc(p.description || "");
+    setPPrice(String(p.price));
+    setPImage(p.image_url || "");
+    setPSizes(p.sizes.join(","));
+    setPStock(String(p.stock));
+    setShowForm(true);
+  };
+
+  const saveEdit = async () => {
+    if (!editingId) return;
+    setSubmitting(true);
+    const res = await fetch("/api/loja", {
+      method: "PUT",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        type: "produto",
+        id: editingId,
+        name: pName,
+        description: pDesc || null,
+        price: parseInt(pPrice),
+        image_url: pImage || null,
+        sizes: JSON.stringify(pSizes.split(",").map(s => s.trim()).filter(Boolean)),
+        stock: parseInt(pStock) || 0,
+      }),
+    });
+    if (res.ok) {
+      setFeedback({ type: "success", msg: "Produto atualizado!" });
+      setEditingId(null);
+      setShowForm(false);
+      setPName(""); setPDesc(""); setPPrice(""); setPImage(""); setPSizes("P,M,G,GG"); setPStock("10");
+      await fetchData();
+    } else {
+      setFeedback({ type: "error", msg: "Erro ao atualizar" });
+    }
+    setSubmitting(false);
+  };
 
   const fetchData = useCallback(async () => {
     try {
@@ -206,12 +248,19 @@ export default function AdminLojaPage() {
                     <input type="number" value={pStock} onChange={e => setPStock(e.target.value)} placeholder="10" className={inputClass} />
                   </div>
                 </div>
-                <button onClick={createProduct} disabled={!pName || !pPrice || submitting}
+                <button onClick={editingId ? saveEdit : createProduct} disabled={!pName || !pPrice || submitting}
                   className="px-4 py-2 bg-orbital-purple text-white font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider hover:bg-orbital-purple/80 disabled:opacity-30 transition-colors flex items-center gap-1.5"
                 >
                   {submitting ? <Loader2 size={12} className="animate-spin" /> : <Plus size={12} />}
-                  CRIAR PRODUTO
+                  {editingId ? "SALVAR ALTERAÇÕES" : "CRIAR PRODUTO"}
                 </button>
+                {editingId && (
+                  <button onClick={() => { setEditingId(null); setShowForm(false); setPName(""); setPDesc(""); setPPrice(""); setPImage(""); setPSizes("P,M,G,GG"); setPStock("10"); }}
+                    className="px-4 py-2 text-orbital-text-dim hover:text-orbital-text font-[family-name:var(--font-jetbrains)] text-xs transition-colors"
+                  >
+                    CANCELAR EDIÇÃO
+                  </button>
+                )}
               </div>
             </motion.div>
           )}
@@ -234,6 +283,9 @@ export default function AdminLojaPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-1.5">
+                    <button onClick={() => startEdit(p)} className="p-1.5 text-orbital-text-dim hover:text-cyan-400 transition-colors" title="Editar">
+                      <Package size={14} />
+                    </button>
                     <button onClick={() => toggleProduct(p.id, p.active)} className="p-1.5 text-orbital-text-dim hover:text-orbital-purple transition-colors" title={p.active ? "Desativar" : "Ativar"}>
                       {p.active ? <Eye size={14} /> : <EyeOff size={14} />}
                     </button>

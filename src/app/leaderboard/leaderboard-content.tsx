@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Trophy, Target, Skull, Crosshair, Medal, Filter, Download, Search } from "lucide-react";
+import { Trophy, Target, Skull, Crosshair, Medal, Filter, Download, Search, Users, Shield } from "lucide-react";
 import Link from "next/link";
 import { HudCard } from "@/components/hud-card";
 import { LeaderboardEntry, Season } from "@/lib/api";
@@ -141,7 +141,15 @@ export function LeaderboardContent({ initialLeaderboard, initialSeasons }: Leade
                 className="pl-7 pr-2 py-1.5 w-32 sm:w-40 bg-transparent border border-orbital-border focus:border-orbital-purple/50 font-[family-name:var(--font-jetbrains)] text-[0.6rem] sm:text-xs text-orbital-text placeholder:text-orbital-text-dim/50 outline-none transition-colors"
               />
             </div>
-            {/* CSV Export */}
+            {/* Compare + Teams + CSV */}
+            <Link href="/comparar" className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 bg-cyan-500/10 border border-cyan-500/30 hover:border-cyan-500/60 transition-all font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-cyan-400">
+              <Users size={11} />
+              <span className="hidden sm:inline">COMPARAR</span>
+            </Link>
+            <Link href="/times" className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 bg-white/5 border border-orbital-border hover:border-orbital-purple/30 transition-all font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim">
+              <Shield size={11} />
+              <span className="hidden sm:inline">TIMES</span>
+            </Link>
             {sorted.length > 0 && (
               <button
                 onClick={exportCSV}

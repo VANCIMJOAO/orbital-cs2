@@ -153,6 +153,23 @@ export function HomeContent({
         </motion.section>
       )}
 
+      {/* CTA Inscrição — se há torneio pendente/ativo */}
+      {activeTournament && (activeTournament.status === "pending" || activeTournament.status === "active") && (
+        <Link href="/inscricao" className="block bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 p-4 transition-colors group">
+          <div className="flex items-center justify-between">
+            <div>
+              <span className="font-[family-name:var(--font-orbitron)] text-[0.7rem] tracking-wider text-orbital-purple">INSCRIÇÕES ABERTAS</span>
+              <p className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text-dim mt-0.5">
+                {activeTournament.name} — {activeTournament.teams.length}/{activeTournament.format === "swiss" ? "16" : "8"} vagas
+              </p>
+            </div>
+            <span className="font-[family-name:var(--font-orbitron)] text-[0.65rem] text-orbital-purple group-hover:text-orbital-text transition-colors">
+              INSCREVER TIME →
+            </span>
+          </div>
+        </Link>
+      )}
+
       {/* ── 3-COLUMN GRID ─────────────────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr_260px] gap-4 lg:gap-5">
 
