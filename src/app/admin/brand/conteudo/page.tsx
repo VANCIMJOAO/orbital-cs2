@@ -364,7 +364,7 @@ export default function ConteudoPage() {
                 {/* Date */}
                 {post.scheduled_date && (
                   <span className="font-[family-name:var(--font-jetbrains)] text-[0.55rem] text-orbital-text-dim shrink-0">
-                    {new Date(post.scheduled_date + "T00:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}
+                    {new Date(post.scheduled_date.toString().slice(0, 10) + "T12:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}
                     {post.scheduled_time && ` ${post.scheduled_time}`}
                   </span>
                 )}
