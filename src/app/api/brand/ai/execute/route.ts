@@ -302,8 +302,11 @@ Seja prático e realista. Texto organizado.`);
       }
 
       case "sugerir-midia": {
-        // Buscar fotos/vídeos do Google Drive do Cup #1 via OAuth refresh
-        let driveFiles: string[] = [];
+        // Buscar fotos/vídeos do Drive e analisar thumbnails visualmente
+        interface DriveFile { id: string; name: string; mimeType: string; thumbnailLink?: string; webViewLink?: string }
+        let driveFiles: DriveFile[] = [];
+        let accessToken = "";
+
         try {
           const GDRIVE_CLIENT_ID = process.env.GDRIVE_CLIENT_ID || "";
           const GDRIVE_CLIENT_SECRET = process.env.GDRIVE_CLIENT_SECRET || "";
@@ -311,7 +314,6 @@ Seja prático e realista. Texto organizado.`);
           const GDRIVE_FOLDER_ID = "1vflsspQiRLE1kVQhNYwsrOOZubxx4GGi";
 
           if (GDRIVE_REFRESH_TOKEN) {
-            // Refresh access token
             const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
               method: "POST",
               headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -323,35 +325,77 @@ Seja prático e realista. Texto organizado.`);
               }),
             });
             const tokenData = await tokenRes.json();
+            accessToken = tokenData.access_token || "";
 
-            if (tokenData.access_token) {
+            if (accessToken) {
               const driveRes = await fetch(
-                `https://www.googleapis.com/drive/v3/files?q="${GDRIVE_FOLDER_ID}"+in+parents&fields=files(id,name,mimeType,thumbnailLink,webViewLink)&pageSize=100&orderBy=name`,
-                { headers: { Authorization: `Bearer ${tokenData.access_token}` } }
+                `https://www.googleapis.com/drive/v3/files?q="${GDRIVE_FOLDER_ID}"+in+parents+and+mimeType+contains+"image"&fields=files(id,name,mimeType,thumbnailLink,webViewLink)&pageSize=50&orderBy=name`,
+                { headers: { Authorization: `Bearer ${accessToken}` } }
               );
               const driveData = await driveRes.json();
-              driveFiles = (driveData.files || []).map((f: { name: string; mimeType: string; webViewLink?: string }) =>
-                `${f.name} (${f.mimeType.includes("video") ? "VIDEO" : "FOTO"})${f.webViewLink ? ` — ${f.webViewLink}` : ""}`
-              );
+              driveFiles = driveData.files || [];
             }
           }
         } catch { /* Drive not available */ }
 
-        const raw = await callAI(`O admin quer postar no Instagram da ORBITAL ROXA sobre:
+        // Baixar thumbnails das fotos (máx 12 pra não estourar tokens)
+        const imagesToAnalyze: Anthropic.ImageBlockParam[] = [];
+        const fileMap: { index: number; name: string; link: string }[] = [];
+
+        const sampled = driveFiles.filter(f => f.thumbnailLink).slice(0, 12);
+        for (let i = 0; i < sampled.length; i++) {
+          const f = sampled[i];
+          try {
+            // Thumbnail do Drive precisa do access token
+            const thumbUrl = f.thumbnailLink!.replace("=s220", "=s400");
+            const imgRes = await fetch(thumbUrl, { headers: { Authorization: `Bearer ${accessToken}` } });
+            if (imgRes.ok) {
+              const buf = await imgRes.arrayBuffer();
+              const base64 = Buffer.from(buf).toString("base64");
+              imagesToAnalyze.push({
+                type: "image",
+                source: { type: "base64", media_type: "image/jpeg" as const, data: base64 },
+              });
+              fileMap.push({ index: i + 1, name: f.name, link: f.webViewLink || "" });
+            }
+          } catch { /* skip failed thumbnails */ }
+        }
+
+        // Chamar Claude com as imagens
+        const messageContent: Anthropic.ContentBlockParam[] = [];
+        for (let i = 0; i < imagesToAnalyze.length; i++) {
+          messageContent.push(imagesToAnalyze[i]);
+          messageContent.push({ type: "text", text: `[FOTO ${i + 1}] ${fileMap[i]?.name || ""}` });
+        }
+        messageContent.push({
+            type: "text",
+            text: `O admin quer postar no Instagram da ORBITAL ROXA sobre:
 "${context?.title || "Post do campeonato"}"
 
-Temos ${driveFiles.length} arquivos de mídia do Cup #1 no Google Drive:
-${driveFiles.length > 0 ? driveFiles.join("\n") : "Nenhum arquivo encontrado no Drive."}
+Acima estão ${imagesToAnalyze.length} fotos reais do Cup #1 (evento LAN de CS2 em Ribeirão Preto).
+Também temos 45 highlight clips de vídeo no site (gameplay com HUD animado).
 
-Também temos 45 highlight clips de vídeo no site (partidas gravadas com HUD animado).
+Analise VISUALMENTE cada foto e sugira:
+1. As 2-3 melhores fotos pra esse post específico (cite FOTO X e explique POR QUÊ visualmente)
+2. Se algum highlight de vídeo do site seria melhor
+3. Formato recomendado (carrossel, foto única, vídeo)
 
-Com base no título do post, sugira:
-1. Quais 2-3 arquivos do Drive seriam os melhores pra esse post (com o nome do arquivo e link)
-2. Se algum highlight do site seria melhor (qual partida/jogador)
-3. Dica de como usar a mídia (carrossel? vídeo com caption? foto única?)
+Retorne em TEXTO PURO legível com markdown simples. Seja direto.`,
+        });
 
-IMPORTANTE: Retorne em TEXTO PURO legível, NÃO em JSON. Use markdown simples (## para títulos, - para listas). Seja direto e objetivo.`);
-        return NextResponse.json({ result: raw, driveFiles: driveFiles.slice(0, 10) });
+        const msg = await client.messages.create({
+          model: "claude-haiku-4-5-20251001",
+          max_tokens: 2048,
+          system: SYSTEM,
+          messages: [{ role: "user", content: messageContent }],
+        });
+
+        const resultText = msg.content[0].type === "text" ? msg.content[0] .text : "";
+        // Append file links at the end
+        const linksSection = fileMap.map(f => `- FOTO ${f.index}: ${f.name} — ${f.link}`).join("\n");
+        const finalResult = resultText + "\n\n---\nLINKS DAS FOTOS:\n" + linksSection;
+
+        return NextResponse.json({ result: finalResult });
       }
 
       case "gerar-cronograma": {
