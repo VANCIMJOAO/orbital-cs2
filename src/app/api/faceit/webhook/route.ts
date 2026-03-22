@@ -19,9 +19,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Server misconfiguration" }, { status: 500 });
   }
 
+  // Only accept secret via headers (never query string — appears in logs)
   const headerSecret = req.headers.get("x-webhook-secret") || req.headers.get("authorization");
-  const urlSecret = req.nextUrl.searchParams.get("secret");
-  if (headerSecret !== WEBHOOK_SECRET && urlSecret !== WEBHOOK_SECRET) {
+  if (headerSecret !== WEBHOOK_SECRET) {
     console.warn("[FACEIT WEBHOOK] Invalid secret");
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

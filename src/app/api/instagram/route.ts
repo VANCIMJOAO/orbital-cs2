@@ -231,19 +231,24 @@ async function publishToInstagram(postId: number, pool: any): Promise<NextRespon
 
     await pool.query("UPDATE instagram_posts SET ig_container_id = ? WHERE id = ?", [containerId, postId]);
 
-    // Step 2: Aguardar processamento (pra vídeos pode demorar)
+    // Step 2: Aguardar processamento (pra vídeos pode demorar — max 50s pra não estourar timeout serverless)
     if (post.post_type === "reel") {
       let attempts = 0;
-      while (attempts < 30) {
+      let videoReady = false;
+      while (attempts < 25) {
         const statusRes = await fetch(`${META_GRAPH_URL}/${containerId}?fields=status_code&access_token=${token}`);
         const statusData = await statusRes.json();
-        if (statusData.status_code === "FINISHED") break;
+        if (statusData.status_code === "FINISHED") { videoReady = true; break; }
         if (statusData.status_code === "ERROR") {
           await pool.query("UPDATE instagram_posts SET status = 'failed', error_message = 'Video processing failed' WHERE id = ?", [postId]);
           return NextResponse.json({ error: "Processamento do vídeo falhou" }, { status: 400 });
         }
         await new Promise(r => setTimeout(r, 2000));
         attempts++;
+      }
+      if (!videoReady) {
+        await pool.query("UPDATE instagram_posts SET status = 'failed', error_message = 'Video processing timeout (50s)' WHERE id = ?", [postId]);
+        return NextResponse.json({ error: "Timeout no processamento do vídeo. Tente novamente." }, { status: 408 });
       }
     }
 

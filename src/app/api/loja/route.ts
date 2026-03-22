@@ -71,20 +71,41 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Campos obrigatórios faltando" }, { status: 400 });
     }
 
-    // Recalcular total no servidor (nunca confiar no client)
+    // Validar e recalcular total no servidor (nunca confiar no client)
     const productIds = items.map((i: { product_id: number }) => i.product_id).filter(Boolean);
     let serverTotal = 0;
     if (productIds.length > 0) {
       const placeholders = productIds.map(() => "?").join(",");
       const [products] = await pool.query(
-        `SELECT id, price FROM loja_produtos WHERE id IN (${placeholders})`,
+        `SELECT id, price, stock, name FROM loja_produtos WHERE id IN (${placeholders}) AND active = TRUE`,
         productIds
-      ) as [{ id: number; price: number }[], unknown];
-      const priceMap = new Map(products.map(p => [p.id, p.price]));
+      ) as [{ id: number; price: number; stock: number; name: string }[], unknown];
+      const productMap = new Map(products.map(p => [p.id, p]));
+
       for (const item of items) {
-        const unitPrice = priceMap.get(item.product_id) || 0;
+        // Validate quantity
+        const qty = Math.floor(Number(item.qty || item.quantity || 1));
+        if (!qty || qty < 1 || qty > 99) {
+          return NextResponse.json({ error: `Quantidade inválida para produto ${item.product_id}` }, { status: 400 });
+        }
+
+        const product = productMap.get(item.product_id);
+        if (!product) {
+          return NextResponse.json({ error: `Produto ${item.product_id} não encontrado ou inativo` }, { status: 400 });
+        }
+
+        // Check stock
+        if (product.stock < qty) {
+          return NextResponse.json({ error: `${product.name} sem estoque suficiente (disponível: ${product.stock})` }, { status: 409 });
+        }
+
+        serverTotal += product.price * qty;
+      }
+
+      // Decrement stock
+      for (const item of items) {
         const qty = Math.max(1, Math.floor(Number(item.qty || item.quantity || 1)));
-        serverTotal += unitPrice * qty;
+        await pool.query("UPDATE loja_produtos SET stock = stock - ? WHERE id = ?", [qty, item.product_id]);
       }
     }
 

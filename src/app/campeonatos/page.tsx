@@ -16,7 +16,7 @@ export default function CampeonatosPage() {
   const [teamsMap, setTeamsMap] = useState<TeamsMap>({});
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState<"all" | "active" | "pending" | "finished">("all");
-  const [filterFormat, setFilterFormat] = useState<"all" | "double_elimination" | "single_elimination">("all");
+  const [filterFormat, setFilterFormat] = useState<"all" | "double_elimination" | "swiss">("all");
 
   const fetchData = useCallback(async () => {
     try {
@@ -112,7 +112,7 @@ export default function CampeonatosPage() {
           {([
             { value: "all", label: "Todos" },
             { value: "double_elimination", label: "Eliminação Dupla" },
-            { value: "single_elimination", label: "Eliminação Simples" },
+            { value: "swiss", label: "Sistema Suíço" },
           ] as const).map(opt => (
             <button
               key={opt.value}
@@ -198,7 +198,7 @@ function TournamentCard({ tournament: t, teamsMap, delay }: { tournament: Tourna
   const winnerTeam = winnerId ? t.teams.find(tm => tm.id === winnerId) : null;
   const winnerLogo = winnerId ? teamsMap[winnerId]?.logo : null;
 
-  const formatLabel = t.format === "double_elimination" ? "Eliminação Dupla" : t.format || "Eliminação Dupla";
+  const formatLabel = t.format === "double_elimination" ? "Eliminação Dupla" : t.format === "swiss" ? "Sistema Suíço" : t.format || "Eliminação Dupla";
 
   return (
     <motion.div

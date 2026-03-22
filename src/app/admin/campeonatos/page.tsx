@@ -128,11 +128,19 @@ export default function AdminCampeonatos() {
         spectator_auth: mode === "presencial" ? (spectatorAuth || null) : null,
       };
 
-      await fetch("/api/tournaments", {
+      const res = await fetch("/api/tournaments", {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(tournament),
       });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        setFeedback({ type: "error", msg: err.error || `Erro ao criar campeonato (${res.status})` });
+        setSubmitting(false);
+        return;
+      }
 
       setFeedback({ type: "success", msg: `Campeonato "${tournament.name}" criado com sucesso!` });
       setName("");
