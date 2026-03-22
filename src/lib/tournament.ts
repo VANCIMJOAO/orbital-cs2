@@ -72,9 +72,10 @@ export interface Tournament {
   spectator_auth?: string | null;
 }
 
+// CS2 active duty pool (must match api.ts CS2_FULL_POOL)
 const CS2_MAPS = [
   "de_ancient", "de_anubis", "de_dust2", "de_inferno",
-  "de_mirage", "de_nuke", "de_overpass",
+  "de_mirage", "de_nuke", "de_vertigo",
 ];
 
 export function getDefaultMapPool(): string[] {

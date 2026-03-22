@@ -6,6 +6,8 @@ import { ShoppingBag, Plus, Minus, ArrowLeft, CheckCircle2, AlertCircle, Loader2
 import Link from "next/link";
 import Image from "next/image";
 
+const formatPrice = (v: number) => `R$ ${v.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
+
 interface Product {
   id: number;
   name: string;
@@ -201,7 +203,7 @@ export default function LojaPage() {
                   <div className="flex-1">
                     <div className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text">{item.product.name}</div>
                     <div className="font-[family-name:var(--font-jetbrains)] text-[0.55rem] text-orbital-text-dim">Tamanho: {item.size}</div>
-                    <div className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-purple mt-0.5">R$ {item.product.price}</div>
+                    <div className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-purple mt-0.5">{formatPrice(item.product.price)}</div>
                   </div>
                   <div className="flex items-center gap-2">
                     <button onClick={() => updateQty(idx, -1)} className="w-6 h-6 bg-[#0A0A0A] border border-orbital-border flex items-center justify-center text-orbital-text-dim hover:text-orbital-text">
@@ -220,7 +222,7 @@ export default function LojaPage() {
             <div className="p-4 border-t border-orbital-border space-y-3">
               <div className="flex items-center justify-between">
                 <span className="font-[family-name:var(--font-orbitron)] text-xs tracking-wider text-orbital-text-dim">TOTAL</span>
-                <span className="font-[family-name:var(--font-orbitron)] text-lg text-orbital-purple">R$ {cartTotal}</span>
+                <span className="font-[family-name:var(--font-orbitron)] text-lg text-orbital-purple">{formatPrice(cartTotal)}</span>
               </div>
 
               {!showCheckout ? (
@@ -242,7 +244,7 @@ export default function LojaPage() {
                     className="w-full py-3 bg-orbital-purple hover:bg-orbital-purple/80 disabled:opacity-30 text-white font-[family-name:var(--font-orbitron)] text-sm tracking-wider transition-colors flex items-center justify-center gap-2"
                   >
                     {submitting ? <Loader2 size={16} className="animate-spin" /> : <ShoppingBag size={16} />}
-                    {submitting ? "ENVIANDO..." : `PEDIR — R$ ${cartTotal}`}
+                    {submitting ? "ENVIANDO..." : `PEDIR — ${formatPrice(cartTotal)}`}
                   </button>
                   <p className="font-[family-name:var(--font-jetbrains)] text-[0.5rem] text-orbital-text-dim/40 text-center">
                     Pagamento via PIX — entraremos em contato pelo WhatsApp
@@ -306,7 +308,7 @@ function ProductCard({ product, onAdd, delay }: { product: Product; onAdd: (p: P
         </div>
 
         <div className="font-[family-name:var(--font-orbitron)] text-lg text-orbital-purple">
-          R$ {product.price}
+          {formatPrice(product.price)}
         </div>
 
         {/* Sizes */}

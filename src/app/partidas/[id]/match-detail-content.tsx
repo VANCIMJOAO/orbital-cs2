@@ -43,6 +43,7 @@ export function MatchDetailContent({ match: initialMatch, playerStats: initialSt
   const [highlightClips, setHighlightClips] = useState<HighlightClip[]>([]);
   const [highlightsLoading, setHighlightsLoading] = useState(false);
   const [highlightsTriggering, setHighlightsTriggering] = useState(false);
+  const [highlightError, setHighlightError] = useState<string | null>(null);
   const { isAdmin } = useAuth();
   const router = useRouter();
   const statusType = getStatusType(match);
@@ -147,16 +148,19 @@ export function MatchDetailContent({ match: initialMatch, playerStats: initialSt
 
   useEffect(() => { fetchHighlightClips(); }, [fetchHighlightClips]);
 
-  // Poll for in-progress highlights every 15s
+  // Poll for in-progress highlights every 15s (use ref to avoid dependency churn)
+  const hasPendingClips = useRef(false);
+  hasPendingClips.current = highlightClips.some(c => c.status !== "ready" && c.status !== "error");
   useEffect(() => {
-    const hasPending = highlightClips.some(c => c.status !== "ready" && c.status !== "error");
-    if (!hasPending) return;
-    const interval = setInterval(fetchHighlightClips, 15000);
+    const interval = setInterval(() => {
+      if (hasPendingClips.current) fetchHighlightClips();
+    }, 15000);
     return () => clearInterval(interval);
-  }, [highlightClips, fetchHighlightClips]);
+  }, [fetchHighlightClips]); // stable dependency — interval created once
 
   const triggerHighlights = async (mapNumber?: number) => {
     setHighlightsTriggering(true);
+    setHighlightError(null);
     try {
       const res = await fetch("/api/highlights/trigger", {
         method: "POST",
@@ -166,11 +170,11 @@ export function MatchDetailContent({ match: initialMatch, playerStats: initialSt
       if (res.ok) {
         await fetchHighlightClips();
       } else {
-        const data = await res.json();
-        alert(data.error || "Erro ao gerar highlights");
+        const data = await res.json().catch(() => ({}));
+        setHighlightError(data.error || "Erro ao gerar highlights");
       }
     } catch {
-      alert("Erro de conexão");
+      setHighlightError("Erro de conexão");
     }
     setHighlightsTriggering(false);
   };
