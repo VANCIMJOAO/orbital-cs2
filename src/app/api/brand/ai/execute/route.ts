@@ -302,22 +302,38 @@ Seja prático e realista. Texto organizado.`);
       }
 
       case "sugerir-midia": {
-        // Buscar fotos/vídeos do Google Drive do Cup #1
+        // Buscar fotos/vídeos do Google Drive do Cup #1 via OAuth refresh
         let driveFiles: string[] = [];
         try {
-          const fs = await import("fs");
-          const tokensPath = "C:/Users/vancimj/.config/google-drive-mcp/tokens.json";
-          if (fs.existsSync(tokensPath)) {
-            const tokens = JSON.parse(fs.readFileSync(tokensPath, "utf8"));
-            const folderId = "1vflsspQiRLE1kVQhNYwsrOOZubxx4GGi";
-            const driveRes = await fetch(
-              `https://www.googleapis.com/drive/v3/files?q="${folderId}"+in+parents&fields=files(id,name,mimeType,thumbnailLink,webViewLink)&pageSize=100&orderBy=name`,
-              { headers: { Authorization: `Bearer ${tokens.access_token}` } }
-            );
-            const driveData = await driveRes.json();
-            driveFiles = (driveData.files || []).map((f: { name: string; mimeType: string; webViewLink: string }) =>
-              `${f.name} (${f.mimeType.includes("video") ? "VIDEO" : "FOTO"}) — ${f.webViewLink}`
-            );
+          const GDRIVE_CLIENT_ID = process.env.GDRIVE_CLIENT_ID || "";
+          const GDRIVE_CLIENT_SECRET = process.env.GDRIVE_CLIENT_SECRET || "";
+          const GDRIVE_REFRESH_TOKEN = process.env.GDRIVE_REFRESH_TOKEN || "";
+          const GDRIVE_FOLDER_ID = "1vflsspQiRLE1kVQhNYwsrOOZubxx4GGi";
+
+          if (GDRIVE_REFRESH_TOKEN) {
+            // Refresh access token
+            const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
+              method: "POST",
+              headers: { "Content-Type": "application/x-www-form-urlencoded" },
+              body: new URLSearchParams({
+                client_id: GDRIVE_CLIENT_ID,
+                client_secret: GDRIVE_CLIENT_SECRET,
+                refresh_token: GDRIVE_REFRESH_TOKEN,
+                grant_type: "refresh_token",
+              }),
+            });
+            const tokenData = await tokenRes.json();
+
+            if (tokenData.access_token) {
+              const driveRes = await fetch(
+                `https://www.googleapis.com/drive/v3/files?q="${GDRIVE_FOLDER_ID}"+in+parents&fields=files(id,name,mimeType,thumbnailLink,webViewLink)&pageSize=100&orderBy=name`,
+                { headers: { Authorization: `Bearer ${tokenData.access_token}` } }
+              );
+              const driveData = await driveRes.json();
+              driveFiles = (driveData.files || []).map((f: { name: string; mimeType: string; webViewLink?: string }) =>
+                `${f.name} (${f.mimeType.includes("video") ? "VIDEO" : "FOTO"})${f.webViewLink ? ` — ${f.webViewLink}` : ""}`
+              );
+            }
           }
         } catch { /* Drive not available */ }
 
