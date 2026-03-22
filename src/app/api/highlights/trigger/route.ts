@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { checkAdmin } from "../../brand/auth";
 
 const G5API_URL = process.env.NEXT_PUBLIC_G5API_URL || process.env.G5API_URL || "https://g5api-production-998f.up.railway.app";
 
@@ -6,14 +7,16 @@ const HIGHLIGHTS_KEY = process.env.HIGHLIGHTS_API_KEY;
 
 // POST /api/highlights/trigger
 // Body: { matchId: number, mapNumber?: number }
-// Auth: cookie (admin) or X-Highlights-Key header
+// Auth: checkAdmin or X-Highlights-Key header (for automated pipeline)
 export async function POST(req: NextRequest) {
   try {
-    // Check auth: admin cookie or API key
+    // Check auth: admin validated against G5API, or API key for automation
     const apiKey = req.headers.get("X-Highlights-Key");
-    const cookie = req.cookies.get("G5API")?.value;
-    if (!cookie && (!HIGHLIGHTS_KEY || apiKey !== HIGHLIGHTS_KEY)) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (HIGHLIGHTS_KEY && apiKey === HIGHLIGHTS_KEY) {
+      // API key auth — valid for automated pipeline
+    } else {
+      const authError = await checkAdmin(req);
+      if (authError) return authError;
     }
 
     const body = await req.json();

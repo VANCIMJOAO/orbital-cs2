@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { checkAdmin } from "../../brand/auth";
 
 const G5API_URL =
   process.env.NEXT_PUBLIC_G5API_URL ||
@@ -15,10 +16,9 @@ interface ImportTeamRequest {
 
 // POST — cadastrar times da Faceit no G5API automaticamente
 export async function POST(req: NextRequest) {
+  const authError = await checkAdmin(req);
+  if (authError) return authError;
   const cookie = req.cookies.get("G5API")?.value;
-  if (!cookie) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
 
   try {
     const { teams } = (await req.json()) as { teams: ImportTeamRequest[] };

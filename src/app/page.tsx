@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { getMatches, getTeams, getLeaderboard, Match, Team, LeaderboardEntry, getStatusType } from "@/lib/api";
+import { getMatches, getTeams, getLeaderboard, getMapStats, parseMapStats, Match, Team, LeaderboardEntry, getStatusType } from "@/lib/api";
 import { Tournament } from "@/lib/tournament";
 import { getTournamentsFromDB } from "@/lib/tournaments-db";
 import { HomeContent } from "./home-content";
@@ -52,26 +52,22 @@ export default async function HomePage() {
     .filter((m) => getStatusType(m) === "upcoming")
     .slice(0, 5);
 
-  // Fetch map stats for displayed matches (batch)
+  // Fetch map stats for displayed matches (direct to G5API, not self-referential)
   const displayedMatches = [...liveMatches, ...recentMatches.slice(0, 5)];
   const mapScoresMap: Record<number, { team1_score: number; team2_score: number; map_name: string }[]> = {};
   if (displayedMatches.length > 0) {
     try {
-      const ids = displayedMatches.map(m => m.id).join(",");
-      const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://www.orbitalroxa.com.br";
-      const batchRes = await fetch(`${SITE_URL}/api/mapstats-batch?ids=${ids}`, { next: { revalidate: 30 } }).catch(() => null);
-      if (batchRes?.ok) {
-        const batchData = await batchRes.json();
-        const batchMap = batchData.mapStats || {};
-        for (const [idStr, stats] of Object.entries(batchMap)) {
-          const ms = stats as { team1_score: number; team2_score: number; map_name: string }[];
-          if (ms?.length > 0) {
-            mapScoresMap[Number(idStr)] = ms.map(s => ({
-              team1_score: s.team1_score,
-              team2_score: s.team2_score,
-              map_name: s.map_name,
-            }));
-          }
+      const results = await Promise.all(
+        displayedMatches.map(m => getMapStats(m.id).then(r => ({ id: m.id, stats: parseMapStats(r as Record<string, unknown>) })).catch(() => ({ id: m.id, stats: [] })))
+      );
+      for (const { id, stats } of results) {
+        const ms = stats as { team1_score: number; team2_score: number; map_name: string }[];
+        if (ms?.length > 0) {
+          mapScoresMap[id] = ms.map(s => ({
+            team1_score: s.team1_score,
+            team2_score: s.team2_score,
+            map_name: s.map_name,
+          }));
         }
       }
     } catch { /* fallback: no map scores */ }

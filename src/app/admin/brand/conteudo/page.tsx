@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus, X, Loader2, Image, Film, MessageSquare, Calendar, Send, Trash2,
@@ -164,13 +164,21 @@ export default function ConteudoPage() {
     setAiLoading(null);
   };
 
-  const updatePost = async (id: number, fields: Record<string, unknown>) => {
-    await fetch("/api/instagram", {
-      method: "PUT", credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, ...fields }),
-    });
-    await fetchPosts();
+  const debounceTimers = useRef<Record<number, NodeJS.Timeout>>({});
+
+  const updatePost = (id: number, fields: Record<string, unknown>) => {
+    // Update local state immediately (no lag)
+    setPosts(prev => prev.map(p => p.id === id ? { ...p, ...fields } as Post : p));
+
+    // Debounce the API save (500ms)
+    if (debounceTimers.current[id]) clearTimeout(debounceTimers.current[id]);
+    debounceTimers.current[id] = setTimeout(async () => {
+      await fetch("/api/instagram", {
+        method: "PUT", credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, ...fields }),
+      });
+    }, 500);
   };
 
   const filteredPosts = posts.filter(p => filter === "all" || p.status === filter);

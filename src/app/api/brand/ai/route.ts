@@ -317,7 +317,7 @@ async function getBrandContext() {
     const [tasks] = await dbPool.execute("SELECT title, category, done, week FROM brand_tasks ORDER BY week");
     const [checks] = await dbPool.execute("SELECT title, category, done FROM brand_checklist ORDER BY sort_order");
     const [sponsors] = await dbPool.execute("SELECT name, type, estimated_value, status FROM brand_sponsors");
-    const [posts] = await dbPool.execute("SELECT title, post_type, scheduled_date, published FROM brand_posts ORDER BY scheduled_date");
+    const [posts] = await dbPool.execute("SELECT title, post_type, scheduled_date, status FROM instagram_posts ORDER BY scheduled_date");
 
     const taskList = tasks as { title: string; category: string; done: boolean; week: number }[];
     const checkList = checks as { title: string; category: string; done: boolean }[];

@@ -7,7 +7,16 @@ const G5API_URL =
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
 
+// Allowlist of G5API paths that can be proxied
+const ALLOWED_PREFIXES = ["teams", "servers", "seasons", "matches", "auth", "leaderboard", "playerstats", "mapstats", "vetoes", "isloggedin", "highlights"];
+
 async function proxyRequest(req: NextRequest, path: string) {
+  // Validate path against allowlist
+  const firstSegment = path.split("/")[0];
+  if (!ALLOWED_PREFIXES.includes(firstSegment)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   const queryString = new URL(req.url).search;
   const url = `${G5API_URL}/${path}${queryString}`;
   const cookie = req.headers.get("cookie") || "";
@@ -47,7 +56,7 @@ async function proxyRequest(req: NextRequest, path: string) {
     });
   } catch (err) {
     console.error(`[write-proxy] ERROR:`, err);
-    return NextResponse.json({ error: "Proxy error", details: String(err) }, { status: 502 });
+    return NextResponse.json({ error: "Proxy error" }, { status: 502 });
   }
 }
 

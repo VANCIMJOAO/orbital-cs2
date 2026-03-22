@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { put } from "@vercel/blob";
+import { checkAdmin } from "../brand/auth";
 
 export async function POST(req: NextRequest) {
-  // Auth check: require admin session cookie
-  const cookie = req.cookies.get("G5API")?.value;
-  if (!cookie) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const authError = await checkAdmin(req);
+  if (authError) return authError;
 
   try {
     const formData = await req.formData();

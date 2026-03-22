@@ -6,7 +6,16 @@ if (!DATABASE_URL) {
   console.warn("[ORBITAL] WARNING: DATABASE_URL not set. Tournament features will not work.");
 }
 
-export const dbPool = mysql.createPool(DATABASE_URL);
+// Use globalThis to prevent pool duplication during hot-reload in dev
+const globalForDb = globalThis as unknown as { _dbPool?: mysql.Pool };
+export const dbPool = globalForDb._dbPool || mysql.createPool({
+  uri: DATABASE_URL,
+  connectionLimit: 5,
+  connectTimeout: 10000,
+  waitForConnections: true,
+  queueLimit: 20,
+});
+if (!globalForDb._dbPool) globalForDb._dbPool = dbPool;
 
 let tableEnsured = false;
 async function ensureTable() {

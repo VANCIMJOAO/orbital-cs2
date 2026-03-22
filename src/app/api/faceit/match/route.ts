@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getFaceitMatch, getFaceitMatchStats } from "@/lib/faceit";
 import { mapFaceitMatch, enrichStatsWithSteamIds } from "@/lib/faceit-mapper";
 import { saveFaceitMatch, getAllFaceitMatches } from "@/lib/faceit-db";
+import { checkAdmin } from "../../brand/auth";
 
 // GET — listar todas as partidas Faceit salvas
 export async function GET(req: NextRequest) {
@@ -17,10 +18,8 @@ export async function GET(req: NextRequest) {
 
 // POST — importar partida da Faceit manualmente (admin)
 export async function POST(req: NextRequest) {
-  const cookie = req.cookies.get("G5API")?.value;
-  if (!cookie) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const authError = await checkAdmin(req);
+  if (authError) return authError;
 
   try {
     const { faceit_match_id, tournament_id } = await req.json();

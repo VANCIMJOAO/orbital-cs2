@@ -4,13 +4,12 @@ import { getFaceitMatch, getFaceitMatchStats } from "@/lib/faceit";
 import { mapFaceitMatch, enrichStatsWithSteamIds } from "@/lib/faceit-mapper";
 import { saveFaceitMatch } from "@/lib/faceit-db";
 import { syncFaceitMatchToG5API } from "@/lib/faceit-sync";
+import { checkAdmin } from "../../brand/auth";
 
 // POST — sync uma partida Faceit finalizada para o G5API
 export async function POST(req: NextRequest) {
-  const cookie = req.cookies.get("G5API")?.value;
-  if (!cookie) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const authError = await checkAdmin(req);
+  if (authError) return authError;
 
   try {
     const { faceit_match_id, season_id } = await req.json();
