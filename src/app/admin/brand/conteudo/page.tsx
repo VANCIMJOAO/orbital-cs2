@@ -458,7 +458,55 @@ export default function ConteudoPage() {
                         </a>
                       )}
 
-                      {/* Actions */}
+                      {/* AI Actions */}
+                      <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-orbital-border/20">
+                        <button
+                          onClick={async () => {
+                            showFeedback("success", "Gerando caption...");
+                            const res = await fetch("/api/brand/ai/execute", { method: "POST", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "gerar-caption", context: { title: post.title, post_type: post.post_type } }) });
+                            if (res.ok) { const d = await res.json(); updatePost(post.id, { caption: d.result }); showFeedback("success", "Caption gerada"); }
+                            else showFeedback("error", "Erro ao gerar caption");
+                          }}
+                          className="flex items-center gap-1 px-2 py-1.5 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 text-orbital-purple font-[family-name:var(--font-jetbrains)] text-[0.6rem] transition-colors"
+                        >
+                          🧠 CAPTION
+                        </button>
+                        <button
+                          onClick={async () => {
+                            showFeedback("success", "Gerando hashtags...");
+                            const res = await fetch("/api/brand/ai/execute", { method: "POST", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "gerar-hashtags", context: { title: post.title, post_type: post.post_type, caption: post.caption } }) });
+                            if (res.ok) { const d = await res.json(); updatePost(post.id, { hashtags: d.result }); showFeedback("success", "Hashtags geradas"); }
+                            else showFeedback("error", "Erro ao gerar hashtags");
+                          }}
+                          className="flex items-center gap-1 px-2 py-1.5 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 text-orbital-purple font-[family-name:var(--font-jetbrains)] text-[0.6rem] transition-colors"
+                        >
+                          # HASHTAGS
+                        </button>
+                        <button
+                          onClick={async () => {
+                            showFeedback("success", "Buscando mídia...");
+                            const res = await fetch("/api/brand/ai/execute", { method: "POST", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "sugerir-midia", context: { title: post.title, post_type: post.post_type } }) });
+                            if (res.ok) { const d = await res.json(); showFeedback("success", d.result); }
+                            else showFeedback("error", "Erro ao sugerir mídia");
+                          }}
+                          className="flex items-center gap-1 px-2 py-1.5 bg-cyan-500/10 border border-cyan-500/30 hover:border-cyan-500/60 text-cyan-400 font-[family-name:var(--font-jetbrains)] text-[0.6rem] transition-colors"
+                        >
+                          📸 SUGERIR MÍDIA
+                        </button>
+                        <button
+                          onClick={async () => {
+                            showFeedback("success", "Gerando prompt...");
+                            const res = await fetch("/api/brand/ai/execute", { method: "POST", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "gerar-prompt-imagem", context: { title: post.title, post_type: post.post_type, caption: post.caption } }) });
+                            if (res.ok) { const d = await res.json(); navigator.clipboard.writeText(d.result); showFeedback("success", "Prompt copiado pro clipboard"); }
+                            else showFeedback("error", "Erro ao gerar prompt");
+                          }}
+                          className="flex items-center gap-1 px-2 py-1.5 bg-yellow-500/10 border border-yellow-500/30 hover:border-yellow-500/60 text-yellow-400 font-[family-name:var(--font-jetbrains)] text-[0.6rem] transition-colors"
+                        >
+                          🎨 PROMPT IMG
+                        </button>
+                      </div>
+
+                      {/* Main Actions */}
                       <div className="flex items-center gap-2 pt-2 border-t border-orbital-border/20">
                         {/* Publish button */}
                         {(post.status === "draft" || post.status === "scheduled" || post.status === "failed") && post.media_url && (

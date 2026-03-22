@@ -63,7 +63,31 @@ VISÃO:
 
 REFERÊNCIAS: Santos Games, Alcans Games, ESL, ESL Brazil
 COMUNIDADE: Grupo WhatsApp ativo, jogadores engajados, 16-40 anos
-TOM: Informal, comunidade, hype
+TOM DE VOZ (IMPORTANTE — seguir SEMPRE):
+- Confiante, direto, com personalidade. NÃO infantilizado.
+- Linguagem gamer adulta — usa termos de CS2 naturalmente (clutch, ace, GG, push, rotate) mas sem forçar
+- Frases curtas e impactantes. Sem exclamação excessiva (máx 1 por caption)
+- Emojis: 1-3 por caption, estratégicos, sem spam (🏆 💜 🎯 são ok, 🔥🔥🔥😱😱 não)
+- NÃO usa: "INCRÍVEL!!!", "ARRASOU!!!", "QUE JOGÃO!!!", caps lock excessivo
+- Estilo referência: FURIA, Loud, MIBR — profissional mas com personalidade
+- Dados concretos sempre que possível (score, rating, kills)
+- CTA sutil no final (link na bio, marca um amigo, stats no site)
+
+Exemplo do tom CORRETO:
+"CHOPPADAS leva o título do Cup #1 🏆
+
+Grand Final 2x0 contra DoKuRosa
+Mirage 13:10 | Inferno 13:11
+
+14 partidas, 40 jogadores, uma noite inteira de CS puro.
+O cenário de RP mostrou que tem nível.
+
+Stats completas no site — link na bio.
+
+#orbitalroxa #cs2 #ribeiraopreto"
+
+Exemplo do tom ERRADO (nunca fazer):
+"🏆🔥 CAMPEÃOOOOO!!! 💜💜💜 CHOPPADAS ARRASOU!!! 😱😱 Que jogão incrível!!! 🎮✨ Parabéns!!! 🙌🙌🙌"
 
 REGRA FUNDAMENTAL: Nunca sugira algo que a crew não tem capacidade de fazer. Considere SEMPRE as limitações (orçamento, equipe, infraestrutura). Sugestões devem ser realistas e acionáveis com os recursos disponíveis.`;
 
@@ -94,19 +118,28 @@ export async function POST(req: NextRequest) {
     switch (action) {
       // ═══ INSTAGRAM: Caption, Prompt Imagem, Hashtags ═══
       case "gerar-caption": {
-        const raw = await callAI(`Crie uma caption para Instagram pro seguinte post da ORBITAL ROXA:
-Título: ${context?.title || "Post"}
+        const raw = await callAI(`Crie uma caption para Instagram da ORBITAL ROXA.
+
+Post: "${context?.title || "Post"}"
 Tipo: ${context?.post_type || "feed"}
+${context?.extra_context ? `Contexto adicional: ${context.extra_context}` : ""}
 
-A caption deve ser:
-- Informal, usar gírias de CS2 (clutch, ace, GG, bora)
-- Ter emojis mas sem exagero
-- Ter CTA no final (seguir, acessar site, marcar amigo)
-- Mencionar @orbitalroxa.gg
+DADOS REAIS DO CUP #1 (use quando relevante):
+- Campeão: CHOPPADAS (2x0 na GF contra DoKuRosa)
+- Grand Final: Mirage 13:10, Inferno 13:11
+- MVP: leoking_ (1.39 rating, 153K, 54% HS)
+- Top 5: leoking_ (1.39), linz1k (1.22), duum (1.19), pdX (1.15), nastyy (1.14)
+- Play of Tournament: Lcszik444- ACE (5K, 4HS, wallbang AK-47)
+- 14 partidas, 40 jogadores, 8 times, ~70 presentes, 120 viewers live
+- Local: LAN house em Ribeirão Preto/SP
+
+Regras:
+- Seguir o TOM DE VOZ definido (confiante, adulto, direto, poucos emojis)
 - Máximo 2200 caracteres
-- Usar dados reais do Cup #1 quando relevante
+- CTA sutil no final
+- NÃO ser genérico — usar dados específicos do post
 
-Retorne APENAS a caption, sem explicação.`);
+Retorne APENAS a caption pronta.`);
         return NextResponse.json({ result: raw });
       }
 
@@ -266,6 +299,43 @@ Liste os 10 próximos passos mais importantes em ordem de prioridade. Para cada:
 
 Seja prático e realista. Texto organizado.`);
         return NextResponse.json({ result: raw });
+      }
+
+      case "sugerir-midia": {
+        // Buscar fotos/vídeos do Google Drive do Cup #1
+        let driveFiles: string[] = [];
+        try {
+          const fs = await import("fs");
+          const tokensPath = "C:/Users/vancimj/.config/google-drive-mcp/tokens.json";
+          if (fs.existsSync(tokensPath)) {
+            const tokens = JSON.parse(fs.readFileSync(tokensPath, "utf8"));
+            const folderId = "1vflsspQiRLE1kVQhNYwsrOOZubxx4GGi";
+            const driveRes = await fetch(
+              `https://www.googleapis.com/drive/v3/files?q="${folderId}"+in+parents&fields=files(id,name,mimeType,thumbnailLink,webViewLink)&pageSize=100&orderBy=name`,
+              { headers: { Authorization: `Bearer ${tokens.access_token}` } }
+            );
+            const driveData = await driveRes.json();
+            driveFiles = (driveData.files || []).map((f: { name: string; mimeType: string; webViewLink: string }) =>
+              `${f.name} (${f.mimeType.includes("video") ? "VIDEO" : "FOTO"}) — ${f.webViewLink}`
+            );
+          }
+        } catch { /* Drive not available */ }
+
+        const raw = await callAI(`O admin quer postar no Instagram da ORBITAL ROXA sobre:
+"${context?.title || "Post do campeonato"}"
+
+Temos ${driveFiles.length} arquivos de mídia do Cup #1 no Google Drive:
+${driveFiles.length > 0 ? driveFiles.join("\n") : "Nenhum arquivo encontrado no Drive."}
+
+Também temos 45 highlight clips de vídeo no site (partidas gravadas com HUD animado).
+
+Com base no título do post, sugira:
+1. Quais 2-3 arquivos do Drive seriam os melhores pra esse post (pelo nome/tipo)
+2. Se algum highlight do site seria melhor (qual partida/jogador)
+3. Dica de como usar a mídia (carrossel? vídeo com caption? foto única?)
+
+Seja direto e objetivo.`);
+        return NextResponse.json({ result: raw, driveFiles: driveFiles.slice(0, 10) });
       }
 
       case "gerar-cronograma": {
