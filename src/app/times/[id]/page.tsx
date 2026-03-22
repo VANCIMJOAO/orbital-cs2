@@ -43,8 +43,8 @@ export default async function TeamPage({ params }: { params: Promise<{ id: strin
       .filter((m: Match) => m.team1_id === teamId || m.team2_id === teamId)
       .sort((a: Match, b: Match) => b.id - a.id);
 
-    // Fetch player stats and map stats for all finished team matches (limit to recent 50)
-    const finishedMatches = teamMatches.filter(m => m.end_time && !m.cancelled).slice(0, 50);
+    // Fetch player stats and map stats for recent finished matches (limit to 15 to avoid N+1 overload)
+    const finishedMatches = teamMatches.filter(m => m.end_time && !m.cancelled).slice(0, 15);
 
     const [allPlayerStats, allMapStats] = await Promise.all([
       Promise.all(

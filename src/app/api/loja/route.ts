@@ -66,15 +66,36 @@ export async function POST(req: NextRequest) {
 
   // Pedido público
   if (body.action === "pedido") {
-    const { customer_name, customer_whatsapp, customer_email, address, items, total } = body;
-    if (!customer_name || !customer_whatsapp || !items || !total) {
+    const { customer_name, customer_whatsapp, customer_email, address, items } = body;
+    if (!customer_name || !customer_whatsapp || !items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json({ error: "Campos obrigatórios faltando" }, { status: 400 });
     }
+
+    // Recalcular total no servidor (nunca confiar no client)
+    const productIds = items.map((i: { product_id: number }) => i.product_id).filter(Boolean);
+    let serverTotal = 0;
+    if (productIds.length > 0) {
+      const placeholders = productIds.map(() => "?").join(",");
+      const [products] = await pool.query(
+        `SELECT id, price FROM loja_produtos WHERE id IN (${placeholders})`,
+        productIds
+      ) as [{ id: number; price: number }[], unknown];
+      const priceMap = new Map(products.map(p => [p.id, p.price]));
+      for (const item of items) {
+        const unitPrice = priceMap.get(item.product_id) || 0;
+        serverTotal += unitPrice * (item.quantity || 1);
+      }
+    }
+
+    if (serverTotal <= 0) {
+      return NextResponse.json({ error: "Pedido inválido — produtos não encontrados" }, { status: 400 });
+    }
+
     const [result] = await pool.query(
       "INSERT INTO loja_pedidos (customer_name, customer_whatsapp, customer_email, address, items, total) VALUES (?, ?, ?, ?, ?, ?)",
-      [customer_name, customer_whatsapp, customer_email || null, address || null, JSON.stringify(items), total]
+      [customer_name, customer_whatsapp, customer_email || null, address || null, JSON.stringify(items), serverTotal]
     ) as [{ insertId: number }, unknown];
-    return NextResponse.json({ id: result.insertId }, { status: 201 });
+    return NextResponse.json({ id: result.insertId, total: serverTotal }, { status: 201 });
   }
 
   // Criar produto (admin)

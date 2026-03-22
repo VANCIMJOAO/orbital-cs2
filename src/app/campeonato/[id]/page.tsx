@@ -163,7 +163,8 @@ export default function CampeonatoPage({ params }: { params: Promise<{ id: strin
   const hasLiveMatches = tournament?.status !== "finished" && tournament?.matches.some(m => m.status === "live" && m.match_id);
 
   useEffect(() => {
-    if (!hasLiveMatches) return;
+    // Only admins should auto-advance brackets (requires auth to save)
+    if (!hasLiveMatches || !isAdmin) return;
 
     const clientFetcher = async (matchId: number) => {
       const res = await fetch(`/api/matches/${matchId}`);
@@ -184,7 +185,7 @@ export default function CampeonatoPage({ params }: { params: Promise<{ id: strin
     const interval = setInterval(checkAutoAdvance, 10000);
     checkAutoAdvance();
     return () => clearInterval(interval);
-  }, [hasLiveMatches]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [hasLiveMatches, isAdmin]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (isAdmin) {
@@ -256,6 +257,7 @@ export default function CampeonatoPage({ params }: { params: Promise<{ id: strin
     setTournament(t);
     await fetch("/api/tournaments", {
       method: "PUT",
+      credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(t),
     });
