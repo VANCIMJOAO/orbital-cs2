@@ -48,6 +48,7 @@ export default function ConteudoPage() {
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [filter, setFilter] = useState<"all" | "draft" | "scheduled" | "published">("all");
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; msg: string } | null>(null);
+  const [aiResult, setAiResult] = useState<{ postId: number; content: string } | null>(null);
 
   // Create form
   const [title, setTitle] = useState("");
@@ -484,10 +485,10 @@ export default function ConteudoPage() {
                         </button>
                         <button
                           onClick={async () => {
-                            showFeedback("success", "Buscando mídia...");
+                            setAiResult({ postId: post.id, content: "Buscando mídia no Google Drive..." });
                             const res = await fetch("/api/brand/ai/execute", { method: "POST", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "sugerir-midia", context: { title: post.title, post_type: post.post_type } }) });
-                            if (res.ok) { const d = await res.json(); showFeedback("success", d.result); }
-                            else showFeedback("error", "Erro ao sugerir mídia");
+                            if (res.ok) { const d = await res.json(); setAiResult({ postId: post.id, content: d.result }); }
+                            else setAiResult({ postId: post.id, content: "❌ Erro ao sugerir mídia" });
                           }}
                           className="flex items-center gap-1 px-2 py-1.5 bg-cyan-500/10 border border-cyan-500/30 hover:border-cyan-500/60 text-cyan-400 font-[family-name:var(--font-jetbrains)] text-[0.6rem] transition-colors"
                         >
@@ -505,6 +506,30 @@ export default function ConteudoPage() {
                           🎨 PROMPT IMG
                         </button>
                       </div>
+
+                      {/* AI Result */}
+                      {aiResult && aiResult.postId === post.id && (
+                        <div className="bg-[#0A0A0A] border border-orbital-purple/30 p-4 relative">
+                          <button
+                            onClick={() => setAiResult(null)}
+                            className="absolute top-2 right-2 text-orbital-text-dim hover:text-orbital-text"
+                          >
+                            <X size={14} />
+                          </button>
+                          <div className="font-[family-name:var(--font-orbitron)] text-[0.5rem] tracking-wider text-orbital-purple mb-2">
+                            RESULTADO DA IA
+                          </div>
+                          <div className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text whitespace-pre-wrap leading-relaxed max-h-[400px] overflow-y-auto">
+                            {aiResult.content}
+                          </div>
+                          <button
+                            onClick={() => { navigator.clipboard.writeText(aiResult.content); showFeedback("success", "Copiado!"); }}
+                            className="mt-2 flex items-center gap-1 px-2 py-1 text-orbital-text-dim hover:text-orbital-purple font-[family-name:var(--font-jetbrains)] text-[0.6rem] transition-colors"
+                          >
+                            <Copy size={10} /> COPIAR
+                          </button>
+                        </div>
+                      )}
 
                       {/* Main Actions */}
                       <div className="flex items-center gap-2 pt-2 border-t border-orbital-border/20">
