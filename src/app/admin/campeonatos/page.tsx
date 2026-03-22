@@ -165,11 +165,16 @@ export default function AdminCampeonatos() {
 
   const handleDelete = async (id: string) => {
     if (!confirm("Deletar este campeonato? Esta ação é irreversível.")) return;
-    await fetch("/api/tournaments", {
+    const res = await fetch("/api/tournaments", {
       method: "DELETE",
+      credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id }),
     });
+    if (!res.ok) {
+      setFeedback({ type: "error", msg: "Erro ao deletar campeonato" });
+      return;
+    }
     await fetchData();
   };
 

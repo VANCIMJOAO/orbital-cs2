@@ -94,18 +94,25 @@ export async function POST(req: NextRequest) {
           return NextResponse.json({ error: `Produto ${item.product_id} não encontrado ou inativo` }, { status: 400 });
         }
 
-        // Check stock
-        if (product.stock < qty) {
-          return NextResponse.json({ error: `${product.name} sem estoque suficiente (disponível: ${product.stock})` }, { status: 409 });
-        }
-
         serverTotal += product.price * qty;
       }
 
-      // Decrement stock
+      // Atomic stock decrement (prevents race condition)
       for (const item of items) {
         const qty = Math.max(1, Math.floor(Number(item.qty || item.quantity || 1)));
-        await pool.query("UPDATE loja_produtos SET stock = stock - ? WHERE id = ?", [qty, item.product_id]);
+        const [result] = await pool.query(
+          "UPDATE loja_produtos SET stock = stock - ? WHERE id = ? AND stock >= ?",
+          [qty, item.product_id, qty]
+        ) as [{ affectedRows: number }, unknown];
+        if (result.affectedRows === 0) {
+          // Rollback already decremented items
+          for (const prev of items.slice(0, items.indexOf(item))) {
+            const pqty = Math.max(1, Math.floor(Number(prev.qty || prev.quantity || 1)));
+            await pool.query("UPDATE loja_produtos SET stock = stock + ? WHERE id = ?", [pqty, prev.product_id]);
+          }
+          const product = productMap.get(item.product_id);
+          return NextResponse.json({ error: `${product?.name || "Produto"} sem estoque suficiente` }, { status: 409 });
+        }
       }
     }
 

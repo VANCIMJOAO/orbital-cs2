@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Crosshair, Swords, Trophy, Film, Sparkles, Menu, X, LogIn, LogOut, User, Shield, ChevronDown, ShoppingBag } from "lucide-react";
+import { Crosshair, Swords, Trophy, Film, Sparkles, Menu, X, LogIn, LogOut, User, Shield, ChevronDown, ShoppingBag, Download, ClipboardList } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
 
@@ -14,8 +14,8 @@ const navLinks = [
   { href: "/partidas", label: "PARTIDAS", icon: Swords },
   { href: "/leaderboard", label: "RANKING", icon: Sparkles },
   { href: "/highlights", label: "HIGHLIGHTS", icon: Film },
-  { href: "/demos", label: "DEMOS", icon: Film },
-  { href: "/inscricao", label: "INSCRIÇÃO", icon: Sparkles },
+  { href: "/demos", label: "DEMOS", icon: Download },
+  { href: "/inscricao", label: "INSCRIÇÃO", icon: ClipboardList },
   { href: "/loja", label: "LOJA", icon: ShoppingBag },
 ];
 
