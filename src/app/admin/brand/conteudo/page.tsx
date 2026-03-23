@@ -49,6 +49,8 @@ export default function ConteudoPage() {
   const [filter, setFilter] = useState<"all" | "draft" | "scheduled" | "published">("all");
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; msg: string } | null>(null);
   const [aiResult, setAiResult] = useState<{ postId: number; content: string } | null>(null);
+  const [viewMode, setViewMode] = useState<"list" | "calendar">("list");
+  const [calendarMonth, setCalendarMonth] = useState(() => { const d = new Date(); return { year: d.getFullYear(), month: d.getMonth() }; });
 
   // Create form
   const [title, setTitle] = useState("");
@@ -205,6 +207,76 @@ export default function ConteudoPage() {
         </button>
       </div>
 
+      {/* View toggle */}
+      <div className="flex items-center gap-2">
+        <button onClick={() => setViewMode("list")} className={`px-3 py-1.5 font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider border transition-colors ${viewMode === "list" ? "bg-orbital-purple/10 border-orbital-purple/50 text-orbital-purple" : "bg-[#0A0A0A] border-orbital-border text-orbital-text-dim"}`}>
+          LISTA
+        </button>
+        <button onClick={() => setViewMode("calendar")} className={`px-3 py-1.5 font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider border transition-colors ${viewMode === "calendar" ? "bg-orbital-purple/10 border-orbital-purple/50 text-orbital-purple" : "bg-[#0A0A0A] border-orbital-border text-orbital-text-dim"}`}>
+          CALENDÁRIO
+        </button>
+      </div>
+
+      {/* Calendar view */}
+      {viewMode === "calendar" && (() => {
+        const { year, month } = calendarMonth;
+        const firstDay = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const monthName = new Date(year, month).toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+        const days: (number | null)[] = Array(firstDay).fill(null).concat(Array.from({ length: daysInMonth }, (_, i) => i + 1));
+        while (days.length % 7 !== 0) days.push(null);
+
+        const getPostsForDay = (day: number) => {
+          const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+          return posts.filter(p => p.scheduled_date && p.scheduled_date.toString().slice(0, 10) === dateStr);
+        };
+
+        const typeColors: Record<string, string> = { feed: "bg-blue-500", story: "bg-pink-500", reel: "bg-purple-500", carousel: "bg-cyan-500" };
+
+        return (
+          <div className="bg-[#0A0A0A] border border-orbital-border p-4">
+            <div className="flex items-center justify-between mb-4">
+              <button onClick={() => setCalendarMonth(p => p.month === 0 ? { year: p.year - 1, month: 11 } : { ...p, month: p.month - 1 })}
+                className="px-3 py-1 text-orbital-text-dim hover:text-orbital-purple font-[family-name:var(--font-jetbrains)] text-xs transition-colors">←</button>
+              <span className="font-[family-name:var(--font-orbitron)] text-sm tracking-wider text-orbital-text capitalize">{monthName}</span>
+              <button onClick={() => setCalendarMonth(p => p.month === 11 ? { year: p.year + 1, month: 0 } : { ...p, month: p.month + 1 })}
+                className="px-3 py-1 text-orbital-text-dim hover:text-orbital-purple font-[family-name:var(--font-jetbrains)] text-xs transition-colors">→</button>
+            </div>
+            <div className="grid grid-cols-7 gap-px">
+              {["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map(d => (
+                <div key={d} className="p-2 text-center font-[family-name:var(--font-orbitron)] text-[0.6rem] text-orbital-text-dim/50">{d}</div>
+              ))}
+              {days.map((day, i) => {
+                if (!day) return <div key={`e${i}`} className="min-h-[80px] bg-[#080808]" />;
+                const dayPosts = getPostsForDay(day);
+                const isToday = new Date().getFullYear() === year && new Date().getMonth() === month && new Date().getDate() === day;
+                return (
+                  <div key={day} className={`min-h-[80px] p-1.5 border border-orbital-border/20 ${isToday ? "bg-orbital-purple/5 border-orbital-purple/30" : "bg-[#0A0A0A]"}`}>
+                    <div className={`font-[family-name:var(--font-jetbrains)] text-[0.65rem] mb-1 ${isToday ? "text-orbital-purple font-bold" : "text-orbital-text-dim/60"}`}>{day}</div>
+                    {dayPosts.map(p => (
+                      <div key={p.id} onClick={() => { setViewMode("list"); setExpandedId(p.id); }}
+                        className="mb-0.5 px-1 py-0.5 cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-1"
+                      >
+                        <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${typeColors[p.post_type] || "bg-gray-500"}`} />
+                        <span className="font-[family-name:var(--font-jetbrains)] text-[0.55rem] text-orbital-text truncate">{p.title}</span>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })}
+            </div>
+            <div className="flex items-center gap-4 mt-3 justify-center">
+              {Object.entries(typeColors).map(([type, color]) => (
+                <div key={type} className="flex items-center gap-1">
+                  <div className={`w-2 h-2 rounded-full ${color}`} />
+                  <span className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim">{type}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Feedback */}
       <AnimatePresence>
         {feedback && (
@@ -324,20 +396,22 @@ export default function ConteudoPage() {
         )}
       </AnimatePresence>
 
-      {/* Filters */}
-      <div className="flex gap-2">
-        {(["all", "draft", "scheduled", "published"] as const).map(f => (
-          <button key={f} onClick={() => setFilter(f)}
-            className={`px-3 py-1.5 font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider border transition-colors ${filter === f ? "bg-orbital-purple/10 border-orbital-purple/50 text-orbital-purple" : "bg-[#0A0A0A] border-orbital-border text-orbital-text-dim hover:text-orbital-text"}`}
-          >
-            {f === "all" ? "TODOS" : f === "draft" ? "RASCUNHOS" : f === "scheduled" ? "AGENDADOS" : "PUBLICADOS"}
-            <span className="ml-1 opacity-50">({posts.filter(p => f === "all" || p.status === f).length})</span>
-          </button>
-        ))}
-      </div>
+      {/* Filters (list mode only) */}
+      {viewMode === "list" && (
+        <div className="flex gap-2">
+          {(["all", "draft", "scheduled", "published"] as const).map(f => (
+            <button key={f} onClick={() => setFilter(f)}
+              className={`px-3 py-1.5 font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider border transition-colors ${filter === f ? "bg-orbital-purple/10 border-orbital-purple/50 text-orbital-purple" : "bg-[#0A0A0A] border-orbital-border text-orbital-text-dim hover:text-orbital-text"}`}
+            >
+              {f === "all" ? "TODOS" : f === "draft" ? "RASCUNHOS" : f === "scheduled" ? "AGENDADOS" : "PUBLICADOS"}
+              <span className="ml-1 opacity-50">({posts.filter(p => f === "all" || p.status === f).length})</span>
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Posts List */}
-      <div className="space-y-2">
+      <div className={`space-y-2 ${viewMode === "calendar" ? "hidden" : ""}`}>
         {filteredPosts.length === 0 && (
           <div className="bg-[#0A0A0A] border border-orbital-border p-8 text-center">
             <Calendar size={24} className="text-orbital-text-dim mx-auto mb-2" />
