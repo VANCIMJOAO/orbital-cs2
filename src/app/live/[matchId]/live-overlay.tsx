@@ -52,7 +52,7 @@ export default function LiveOverlay({ matchId }: { matchId: number }) {
   // ═══ FETCH DATA ═══
   const fetchAll = useCallback(async () => {
     try {
-      const match = await getMatch(matchId);
+      const { match } = await getMatch(matchId);
       if (!match) return;
       const [ps, ms, t1, t2, ke, be] = await Promise.all([
         getPlayerStats(matchId),
