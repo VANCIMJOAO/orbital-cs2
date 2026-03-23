@@ -26,6 +26,7 @@ const brandSubLinks = [
   { href: "/admin/brand/conteudo", label: "Conteúdo", icon: Megaphone },
   { href: "/admin/brand/gerador", label: "Gerador", icon: Megaphone },
   { href: "/admin/brand/patrocinio", label: "Patrocínio", icon: Megaphone },
+  { href: "/admin/brand/midiakit", label: "Mídia Kit", icon: Megaphone },
   { href: "/admin/brand/analytics", label: "Analytics", icon: Bot },
 ];
 
