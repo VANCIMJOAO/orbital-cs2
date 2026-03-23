@@ -164,9 +164,26 @@ export default function LiveOverlay({ matchId }: { matchId: number }) {
   const activeMap = mapStats.length > 0 ? mapStats[mapStats.length - 1] : null;
   const mapName = activeMap?.map_name?.replace("de_", "").toUpperCase() || "---";
 
-  // Split stats by team
-  const team1Stats = playerStats.filter(s => s.team_id === match.team1_id);
-  const team2Stats = playerStats.filter(s => s.team_id === match.team2_id);
+  // Aggregate stats per player (BO3 has multiple entries per player)
+  function aggregateByPlayer(stats: PlayerStats[]): PlayerStats[] {
+    const map = new Map<string, PlayerStats>();
+    for (const s of stats) {
+      const key = s.steam_id || s.name;
+      const existing = map.get(key);
+      if (existing) {
+        existing.kills = (existing.kills || 0) + (s.kills || 0);
+        existing.deaths = (existing.deaths || 0) + (s.deaths || 0);
+        existing.assists = (existing.assists || 0) + (s.assists || 0);
+        existing.headshot_kills = (existing.headshot_kills || 0) + (s.headshot_kills || 0);
+      } else {
+        map.set(key, { ...s });
+      }
+    }
+    return Array.from(map.values());
+  }
+
+  const team1Stats = aggregateByPlayer(playerStats.filter(s => s.team_id === match.team1_id));
+  const team2Stats = aggregateByPlayer(playerStats.filter(s => s.team_id === match.team2_id));
 
   // Current scores
   const t1Score = activeMap?.team1_score ?? match.team1_score ?? 0;
@@ -217,7 +234,7 @@ export default function LiveOverlay({ matchId }: { matchId: number }) {
       {/* ═══ PLAYER BARS — LEFT (Team 1) ═══ */}
       <div className="absolute left-0 top-[100px] flex flex-col gap-1">
         {team1Stats.sort((a, b) => (b.kills || 0) - (a.kills || 0)).slice(0, 5).map((p, i) => (
-          <div key={p.steam_id || i} className="flex items-center bg-[#0A0A0A]/80 border-l-2 border-[#A855F7]/40 pl-2 pr-4 py-1.5 min-w-[280px]"
+          <div key={`t1-${i}`} className="flex items-center bg-[#0A0A0A]/80 border-l-2 border-[#A855F7]/40 pl-2 pr-4 py-1.5 min-w-[280px]"
             style={{ animationDelay: `${i * 50}ms` }}>
             <div className="w-[120px] truncate">
               <span className="text-white text-[0.7rem] font-medium">{p.name}</span>
@@ -237,22 +254,22 @@ export default function LiveOverlay({ matchId }: { matchId: number }) {
       </div>
 
       {/* ═══ PLAYER BARS — RIGHT (Team 2) ═══ */}
-      <div className="absolute right-0 top-[100px] flex flex-col gap-1">
+      <div className="absolute right-0 top-[100px] flex flex-col gap-1 items-end">
         {team2Stats.sort((a, b) => (b.kills || 0) - (a.kills || 0)).slice(0, 5).map((p, i) => (
-          <div key={p.steam_id || i} className="flex items-center bg-[#0A0A0A]/80 border-r-2 border-[#A855F7]/40 pr-2 pl-4 py-1.5 min-w-[280px] flex-row-reverse"
+          <div key={`t2-${i}`} className="flex items-center bg-[#0A0A0A]/80 border-r-2 border-[#A855F7]/40 pr-2 pl-4 py-1.5 w-[280px]"
             style={{ animationDelay: `${i * 50}ms` }}>
-            <div className="w-[120px] truncate text-right">
-              <span className="text-white text-[0.7rem] font-medium">{p.name}</span>
-            </div>
-            <div className="flex items-center gap-3 mr-auto text-[0.65rem]">
-              {p.headshot_kills > 0 && (
-                <span className="text-[#A855F7] text-[0.6rem]">🎯{p.headshot_kills}</span>
-              )}
+            <div className="flex items-center gap-3 text-[0.65rem]">
               <span className="text-green-400 font-mono">{p.kills || 0}</span>
               <span className="text-gray-500">/</span>
               <span className="text-red-400 font-mono">{p.deaths || 0}</span>
               <span className="text-gray-500">/</span>
               <span className="text-yellow-400 font-mono">{p.assists || 0}</span>
+              {p.headshot_kills > 0 && (
+                <span className="text-[#A855F7] text-[0.6rem]">🎯{p.headshot_kills}</span>
+              )}
+            </div>
+            <div className="w-[120px] truncate text-right ml-auto">
+              <span className="text-white text-[0.7rem] font-medium">{p.name}</span>
             </div>
           </div>
         ))}

@@ -1,8 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Orbitron, JetBrains_Mono, Inter } from "next/font/google";
 import "./globals.css";
-import { Navbar } from "@/components/navbar";
-import { LiveToastProvider } from "@/components/live-toast";
+import { LayoutShell } from "@/components/layout-shell";
 import { AuthProvider } from "@/lib/auth-context";
 import { Analytics } from "@vercel/analytics/react";
 
@@ -59,11 +58,9 @@ export default function RootLayout({
         className={`${orbitron.variable} ${jetbrains.variable} ${inter.variable} antialiased scanlines grid-bg`}
       >
         <AuthProvider>
-          <Navbar />
-          <main className="min-h-screen pt-20 overflow-x-hidden">
+          <LayoutShell>
             {children}
-          </main>
-          <LiveToastProvider />
+          </LayoutShell>
           <Analytics />
         </AuthProvider>
       </body>
