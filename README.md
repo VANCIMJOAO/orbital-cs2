@@ -206,4 +206,4 @@ python postprocess.py  # HUD overlay + upload R2
 
 ## Autor
 
-Desenvolvido por **Maisum** -- full-stack developer.
+Desenvolvido por **VANCIM** -- full-stack developer.
