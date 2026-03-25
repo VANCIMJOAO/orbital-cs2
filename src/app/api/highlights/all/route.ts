@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-
-const G5API_URL = process.env.NEXT_PUBLIC_G5API_URL || process.env.G5API_URL || "https://g5api-production-998f.up.railway.app";
+import { G5API_URL } from "@/lib/constants";
 
 // GET /api/highlights/all?limit=30&offset=0
 export async function GET(req: NextRequest) {

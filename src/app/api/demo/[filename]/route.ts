@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-
-const G5API_URL = process.env.G5API_URL || "https://g5api-production-998f.up.railway.app";
+import { G5API_URL } from "@/lib/constants";
 
 export async function GET(
   _req: NextRequest,

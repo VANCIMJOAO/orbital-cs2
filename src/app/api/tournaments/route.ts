@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Tournament } from "@/lib/tournament";
 import { dbPool as pool } from "@/lib/tournaments-db";
+import { G5API_URL, G5API_COOKIE_NAME } from "@/lib/constants";
 
 export async function GET() {
   try {
@@ -15,19 +16,14 @@ export async function GET() {
   }
 }
 
-const G5API_AUTH_URL =
-  process.env.G5API_URL ||
-  process.env.NEXT_PUBLIC_G5API_URL ||
-  "https://g5api-production-998f.up.railway.app";
-
 async function checkAdmin(req: NextRequest): Promise<NextResponse | null> {
-  const cookie = req.cookies.get("G5API")?.value;
+  const cookie = req.cookies.get(G5API_COOKIE_NAME)?.value;
   if (!cookie) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   try {
-    const authRes = await fetch(`${G5API_AUTH_URL}/isloggedin`, {
-      headers: { Cookie: `G5API=${cookie}` },
+    const authRes = await fetch(`${G5API_URL}/isloggedin`, {
+      headers: { Cookie: `${G5API_COOKIE_NAME}=${cookie}` },
     });
     const authData = await authRes.json();
     const user = authData?.user || authData;

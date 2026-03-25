@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-
-const G5API_URL =
-  process.env.NEXT_PUBLIC_G5API_URL ||
-  "https://g5api-production-998f.up.railway.app";
+import { G5API_URL, ADMIN_CHECK_TIMEOUT } from "./lib/constants";
 
 export async function middleware(req: NextRequest) {
   // Only protect /admin routes
@@ -17,7 +14,7 @@ export async function middleware(req: NextRequest) {
   }
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 5000);
+  const timeout = setTimeout(() => controller.abort(), ADMIN_CHECK_TIMEOUT);
   try {
     const res = await fetch(`${G5API_URL}/isloggedin`, {
       headers: { Cookie: cookie },

@@ -1,20 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
-
-const G5API_URL =
-  process.env.NEXT_PUBLIC_G5API_URL ||
-  "https://g5api-production-998f.up.railway.app";
+import { G5API_URL, WRITE_PROXY_ALLOWED_PREFIXES, WRITE_PROXY_ALLOW_ALL } from "@/lib/constants";
 
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
 
-// Allowlist of G5API paths that can be proxied
-const ALLOWED_PREFIXES = ["teams", "servers", "seasons", "matches", "auth", "leaderboard", "playerstats", "mapstats", "vetoes", "isloggedin", "highlights"];
-
 async function proxyRequest(req: NextRequest, path: string) {
-  // Validate path against allowlist
+  // Validate path against allowlist (bypass if WRITE_PROXY_ALLOW_ALL is enabled)
   const firstSegment = path.split("/")[0];
-  if (!ALLOWED_PREFIXES.includes(firstSegment)) {
+  const isAllowed = WRITE_PROXY_ALLOWED_PREFIXES.includes(firstSegment as typeof WRITE_PROXY_ALLOWED_PREFIXES[number]);
+
+  if (!isAllowed && !WRITE_PROXY_ALLOW_ALL) {
+    console.warn(`[write-proxy] BLOCKED: /${path} (prefix "${firstSegment}" not in allowlist)`);
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  if (WRITE_PROXY_ALLOW_ALL && !isAllowed) {
+    console.warn(`[write-proxy] BYPASS: /${path} allowed via WRITE_PROXY_ALLOW_ALL (add "${firstSegment}" to constants.ts)`);
   }
 
   const queryString = new URL(req.url).search;

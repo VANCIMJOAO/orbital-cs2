@@ -4,6 +4,7 @@ import { getLeaderboard, getMatch, getMapStats, getPlayerStats, getTeams, parseM
 import type { Match, MapStats, PlayerStats, LeaderboardEntry, HighlightClip, Team } from "@/lib/api";
 import type { Tournament, BracketMatch } from "@/lib/tournament";
 import { RecapContent } from "./recap-content";
+import { G5API_URL } from "@/lib/constants";
 
 interface MatchData {
   bracketMatch: BracketMatch;
@@ -13,7 +14,6 @@ interface MatchData {
 }
 
 async function fetchHighlightsForMatches(matchIds: number[]): Promise<HighlightClip[]> {
-  const G5API_URL = process.env.NEXT_PUBLIC_G5API_URL || process.env.G5API_URL || "https://g5api-production-998f.up.railway.app";
   try {
     const res = await fetch(`${G5API_URL}/highlights/all?limit=200`, { next: { revalidate: 60 } });
     if (!res.ok) return [];

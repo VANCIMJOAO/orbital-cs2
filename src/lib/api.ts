@@ -1,15 +1,130 @@
+import { G5API_URL, API_PROXY_URL, WRITE_PROXY_URL } from "./constants";
+
 // Server-side usa URL direta, client-side usa proxy /api para evitar CORS
-const API_BASE_DIRECT =
-  process.env.NEXT_PUBLIC_G5API_URL ||
-  "https://g5api-production-998f.up.railway.app";
-const API_BASE_PROXY = "/api";
+const API_BASE_DIRECT = G5API_URL;
+const API_BASE_PROXY = API_PROXY_URL;
 // Proxy manual para operações de escrita (POST/PUT/DELETE)
 // O rewrite do Next.js não repassa cookies corretamente em POSTs
-const API_WRITE_PROXY = "/write-proxy";
+const API_WRITE_PROXY = WRITE_PROXY_URL;
 
 function getApiBase() {
   if (typeof window === "undefined") return API_BASE_DIRECT;
   return API_BASE_PROXY;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// G5API Write Operations - CENTRALIZADO
+// ══════════════════════════════════════════════════════════════════════════════
+// IMPORTANTE: G5API espera SEMPRE um array no body: req.body[0]
+// Este wrapper garante que TODAS as operações de escrita usem o formato correto.
+// ══════════════════════════════════════════════════════════════════════════════
+
+interface G5ApiWriteOptions {
+  /** Endpoint path (sem base URL), ex: "/teams" ou "/matches" */
+  endpoint: string;
+  /** HTTP method */
+  method: "POST" | "PUT" | "DELETE";
+  /** Payload - será automaticamente envolvido em array se não for array */
+  body?: unknown;
+  /** Mensagem de erro customizada */
+  errorMessage?: string;
+}
+
+/**
+ * Wrapper centralizado para operações de escrita no G5API (client-side via write-proxy).
+ *
+ * CRÍTICO: G5API lê `req.body[0]` - enviar objeto puro causa crash.
+ * Este wrapper SEMPRE envolve o body em array automaticamente.
+ *
+ * @example
+ * // Criar time
+ * await g5apiWrite({ endpoint: "/teams", method: "POST", body: { name: "FURIA" } });
+ *
+ * // Deletar match
+ * await g5apiWrite({ endpoint: "/matches", method: "DELETE", body: { match_id: 123 } });
+ */
+export async function g5apiWrite<T = unknown>({
+  endpoint,
+  method,
+  body,
+  errorMessage,
+}: G5ApiWriteOptions): Promise<T> {
+  // Garantir que body é sempre array
+  const wrappedBody = body !== undefined
+    ? JSON.stringify(Array.isArray(body) ? body : [body])
+    : undefined;
+
+  const res = await fetch(`${API_WRITE_PROXY}${endpoint}`, {
+    method,
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: wrappedBody,
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    const defaultMsg = `G5API ${method} ${endpoint}: ${res.status}`;
+    const parsed = (() => {
+      try {
+        return JSON.parse(text).message;
+      } catch {
+        return text;
+      }
+    })();
+    throw new Error(errorMessage ? `${errorMessage}: ${parsed || res.status}` : `${defaultMsg} ${parsed}`);
+  }
+
+  // Alguns endpoints retornam 204 No Content
+  const contentType = res.headers.get("content-type");
+  if (!contentType || !contentType.includes("application/json")) {
+    return {} as T;
+  }
+
+  return res.json();
+}
+
+/**
+ * Wrapper server-side para operações de escrita no G5API (direto, sem proxy).
+ * Use este em API routes e server components que precisam chamar G5API diretamente.
+ *
+ * CRÍTICO: G5API lê `req.body[0]` - enviar objeto puro causa crash.
+ */
+export async function g5apiWriteServer<T = unknown>({
+  endpoint,
+  method,
+  body,
+  errorMessage,
+}: G5ApiWriteOptions): Promise<T> {
+  // Garantir que body é sempre array
+  const wrappedBody = body !== undefined
+    ? JSON.stringify(Array.isArray(body) ? body : [body])
+    : undefined;
+
+  const res = await fetch(`${API_BASE_DIRECT}${endpoint}`, {
+    method,
+    headers: { "Content-Type": "application/json" },
+    body: wrappedBody,
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    const defaultMsg = `G5API ${method} ${endpoint}: ${res.status}`;
+    const parsed = (() => {
+      try {
+        return JSON.parse(text).message;
+      } catch {
+        return text;
+      }
+    })();
+    throw new Error(errorMessage ? `${errorMessage}: ${parsed || res.status}` : `${defaultMsg} ${parsed}`);
+  }
+
+  const contentType = res.headers.get("content-type");
+  if (!contentType || !contentType.includes("application/json")) {
+    return {} as T;
+  }
+
+  return res.json();
 }
 
 export interface Match {
@@ -409,14 +524,7 @@ export async function createTeam(team: { name: string; tag: string; flag: string
     Object.entries(team.auth_name).map(([steamId, nick]) => [steamId, { name: nick, captain: 0, coach: 0 }])
   );
   const payload = { ...team, auth_name: authNested };
-  const res = await fetch(`${API_WRITE_PROXY}/teams`, {
-    method: "POST",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify([payload]),  // G5API espera array: req.body[0]
-  });
-  if (!res.ok) throw new Error(`Erro ao criar time: ${res.status}`);
-  return res.json();
+  return g5apiWrite({ endpoint: "/teams", method: "POST", body: payload, errorMessage: "Erro ao criar time" });
 }
 
 export async function updateTeam(team: { team_id: number; name?: string; tag?: string; flag?: string; logo?: string; public_team?: boolean; auth_name?: Record<string, string>; prev_auth_name?: Record<string, string> }): Promise<void> {
@@ -432,35 +540,15 @@ export async function updateTeam(team: { team_id: number; name?: string; tag?: s
   if (prev_auth_name && auth_name) {
     const removedSteamIds = Object.keys(prev_auth_name).filter(sid => !(sid in auth_name));
     for (const steamId of removedSteamIds) {
-      await fetch(`${API_WRITE_PROXY}/teams`, {
-        method: "DELETE",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify([{ team_id, steam_id: steamId }]),
-      });
+      await g5apiWrite({ endpoint: "/teams", method: "DELETE", body: { team_id, steam_id: steamId } });
     }
   }
 
-  const res = await fetch(`${API_WRITE_PROXY}/teams`, {
-    method: "PUT",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify([payload]),
-  });
-  if (!res.ok) {
-    const errBody = await res.text().catch(() => "");
-    throw new Error(`Erro ao atualizar time: ${res.status} ${errBody}`);
-  }
+  await g5apiWrite({ endpoint: "/teams", method: "PUT", body: payload, errorMessage: "Erro ao atualizar time" });
 }
 
 export async function deleteTeam(teamId: number): Promise<void> {
-  const res = await fetch(`${API_WRITE_PROXY}/teams`, {
-    method: "DELETE",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify([{ team_id: teamId }]),
-  });
-  if (!res.ok) throw new Error(`Erro ao deletar time: ${res.status}`);
+  await g5apiWrite({ endpoint: "/teams", method: "DELETE", body: { team_id: teamId }, errorMessage: "Erro ao deletar time" });
 }
 
 // ── Admin: Servers ──
@@ -477,35 +565,15 @@ export async function getAvailableServers(): Promise<{ servers: Server[] }> {
 }
 
 export async function createServer(server: { ip_string: string; port: number; display_name: string; rcon_password: string; public_server: boolean; flag?: string }): Promise<{ server: Server }> {
-  const res = await fetch(`${API_WRITE_PROXY}/servers`, {
-    method: "POST",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify([server]),
-  });
-  if (!res.ok) throw new Error(`Erro ao criar servidor: ${res.status}`);
-  return res.json();
+  return g5apiWrite({ endpoint: "/servers", method: "POST", body: server, errorMessage: "Erro ao criar servidor" });
 }
 
 export async function updateServer(server: { server_id: number; ip_string?: string; port?: number; display_name?: string; rcon_password?: string; public_server?: boolean; flag?: string }): Promise<void> {
-  // G5API PUT /servers espera "server_id" no body
-  const res = await fetch(`${API_WRITE_PROXY}/servers`, {
-    method: "PUT",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify([server]),
-  });
-  if (!res.ok) throw new Error(`Erro ao atualizar servidor: ${res.status}`);
+  await g5apiWrite({ endpoint: "/servers", method: "PUT", body: server, errorMessage: "Erro ao atualizar servidor" });
 }
 
 export async function deleteServer(serverId: number): Promise<void> {
-  const res = await fetch(`${API_WRITE_PROXY}/servers`, {
-    method: "DELETE",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify([{ server_id: serverId }]),
-  });
-  if (!res.ok) throw new Error(`Erro ao deletar servidor: ${res.status}`);
+  await g5apiWrite({ endpoint: "/servers", method: "DELETE", body: { server_id: serverId }, errorMessage: "Erro ao deletar servidor" });
 }
 
 // ── Admin: Matches ──
@@ -535,53 +603,28 @@ export async function createMatch(match: {
     ...rest,
     veto_mappool: maplist ? maplist.join(" ") : (rest.veto_mappool || CS2_FULL_POOL),
   };
-  const res = await fetch(`${API_WRITE_PROXY}/matches`, {
+  const data = await g5apiWrite<{ match?: { id: number }; id?: number; message?: string }>({
+    endpoint: "/matches",
     method: "POST",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify([payload]),
+    body: payload,
+    errorMessage: "Erro ao criar partida",
   });
-  if (!res.ok) {
-    const text = await res.text();
-    const msg = (() => { try { return JSON.parse(text).message; } catch { return text; } })();
-    throw new Error(msg || `Erro ao criar partida: ${res.status}`);
-  }
-  const data = await res.json();
   // G5API retorna { message: "...", id: N } ao criar match
-  if (data.match) return data;
+  if (data.match) return data as { match: { id: number } };
   if (data.id) return { match: { id: data.id } as Match };
-  return data;
+  return data as { match: { id: number } };
 }
 
 export async function updateMatch(match: { match_id: number; [key: string]: unknown }): Promise<void> {
-  const res = await fetch(`${API_WRITE_PROXY}/matches`, {
-    method: "PUT",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify([match]),
-  });
-  if (!res.ok) throw new Error(`Erro ao atualizar partida: ${res.status}`);
+  await g5apiWrite({ endpoint: "/matches", method: "PUT", body: match, errorMessage: "Erro ao atualizar partida" });
 }
 
 export async function deleteMatch(matchId: number): Promise<void> {
-  const res = await fetch(`${API_WRITE_PROXY}/matches`, {
-    method: "DELETE",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify([{ match_id: matchId }]),
-  });
-  if (!res.ok) throw new Error(`Erro ao deletar partida: ${res.status}`);
+  await g5apiWrite({ endpoint: "/matches", method: "DELETE", body: { match_id: matchId }, errorMessage: "Erro ao deletar partida" });
 }
 
 export async function sendRconCommand(serverId: number, command: string): Promise<{ response: string }> {
-  const res = await fetch(`${API_WRITE_PROXY}/servers/${serverId}/rcon`, {
-    method: "POST",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify([{ command }]),
-  });
-  if (!res.ok) throw new Error(`Erro ao enviar RCON: ${res.status}`);
-  return res.json();
+  return g5apiWrite({ endpoint: `/servers/${serverId}/rcon`, method: "POST", body: { command }, errorMessage: "Erro ao enviar RCON" });
 }
 
 // ── Match Admin Actions (RCON via G5API) ──
@@ -607,13 +650,7 @@ export async function restartMatch(matchId: number): Promise<void> {
 }
 
 export async function addPlayerToMatch(matchId: number, steamId: string, nickname: string, teamId: string): Promise<void> {
-  const res = await fetch(`${API_WRITE_PROXY}/matches/${matchId}/adduser`, {
-    method: "PUT",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify([{ steam_id: steamId, nickname, team_id: teamId }]),
-  });
-  if (!res.ok) throw new Error(`Erro ao adicionar jogador: ${res.status}`);
+  await g5apiWrite({ endpoint: `/matches/${matchId}/adduser`, method: "PUT", body: { steam_id: steamId, nickname, team_id: teamId }, errorMessage: "Erro ao adicionar jogador" });
 }
 
 export interface BackupEntry {
@@ -698,54 +735,22 @@ export async function getMatchBackups(matchId: number): Promise<BackupEntry[]> {
 }
 
 export async function restoreMatchBackup(matchId: number, backupFile: string): Promise<void> {
-  const res = await fetch(`${API_WRITE_PROXY}/matches/${matchId}/backup`, {
-    method: "POST",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify([{ backup_name: backupFile }]),
-  });
-  if (!res.ok) throw new Error(`Erro ao restaurar backup: ${res.status}`);
+  await g5apiWrite({ endpoint: `/matches/${matchId}/backup`, method: "POST", body: { backup_name: backupFile }, errorMessage: "Erro ao restaurar backup" });
 }
 
 export async function sendMatchRcon(matchId: number, command: string): Promise<{ response: string }> {
-  const res = await fetch(`${API_WRITE_PROXY}/matches/${matchId}/rcon`, {
-    method: "PUT",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify([{ rcon_command: command }]),
-  });
-  if (!res.ok) throw new Error(`Erro ao enviar RCON: ${res.status}`);
-  return res.json();
+  return g5apiWrite({ endpoint: `/matches/${matchId}/rcon`, method: "PUT", body: { rcon_command: command }, errorMessage: "Erro ao enviar RCON" });
 }
 
 // ── Admin: Seasons ──
 export async function createSeason(season: { name: string; start_date: string; end_date?: string }): Promise<{ season: Season }> {
-  const res = await fetch(`${API_WRITE_PROXY}/seasons`, {
-    method: "POST",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify([season]),
-  });
-  if (!res.ok) throw new Error(`Erro ao criar season: ${res.status}`);
-  return res.json();
+  return g5apiWrite({ endpoint: "/seasons", method: "POST", body: season, errorMessage: "Erro ao criar season" });
 }
 
 export async function updateSeason(season: { season_id: number; name?: string; start_date?: string; end_date?: string }): Promise<void> {
-  const res = await fetch(`${API_WRITE_PROXY}/seasons`, {
-    method: "PUT",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify([season]),
-  });
-  if (!res.ok) throw new Error(`Erro ao atualizar season: ${res.status}`);
+  await g5apiWrite({ endpoint: "/seasons", method: "PUT", body: season, errorMessage: "Erro ao atualizar season" });
 }
 
 export async function deleteSeason(seasonId: number): Promise<void> {
-  const res = await fetch(`${API_WRITE_PROXY}/seasons`, {
-    method: "DELETE",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify([{ season_id: seasonId }]),
-  });
-  if (!res.ok) throw new Error(`Erro ao deletar season: ${res.status}`);
+  await g5apiWrite({ endpoint: "/seasons", method: "DELETE", body: { season_id: seasonId }, errorMessage: "Erro ao deletar season" });
 }

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkAdmin } from "../../brand/auth";
-
-const G5API_URL = process.env.NEXT_PUBLIC_G5API_URL || process.env.G5API_URL || "https://g5api-production-998f.up.railway.app";
+import { G5API_URL } from "@/lib/constants";
 
 const HIGHLIGHTS_KEY = process.env.HIGHLIGHTS_API_KEY;
 

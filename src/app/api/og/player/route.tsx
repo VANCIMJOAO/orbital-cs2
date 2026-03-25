@@ -1,9 +1,8 @@
 import { ImageResponse } from "next/og";
 import { NextRequest } from "next/server";
+import { G5API_URL } from "@/lib/constants";
 
 export const runtime = "edge";
-
-const G5API_URL = process.env.NEXT_PUBLIC_G5API_URL || "https://g5api-production-998f.up.railway.app";
 
 export async function GET(req: NextRequest) {
   const steamId = req.nextUrl.searchParams.get("id");

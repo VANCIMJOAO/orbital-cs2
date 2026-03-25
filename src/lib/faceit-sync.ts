@@ -6,28 +6,29 @@ import { estimateRating } from "./faceit-mapper";
 import { getTournamentsFromDB, saveTournamentToDB } from "./tournaments-db";
 import { advanceBracket, type Tournament, type BracketMatch } from "./tournament";
 import { linkFaceitToG5Match } from "./faceit-db";
+import { g5apiWriteServer } from "./api";
+import { G5API_URL } from "./constants";
 
-const G5API_URL =
-  process.env.NEXT_PUBLIC_G5API_URL ||
-  "https://g5api-production-998f.up.railway.app";
-
-// Cookie de admin do G5API pra escrita (precisa estar logado como admin)
-// Alternativa: usar API key direta
-async function g5apiFetch(
+// Wrapper local usando g5apiWriteServer centralizado
+// Mantém compatibilidade com chamadas existentes
+async function g5apiFetch<T = unknown>(
   endpoint: string,
   method: "GET" | "POST" | "PUT" | "DELETE",
   body?: unknown
-) {
-  const res = await fetch(`${G5API_URL}${endpoint}`, {
-    method,
-    headers: { "Content-Type": "application/json" },
-    body: body ? JSON.stringify(Array.isArray(body) ? body : [body]) : undefined,
-  });
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`G5API ${method} ${endpoint}: ${res.status} ${text}`);
+): Promise<T> {
+  if (method === "GET") {
+    // GET não usa o wrapper de escrita
+    const res = await fetch(`${G5API_URL}${endpoint}`, {
+      headers: { "Content-Type": "application/json" },
+    });
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      throw new Error(`G5API ${method} ${endpoint}: ${res.status} ${text}`);
+    }
+    return res.json();
   }
-  return res.json();
+  // POST/PUT/DELETE usam o wrapper centralizado que garante array body
+  return g5apiWriteServer<T>({ endpoint, method, body });
 }
 
 // ── Encontrar time G5API pelos Steam IDs dos jogadores ──
