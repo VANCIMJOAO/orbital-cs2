@@ -19,9 +19,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Server misconfiguration" }, { status: 500 });
   }
 
-  // Only accept secret via headers (never query string — appears in logs)
-  const headerSecret = req.headers.get("x-webhook-secret") || req.headers.get("authorization");
-  if (headerSecret !== WEBHOOK_SECRET) {
+  // Only accept secret via the header configured in the Faceit App Studio
+  // Do NOT fallback to "authorization" — Faceit only sends the custom header you configured
+  const headerSecret = req.headers.get("x-webhook-secret");
+  if (!headerSecret || headerSecret !== WEBHOOK_SECRET) {
     console.warn("[FACEIT WEBHOOK] Invalid secret");
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

@@ -42,10 +42,15 @@ yarn-error.log*
 # uploaded logos
 /public/uploads
 
-# highlights worker temp files
+# highlights — only track source code, not generated media
 /highlights/temp_clips/
 /highlights/temp_demos/
 /highlights/output/
+/highlights/recordings/
+/highlights/final_videos/
+/highlights/compilado/
+/highlights/parsed_highlights/
+/highlights/__pycache__/
 
 # typescript
 *.tsbuildinfo

@@ -171,7 +171,7 @@ export async function syncFaceitMatchToG5API(
                 kills: ps.kills,
                 deaths: ps.deaths,
                 assists: ps.assists,
-                flash_assists: ps.enemies_flashed,
+                flash_assists: ps.flash_successes,
                 headshot_kills: ps.headshot_kills,
                 roundsplayed: roundsPlayed,
                 damage: ps.damage,
@@ -182,9 +182,10 @@ export async function syncFaceitMatchToG5API(
                 firstkill_ct: Math.ceil(ps.first_kills / 2),
                 firstdeath_t: 0,
                 firstdeath_ct: 0,
-                kast: roundsPlayed > 0
-                  ? Math.min(100, Math.round(((ps.kills + ps.assists + Math.max(0, roundsPlayed - ps.deaths)) / roundsPlayed) * 100))
-                  : 0, // Estimativa: (K+A+Survived)/Rounds — Faceit não fornece KAST real
+                // KAST = % de rounds com Kill/Assist/Survived/Traded — requer dados round-by-round
+                // Faceit não fornece KAST nem dados por round, qualquer estimativa por aggregated stats
+                // infla o valor (K+A+S soma > rounds). Enviar 0 = "não disponível"
+                kast: 0,
                 contribution_score: ps.mvps * 5 + ps.kills,
                 mvp: ps.mvps,
                 k1: Math.max(0, ps.kills - ps.double_kills * 2 - ps.triple_kills * 3 - ps.quadro_kills * 4 - ps.penta_kills * 5),
