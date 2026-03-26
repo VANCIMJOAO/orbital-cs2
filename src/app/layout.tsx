@@ -4,6 +4,7 @@ import "./globals.css";
 import { LayoutShell } from "@/components/layout-shell";
 import { AuthProvider } from "@/lib/auth-context";
 import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const orbitron = Orbitron({
   variable: "--font-orbitron",
@@ -62,6 +63,7 @@ export default function RootLayout({
             {children}
           </LayoutShell>
           <Analytics />
+          <SpeedInsights />
         </AuthProvider>
       </body>
     </html>
