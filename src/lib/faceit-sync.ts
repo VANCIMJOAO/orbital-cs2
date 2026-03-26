@@ -123,8 +123,8 @@ export async function syncFaceitMatchToG5API(
       veto_mappool: match.maps.map((m) => m.map_name).join(" ") || "de_mirage",
     };
 
-    const createRes = await g5apiFetch("/matches", "POST", matchPayload);
-    const g5MatchId: number = createRes.id || createRes.match?.id;
+    const createRes = await g5apiFetch<{ id?: number; match?: { id?: number } }>("/matches", "POST", matchPayload);
+    const g5MatchId = createRes.id || createRes.match?.id;
 
     if (!g5MatchId) {
       return { g5_match_id: null, error: "G5API não retornou ID do match" };
@@ -141,7 +141,7 @@ export async function syncFaceitMatchToG5API(
           map_name: map.map_name,
           start_time: match.start_time || new Date().toISOString(),
         };
-        const mapRes = await g5apiFetch("/mapstats", "POST", mapPayload);
+        const mapRes = await g5apiFetch<{ id?: number; mapstat?: { id?: number } }>("/mapstats", "POST", mapPayload);
         const mapId = mapRes.id || mapRes.mapstat?.id;
 
         if (mapId) {
