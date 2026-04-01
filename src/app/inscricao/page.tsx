@@ -463,9 +463,6 @@ export default function InscricaoPage() {
             {submitting ? "ENVIANDO..." : "INSCREVER TIME"}
           </button>
 
-          <p className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim/60 text-center">
-            Inscrição: R$ 100/jogador (R$ 500/time) — Pagamento via PIX após aprovação
-          </p>
         </div>
       )}
     </div>
