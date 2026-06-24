@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { G5API_URL, ADMIN_CHECK_TIMEOUT } from "./lib/constants";
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   // Only protect /admin routes
   if (!req.nextUrl.pathname.startsWith("/admin")) {
     return NextResponse.next();
