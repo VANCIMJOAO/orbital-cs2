@@ -449,7 +449,7 @@ export function RecapContent({ tournament, leaderboard, matchesData, highlights,
                             </span>
                             {startTime && (
                               <span className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim">
-                                {startTime.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}
+                                {startTime.toLocaleDateString("pt-BR", { day: "2-digit", month: "short", timeZone: "America/Sao_Paulo" })}
                               </span>
                             )}
                           </div>

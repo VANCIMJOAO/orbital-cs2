@@ -1074,7 +1074,7 @@ export function CampeonatoContent({ id, initialTournament, initialTeamsMap, init
                                         <div className="shrink-0 text-right hidden sm:flex items-center gap-2">
                                           {match.start_time && (
                                             <span className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim/60">
-                                              {new Date(match.start_time).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}
+                                              {new Date(match.start_time).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", timeZone: "America/Sao_Paulo" })}
                                             </span>
                                           )}
                                           <ChevronRight size={14} className="text-orbital-text-dim/50 group-hover:text-orbital-purple transition-colors" />

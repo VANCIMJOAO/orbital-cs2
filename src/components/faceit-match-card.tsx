@@ -115,7 +115,7 @@ export function FaceitMatchCard({ match, delay = 0 }: FaceitMatchCardProps) {
               </span>
               {(match.end_time || match.start_time) && (
                 <span className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim/60">
-                  {new Date(match.end_time || match.start_time!).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" })}
+                  {new Date(match.end_time || match.start_time!).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric", timeZone: "America/Sao_Paulo" })}
                 </span>
               )}
             </div>
