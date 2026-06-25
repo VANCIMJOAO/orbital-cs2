@@ -167,7 +167,6 @@ export default function MidiaKitPage() {
       "• Highlights automaticos (pipeline Python + FFmpeg)",
       "• Bracket interativo (Double Elimination + Swiss)",
       "• Perfil publico de cada jogador com historico completo",
-      "• Integracao Faceit para campeonatos online",
     ];
     for (const line of platLines) {
       ctx.fillText(line, 40 * s, y);

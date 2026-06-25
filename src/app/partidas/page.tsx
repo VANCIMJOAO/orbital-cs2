@@ -1,8 +1,6 @@
 import { Metadata } from "next";
 import { getMatches, getTeams, getMapStats, parseMapStats, Match, Team, getStatusType } from "@/lib/api";
-import { getAllFaceitMatches } from "@/lib/faceit-db";
 import { PartidasContent } from "./partidas-content";
-import type { MappedMatch } from "@/lib/faceit-mapper";
 
 export const metadata: Metadata = {
   title: "Partidas | ORBITAL ROXA",
@@ -14,17 +12,14 @@ export const revalidate = 30;
 export default async function PartidasPage() {
   let matches: Match[] = [];
   let teams: Team[] = [];
-  let faceitMatches: MappedMatch[] = [];
 
   try {
-    const [matchesRes, teamsRes, faceitRes] = await Promise.all([
+    const [matchesRes, teamsRes] = await Promise.all([
       getMatches(),
       getTeams().catch(() => ({ teams: [] })),
-      getAllFaceitMatches().catch(() => []),
     ]);
     matches = matchesRes.matches || [];
     teams = teamsRes.teams || [];
-    faceitMatches = faceitRes;
   } catch {
     // API offline
   }
@@ -54,5 +49,5 @@ export default async function PartidasPage() {
     })
   );
 
-  return <PartidasContent matches={matches} teamsMap={teamsMap} mapScoresMap={mapScoresMap} faceitMatches={faceitMatches} />;
+  return <PartidasContent matches={matches} teamsMap={teamsMap} mapScoresMap={mapScoresMap} />;
 }

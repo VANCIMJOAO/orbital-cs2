@@ -47,7 +47,7 @@ const ACTION_PROMPTS: Record<string, { title: string; prompt: string }> = {
 - Forças (plataforma própria, dados reais, highlights automáticos)
 - Fraquezas (marca nova, sem redes sociais, sem patrocínio)
 - Oportunidades (interior de SP sem competição, cena crescendo)
-- Ameaças (GamersClub, Faceit, outras ligas)
+- Ameaças (GamersClub, outras ligas)
 
 ## 2. DIFERENCIAL COMPETITIVO
 - O que a Orbital Roxa oferece que ninguém mais faz
@@ -122,7 +122,7 @@ Para cada canal, detalhe: como usar, mensagem-tipo, meta de leads, custo
 - Faculdades com cena gamer
 - Eventos locais
 
-### Faceit/GamersClub
+### GamersClub
 - Hubs e comunidades da região
 
 ## 2. FUNIL DE CONVERSÃO

@@ -19,7 +19,6 @@ export interface BracketMatch {
   team2_from: string | null;
   winner_id: number | null;
   match_id: number | null; // G5API match id once created
-  faceit_match_id?: string | null; // Faceit match id (online mode)
   map: string | null;      // map chosen after veto
   maps: string[] | null;   // for BO3 grand final
   status: "pending" | "veto" | "ready" | "live" | "finished";
@@ -50,7 +49,6 @@ export interface Tournament {
   server_id: number | null;
   format: "double_elimination" | "swiss";
   mode: "presencial" | "online";
-  faceit_championship_id?: string | null;
   teams: TournamentTeam[];
   matches: BracketMatch[];
   map_pool: string[];
@@ -493,7 +491,6 @@ export function generateSwissInitialRound(teams: TournamentTeam[]): {
     team2_from: null,
     winner_id: null,
     match_id: null,
-    faceit_match_id: null,
     map: null,
     maps: null,
     status: "pending" as const,
@@ -673,7 +670,6 @@ export function generateSwissNextRound(tournament: Tournament): Tournament {
           team2_from: null,
           winner_id: null,
           match_id: null,
-          faceit_match_id: null,
           map: null,
           maps: null,
           status: "pending",

@@ -26,7 +26,6 @@ CUP #1 (já realizado):
 PLATAFORMA PRÓPRIA (orbitalroxa.com.br):
 - Stats em tempo real, leaderboard, highlights automáticos, bracket ao vivo
 - Pipeline Python que gera highlights das demos automaticamente
-- Integração Faceit em desenvolvimento pra campeonatos online
 
 LIMITAÇÕES REAIS (IMPORTANTE - NÃO INVENTAR):
 - 10 PCs alugados = máximo 8 times/campeonato (1 jogo por vez)
@@ -53,7 +52,6 @@ PATROCÍNIO (o que podem oferecer de verdade):
 CUP #2:
 - Maio 2026, mesmo formato (8 times DE), inscrição R$500/time
 - Premiação alvo: R$2k (R$1.5k + R$500)
-- Antes: tentar campeonato online via Faceit
 
 VISÃO:
 - 6 meses: mais gente, mais procura, Instagram ativo
