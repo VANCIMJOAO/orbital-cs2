@@ -50,13 +50,17 @@ export default async function RecapPage({ params }: { params: Promise<{ id: stri
     redirect(`/campeonato/${id}`);
   }
 
-  // Fetch leaderboard for the tournament's season
+  // Leaderboard da SEASON do campeonato. Sem season_id NÃO buscamos (senão
+  // getLeaderboard(undefined) cai no leaderboard GLOBAL e o recap mostra
+  // MVP/Top5 de todas as edições, não desta).
   let leaderboard: LeaderboardEntry[] = [];
-  try {
-    const lb = await getLeaderboard(tournament.season_id ?? undefined);
-    leaderboard = lb.leaderboard || [];
-  } catch {
-    leaderboard = [];
+  if (tournament.season_id != null) {
+    try {
+      const lb = await getLeaderboard(tournament.season_id);
+      leaderboard = lb.leaderboard || [];
+    } catch {
+      leaderboard = [];
+    }
   }
 
   // Fetch match data for all bracket matches that have a match_id

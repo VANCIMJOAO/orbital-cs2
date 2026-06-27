@@ -15,15 +15,17 @@ type TeamsMap = Record<number, { name: string; logo: string | null }>;
 export default function CampeonatosPage() {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [teamsMap, setTeamsMap] = useState<TeamsMap>({});
+  const [inscritosCount, setInscritosCount] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState<"all" | "active" | "pending" | "finished">("all");
   const [filterFormat, setFilterFormat] = useState<"all" | "double_elimination" | "swiss">("all");
 
   const fetchData = useCallback(async () => {
     try {
-      const [tourRes, teamsRes] = await Promise.all([
+      const [tourRes, teamsRes, countsRes] = await Promise.all([
         fetch("/api/tournaments").then(r => r.json()),
         getTeams(),
+        fetch("/api/inscricao?counts=1").then(r => r.json()).catch(() => ({ counts: {} })),
       ]);
       setTournaments(tourRes.tournaments || []);
       const map: TeamsMap = {};
@@ -31,6 +33,7 @@ export default function CampeonatosPage() {
         map[t.id] = { name: t.name, logo: t.logo };
       });
       setTeamsMap(map);
+      setInscritosCount(countsRes.counts || {});
     } catch { /* */ }
     setLoading(false);
   }, []);
@@ -128,17 +131,17 @@ export default function CampeonatosPage() {
 
       {/* Active */}
       {active.length > 0 && (
-        <Section title="AO VIVO" color="text-red-500" tournaments={active} teamsMap={teamsMap} delay={0.1} />
+        <Section title="AO VIVO" color="text-red-500" tournaments={active} teamsMap={teamsMap} inscritosCount={inscritosCount} delay={0.1} />
       )}
 
       {/* Pending */}
       {pending.length > 0 && (
-        <Section title="EM BREVE" color="text-yellow-500" tournaments={pending} teamsMap={teamsMap} delay={0.2} />
+        <Section title="EM BREVE" color="text-yellow-500" tournaments={pending} teamsMap={teamsMap} inscritosCount={inscritosCount} delay={0.2} />
       )}
 
       {/* Finished */}
       {finished.length > 0 && (
-        <Section title="FINALIZADOS" color="text-emerald-500" tournaments={finished} teamsMap={teamsMap} delay={0.3} />
+        <Section title="FINALIZADOS" color="text-emerald-500" tournaments={finished} teamsMap={teamsMap} inscritosCount={inscritosCount} delay={0.3} />
       )}
 
       {filtered.length === 0 && (
@@ -161,7 +164,7 @@ export default function CampeonatosPage() {
   );
 }
 
-function Section({ title, color, tournaments, teamsMap, delay }: { title: string; color: string; tournaments: Tournament[]; teamsMap: TeamsMap; delay: number }) {
+function Section({ title, color, tournaments, teamsMap, inscritosCount, delay }: { title: string; color: string; tournaments: Tournament[]; teamsMap: TeamsMap; inscritosCount: Record<string, number>; delay: number }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 15 }}
@@ -179,14 +182,15 @@ function Section({ title, color, tournaments, teamsMap, delay }: { title: string
       </div>
       <div className="grid gap-4">
         {tournaments.map((t, i) => (
-          <TournamentCard key={t.id} tournament={t} teamsMap={teamsMap} delay={delay + i * 0.05} />
+          <TournamentCard key={t.id} tournament={t} teamsMap={teamsMap} inscritosCount={inscritosCount} delay={delay + i * 0.05} />
         ))}
       </div>
     </motion.div>
   );
 }
 
-function TournamentCard({ tournament: t, teamsMap, delay }: { tournament: Tournament; teamsMap: TeamsMap; delay: number }) {
+function TournamentCard({ tournament: t, teamsMap, inscritosCount, delay }: { tournament: Tournament; teamsMap: TeamsMap; inscritosCount: Record<string, number>; delay: number }) {
+  const teamsOuInscritos = t.teams.length || (inscritosCount[t.id] ?? 0);
   const finished = t.matches.filter(m => m.status === "finished").length;
   const total = t.matches.length;
   const progress = total > 0 ? Math.round((finished / total) * 100) : 0;
@@ -319,7 +323,7 @@ function TournamentCard({ tournament: t, teamsMap, delay }: { tournament: Tourna
                   );
                 })}
                 <span className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim ml-2">
-                  {t.teams.length} times
+                  {teamsOuInscritos} times
                 </span>
               </div>
 

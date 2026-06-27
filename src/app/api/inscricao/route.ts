@@ -57,6 +57,17 @@ export async function GET(req: NextRequest) {
 
   const tournamentId = req.nextUrl.searchParams.get("tournament_id");
   const checkSlots = req.nextUrl.searchParams.get("check_slots");
+  const counts = req.nextUrl.searchParams.get("counts");
+
+  // Público: contagem de inscritos (não-rejeitados) por campeonato — só números
+  if (counts) {
+    const [rows] = await pool.query(
+      "SELECT tournament_id, COUNT(*) AS c FROM inscricoes WHERE status IN ('pendente','aprovado','pago') AND tournament_id IS NOT NULL GROUP BY tournament_id"
+    ) as [{ tournament_id: string; c: number }[], unknown];
+    const out: Record<string, number> = {};
+    for (const r of rows) out[r.tournament_id] = Number(r.c);
+    return NextResponse.json({ counts: out });
+  }
 
   // Público: verificar vagas
   if (checkSlots && tournamentId) {
