@@ -3,26 +3,56 @@ import { G5API_URL, ADMIN_CHECK_TIMEOUT } from "./lib/constants";
 
 // Modo manutenção: cobre o site público com /manutencao.html (admin e API liberados).
 // Pra desligar: MAINTENANCE = false e dar deploy.
+// Allowlist por IP via env MAINTENANCE_ALLOW_IPS (separado por vírgula).
+// Bypass alternativo: acessar ?unlock=<MAINTENANCE_BYPASS_SECRET> seta um cookie.
 const MAINTENANCE = true;
+
+function clientIp(req: NextRequest): string {
+  const xff = req.headers.get("x-forwarded-for") || "";
+  return (xff.split(",")[0] || req.headers.get("x-real-ip") || "").trim();
+}
+
+function temAcessoPreview(req: NextRequest): boolean {
+  const ips = (process.env.MAINTENANCE_ALLOW_IPS || "")
+    .split(",").map(s => s.trim()).filter(Boolean);
+  if (ips.length && ips.includes(clientIp(req))) return true;
+  const secret = process.env.MAINTENANCE_BYPASS_SECRET || "";
+  if (secret && req.cookies.get("mnt_bypass")?.value === secret) return true;
+  return false;
+}
 
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   if (MAINTENANCE) {
-    const liberado =
-      pathname.startsWith("/admin") ||
-      pathname.startsWith("/api") ||
-      pathname.startsWith("/write-proxy") ||
-      pathname.startsWith("/_next") ||
-      pathname === "/manutencao.html" ||
-      pathname === "/favicon.ico" ||
-      pathname.startsWith("/app-icon") ||
-      /\.(png|jpe?g|svg|webp|ico|gif|txt|xml|json|webmanifest|woff2?)$/i.test(pathname);
+    // Link-secreto: ?unlock=<segredo> -> seta cookie de preview e remove o query
+    const secret = process.env.MAINTENANCE_BYPASS_SECRET || "";
+    if (secret && req.nextUrl.searchParams.get("unlock") === secret) {
+      const dest = req.nextUrl.clone();
+      dest.searchParams.delete("unlock");
+      const res = NextResponse.redirect(dest);
+      res.cookies.set("mnt_bypass", secret, {
+        path: "/", maxAge: 60 * 60 * 24 * 7, httpOnly: true, sameSite: "lax",
+      });
+      return res;
+    }
 
-    if (!liberado) {
-      const url = req.nextUrl.clone();
-      url.pathname = "/manutencao.html";
-      return NextResponse.rewrite(url, { status: 503 });
+    if (!temAcessoPreview(req)) {
+      const liberado =
+        pathname.startsWith("/admin") ||
+        pathname.startsWith("/api") ||
+        pathname.startsWith("/write-proxy") ||
+        pathname.startsWith("/_next") ||
+        pathname === "/manutencao.html" ||
+        pathname === "/favicon.ico" ||
+        pathname.startsWith("/app-icon") ||
+        /\.(png|jpe?g|svg|webp|ico|gif|txt|xml|json|webmanifest|woff2?)$/i.test(pathname);
+
+      if (!liberado) {
+        const url = req.nextUrl.clone();
+        url.pathname = "/manutencao.html";
+        return NextResponse.rewrite(url, { status: 503 });
+      }
     }
   }
 
