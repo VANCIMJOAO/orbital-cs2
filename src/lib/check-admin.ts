@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { G5API_URL, G5API_COOKIE_NAME, ADMIN_CHECK_TIMEOUT } from "@/lib/constants";
 
+// Valida sessão admin contra o G5API (/isloggedin) com timeout. Auth compartilhado
+// pelas rotas de escrita (inscricao, team-logo, upload, highlights/trigger, tournaments).
 export async function checkAdmin(req: NextRequest): Promise<NextResponse | null> {
   const cookie = req.cookies.get(G5API_COOKIE_NAME)?.value;
   if (!cookie) {

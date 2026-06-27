@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { dbPool } from "@/lib/tournaments-db";
-import { checkAdmin } from "../brand/auth";
+import { checkAdmin } from "@/lib/check-admin";
 
 export async function PUT(req: NextRequest) {
   const authError = await checkAdmin(req);

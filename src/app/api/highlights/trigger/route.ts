@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { checkAdmin } from "../../brand/auth";
+import { checkAdmin } from "@/lib/check-admin";
 import { G5API_URL } from "@/lib/constants";
 
 const HIGHLIGHTS_KEY = process.env.HIGHLIGHTS_API_KEY;

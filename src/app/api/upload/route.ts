@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { put } from "@vercel/blob";
-import { checkAdmin } from "../brand/auth";
+import { checkAdmin } from "@/lib/check-admin";
 
 export async function POST(req: NextRequest) {
   const authError = await checkAdmin(req);

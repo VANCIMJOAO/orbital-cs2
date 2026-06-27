@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-import { Shield, Swords, Users, Server, Calendar, ArrowLeft, Trophy, Home, ChevronRight, Megaphone, Bot, ClipboardList } from "lucide-react";
+import { Shield, Swords, Users, Server, Calendar, ArrowLeft, Trophy, Home, ChevronRight, ClipboardList } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { ReactNode } from "react";
 
@@ -16,16 +16,6 @@ const adminLinks = [
   { href: "/admin/seasons", label: "Seasons", icon: Calendar },
   { href: "/admin/campeonatos", label: "Campeonatos", icon: Trophy },
   { href: "/admin/inscricoes", label: "Inscrições", icon: ClipboardList },
-  { href: "/admin/brand", label: "Brand", icon: Megaphone },
-];
-
-const brandSubLinks = [
-  { href: "/admin/brand", label: "Instagram", icon: Home, exact: true },
-  { href: "/admin/brand/conteudo", label: "Conteúdo", icon: Megaphone },
-  { href: "/admin/brand/gerador", label: "Gerador", icon: Megaphone },
-  { href: "/admin/brand/patrocinio", label: "Patrocínio", icon: Megaphone },
-  { href: "/admin/brand/midiakit", label: "Mídia Kit", icon: Megaphone },
-  { href: "/admin/brand/analytics", label: "Analytics", icon: Bot },
 ];
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
@@ -114,31 +104,6 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                     <ChevronRight size={10} className="text-orbital-purple/50 ml-auto" />
                   )}
                 </Link>
-                {/* Brand sub-links */}
-                {link.href === "/admin/brand" && pathname.startsWith("/admin/brand") && (
-                  <div className="ml-5 mt-0.5 mb-1 space-y-0.5 border-l border-orbital-purple/20 pl-2">
-                    {brandSubLinks.map((sub) => {
-                      const subActive = sub.exact ? pathname === sub.href : pathname.startsWith(sub.href);
-                      const SubIcon = sub.icon;
-                      return (
-                        <Link
-                          key={sub.href}
-                          href={sub.href}
-                          className={`flex items-center gap-2 px-2 py-1.5 rounded-sm transition-all duration-200 ${
-                            subActive
-                              ? "text-orbital-purple"
-                              : "text-orbital-text-dim/60 hover:text-orbital-text-dim hover:bg-white/[0.03]"
-                          }`}
-                        >
-                          <SubIcon size={11} />
-                          <span className="font-[family-name:var(--font-jetbrains)] text-[0.6rem]">
-                            {sub.label}
-                          </span>
-                        </Link>
-                      );
-                    })}
-                  </div>
-                )}
               </div>
             );
           })}

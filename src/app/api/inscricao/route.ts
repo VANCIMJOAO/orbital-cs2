@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { dbPool, getTournamentsFromDB } from "@/lib/tournaments-db";
-import { checkAdmin } from "../brand/auth";
+import { checkAdmin } from "@/lib/check-admin";
 
 let tableReady = false;
 
