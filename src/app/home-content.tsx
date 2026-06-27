@@ -223,7 +223,6 @@ export function HomeContent({
           <Link href="/partidas">Partidas</Link>
           <Link href="/leaderboard">Ranking</Link>
           <Link href="/highlights">Highlights</Link>
-          <Link href="/loja">Loja</Link>
         </div>
         <div className="ovr-foot-cop">© ORBITAL ROXA · plataforma de campeonatos CS2 · orbitalroxa.com.br</div>
       </footer>

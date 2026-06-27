@@ -16,7 +16,6 @@ const navLinks = [
   { href: "/highlights", label: "HIGHLIGHTS" },
   { href: "/demos", label: "DEMOS" },
   { href: "/inscricao", label: "INSCRIÇÃO" },
-  { href: "/loja", label: "LOJA" },
 ];
 
 const chakra = "font-[family-name:var(--font-chakra)]";
