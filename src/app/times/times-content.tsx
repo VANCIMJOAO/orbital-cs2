@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Users, Shield, User, Filter } from "lucide-react";
+import { Shield, User, Filter } from "lucide-react";
 import Link from "next/link";
 import { HudCard } from "@/components/hud-card";
+import { PageHeader } from "@/components/page-header";
 import { Team } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 
@@ -15,23 +16,13 @@ export function TimesContent({ teams }: { teams: Team[] }) {
   const filtered = showMine && user ? teams.filter(t => t.user_id === user.id) : teams;
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 pb-20">
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="py-8"
-      >
-        <div className="flex items-center gap-3 mb-2">
-          <Users size={20} className="text-orbital-purple" />
-          <h1 className="font-[family-name:var(--font-orbitron)] text-xl font-bold tracking-wider text-orbital-text">
-            TIMES
-          </h1>
-        </div>
-        <p className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text-dim">
-          {teams.length} times registrados
-        </p>
-      </motion.div>
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-10 pb-20">
+      <PageHeader
+        kicker="Comunidade"
+        title="Todos os"
+        accent="Times"
+        sub={`${teams.length} times registrados na plataforma`}
+      />
 
       {/* Filters */}
       {user && (
@@ -44,7 +35,7 @@ export function TimesContent({ teams }: { teams: Team[] }) {
           <Filter size={14} className="text-orbital-text-dim" />
           <button
             onClick={() => setShowMine(false)}
-            className={`px-3 py-1.5 font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.15em] border transition-all ${
+            className={`px-3 py-1.5 font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.15em] border transition-all ${
               !showMine ? "bg-orbital-purple/10 border-orbital-purple/50 text-orbital-purple" : "bg-transparent border-orbital-border text-orbital-text-dim hover:border-orbital-border-light"
             }`}
           >
@@ -52,7 +43,7 @@ export function TimesContent({ teams }: { teams: Team[] }) {
           </button>
           <button
             onClick={() => setShowMine(true)}
-            className={`px-3 py-1.5 font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.15em] border transition-all ${
+            className={`px-3 py-1.5 font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.15em] border transition-all ${
               showMine ? "bg-orbital-purple/10 border-orbital-purple/50 text-orbital-purple" : "bg-transparent border-orbital-border text-orbital-text-dim hover:border-orbital-border-light"
             }`}
           >
@@ -104,7 +95,7 @@ function TeamCard({ team, delay }: { team: Team; delay: number }) {
               )}
             </div>
             <div>
-              <h3 className="font-[family-name:var(--font-orbitron)] text-sm font-bold tracking-wider text-orbital-text group-hover:text-orbital-purple transition-colors">
+              <h3 className="font-[family-name:var(--font-russo)] text-sm font-bold tracking-wider text-orbital-text group-hover:text-orbital-purple transition-colors">
                 {team.name}
               </h3>
               <div className="flex items-center gap-2">
@@ -123,7 +114,7 @@ function TeamCard({ team, delay }: { team: Team; delay: number }) {
           {/* Players */}
           {players.length > 0 && (
             <div className="space-y-1.5">
-              <div className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.2em] text-orbital-purple mb-2">
+              <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.2em] text-orbital-purple mb-2">
                 ROSTER ({players.length})
               </div>
               {players.map(([steamId, name]) => (

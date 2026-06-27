@@ -50,7 +50,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           className="bg-orbital-card border border-orbital-border p-12 text-center max-w-md"
         >
           <Shield size={48} className="text-orbital-danger/50 mx-auto mb-4" />
-          <h1 className="font-[family-name:var(--font-orbitron)] text-lg text-orbital-text mb-2">
+          <h1 className="font-[family-name:var(--font-russo)] text-lg text-orbital-text mb-2">
             ACESSO NEGADO
           </h1>
           <p className="font-[family-name:var(--font-jetbrains)] text-sm text-orbital-text-dim mb-6">
@@ -58,7 +58,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           </p>
           <Link
             href="/"
-            className="inline-flex items-center gap-2 px-6 py-2.5 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 transition-all font-[family-name:var(--font-orbitron)] text-xs tracking-wider text-orbital-purple"
+            className="inline-flex items-center gap-2 px-6 py-2.5 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 transition-all font-[family-name:var(--font-russo)] text-xs tracking-wider text-orbital-purple"
           >
             <ArrowLeft size={14} /> VOLTAR
           </Link>
@@ -80,7 +80,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
               <Shield size={14} className="text-orbital-purple" />
             </div>
             <div>
-              <div className="font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-[0.15em] text-orbital-purple group-hover:text-orbital-text transition-colors">
+              <div className="font-[family-name:var(--font-russo)] text-[0.6rem] tracking-[0.15em] text-orbital-purple group-hover:text-orbital-text transition-colors">
                 ORBITAL ROXA
               </div>
               <div className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim/50">
@@ -182,7 +182,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         <div className="flex items-center justify-between px-4 py-2.5">
           <div className="flex items-center gap-2">
             <Shield size={14} className="text-orbital-purple" />
-            <span className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.15em] text-orbital-purple">
+            <span className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.15em] text-orbital-purple">
               ADMIN
             </span>
           </div>

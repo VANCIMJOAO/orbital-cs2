@@ -137,11 +137,11 @@ export default function AdminServidores() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h2 className="font-[family-name:var(--font-orbitron)] text-sm font-bold text-orbital-text tracking-wider">
+        <h2 className="font-[family-name:var(--font-russo)] text-sm font-bold text-orbital-text tracking-wider">
           SERVIDORES ({servers.length})
         </h2>
         {!showForm && (
-          <button onClick={() => { resetForm(); setShowForm(true); }} className="flex items-center gap-2 px-4 py-2 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 transition-all font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-wider text-orbital-purple">
+          <button onClick={() => { resetForm(); setShowForm(true); }} className="flex items-center gap-2 px-4 py-2 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 transition-all font-[family-name:var(--font-russo)] text-[0.6rem] tracking-wider text-orbital-purple">
             <Plus size={14} />
             NOVO SERVIDOR
           </button>
@@ -155,26 +155,26 @@ export default function AdminServidores() {
               <form onSubmit={handleSubmit} className="space-y-4 py-2">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-[0.15em] text-orbital-text-dim mb-2">NOME</label>
+                    <label className="block font-[family-name:var(--font-russo)] text-[0.6rem] tracking-[0.15em] text-orbital-text-dim mb-2">NOME</label>
                     <input type="text" value={displayName} onChange={e => setDisplayName(e.target.value)} placeholder="Servidor CS2" className="w-full bg-[#0A0A0A] border border-orbital-border text-orbital-text font-[family-name:var(--font-jetbrains)] text-sm px-3 py-2.5 focus:border-orbital-purple/50 focus:outline-none transition-colors placeholder:text-orbital-text-dim/50" />
                   </div>
                   <div>
-                    <label className="block font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-[0.15em] text-orbital-text-dim mb-2">PAÍS</label>
+                    <label className="block font-[family-name:var(--font-russo)] text-[0.6rem] tracking-[0.15em] text-orbital-text-dim mb-2">PAÍS</label>
                     <input type="text" value={flag} onChange={e => setFlag(e.target.value)} placeholder="BR" maxLength={2} className="w-full bg-[#0A0A0A] border border-orbital-border text-orbital-text font-[family-name:var(--font-jetbrains)] text-sm px-3 py-2.5 focus:border-orbital-purple/50 focus:outline-none transition-colors placeholder:text-orbital-text-dim/50" />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
-                    <label className="block font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-[0.15em] text-orbital-text-dim mb-2">IP</label>
+                    <label className="block font-[family-name:var(--font-russo)] text-[0.6rem] tracking-[0.15em] text-orbital-text-dim mb-2">IP</label>
                     <input type="text" value={ipString} onChange={e => setIpString(e.target.value)} placeholder="192.168.1.1" className="w-full bg-[#0A0A0A] border border-orbital-border text-orbital-text font-[family-name:var(--font-jetbrains)] text-sm px-3 py-2.5 focus:border-orbital-purple/50 focus:outline-none transition-colors placeholder:text-orbital-text-dim/50" />
                   </div>
                   <div>
-                    <label className="block font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-[0.15em] text-orbital-text-dim mb-2">PORTA</label>
+                    <label className="block font-[family-name:var(--font-russo)] text-[0.6rem] tracking-[0.15em] text-orbital-text-dim mb-2">PORTA</label>
                     <input type="number" value={port} onChange={e => setPort(e.target.value)} placeholder="27015" className="w-full bg-[#0A0A0A] border border-orbital-border text-orbital-text font-[family-name:var(--font-jetbrains)] text-sm px-3 py-2.5 focus:border-orbital-purple/50 focus:outline-none transition-colors placeholder:text-orbital-text-dim/50" />
                   </div>
                   <div>
-                    <label className="block font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-[0.15em] text-orbital-text-dim mb-2">RCON SENHA</label>
+                    <label className="block font-[family-name:var(--font-russo)] text-[0.6rem] tracking-[0.15em] text-orbital-text-dim mb-2">RCON SENHA</label>
                     <input type="password" value={rconPassword} onChange={e => setRconPassword(e.target.value)} placeholder={editing ? "(manter atual)" : "Senha RCON"} className="w-full bg-[#0A0A0A] border border-orbital-border text-orbital-text font-[family-name:var(--font-jetbrains)] text-sm px-3 py-2.5 focus:border-orbital-purple/50 focus:outline-none transition-colors placeholder:text-orbital-text-dim/50" />
                   </div>
                 </div>
@@ -192,11 +192,11 @@ export default function AdminServidores() {
                 )}
 
                 <div className="flex gap-3">
-                  <button type="submit" disabled={submitting} className="flex items-center gap-2 px-6 py-2.5 bg-orbital-purple/20 border border-orbital-purple/50 hover:bg-orbital-purple/30 transition-all font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-wider text-orbital-purple disabled:opacity-50">
+                  <button type="submit" disabled={submitting} className="flex items-center gap-2 px-6 py-2.5 bg-orbital-purple/20 border border-orbital-purple/50 hover:bg-orbital-purple/30 transition-all font-[family-name:var(--font-russo)] text-[0.6rem] tracking-wider text-orbital-purple disabled:opacity-50">
                     {submitting ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
                     {editing ? "SALVAR" : "CRIAR"}
                   </button>
-                  <button type="button" onClick={resetForm} className="px-6 py-2.5 border border-orbital-border hover:border-orbital-text-dim transition-all font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-wider text-orbital-text-dim">
+                  <button type="button" onClick={resetForm} className="px-6 py-2.5 border border-orbital-border hover:border-orbital-text-dim transition-all font-[family-name:var(--font-russo)] text-[0.6rem] tracking-wider text-orbital-text-dim">
                     CANCELAR
                   </button>
                 </div>
@@ -221,7 +221,7 @@ export default function AdminServidores() {
                 <Server size={16} className="text-orbital-purple" />
               </div>
               <div>
-                <h3 className="font-[family-name:var(--font-orbitron)] text-xs font-bold text-orbital-text tracking-wider">
+                <h3 className="font-[family-name:var(--font-russo)] text-xs font-bold text-orbital-text tracking-wider">
                   {server.display_name}
                 </h3>
                 <div className="flex items-center gap-3 mt-0.5">

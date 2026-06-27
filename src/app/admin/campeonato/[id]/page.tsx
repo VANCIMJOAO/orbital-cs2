@@ -12,7 +12,7 @@ export default async function MissionControlPage({ params }: { params: Promise<{
   if (!tournament) {
     return (
       <div className="py-20 text-center">
-        <p className="font-[family-name:var(--font-orbitron)] text-orbital-text-dim">
+        <p className="font-[family-name:var(--font-russo)] text-orbital-text-dim">
           Campeonato não encontrado
         </p>
       </div>

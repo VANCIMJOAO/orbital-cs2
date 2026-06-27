@@ -2,10 +2,16 @@
 
 import React, { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Trophy, Target, Skull, Crosshair, Medal, Filter, Download, Search, Users, Shield } from "lucide-react";
+import { Trophy, Target, Skull, Crosshair, Crown, Filter, Download, Search, Users, Shield } from "lucide-react";
 import Link from "next/link";
 import { HudCard } from "@/components/hud-card";
+import { PageHeader } from "@/components/page-header";
 import { LeaderboardEntry, Season } from "@/lib/api";
+
+const initial = (s?: string | null) => (s || "?").trim().charAt(0).toUpperCase() || "?";
+const onImgErr = (e: React.SyntheticEvent<HTMLImageElement>) => { e.currentTarget.style.display = "none"; };
+const ratingBarPct = (r: number) => Math.max(6, Math.min(100, ((r - 0.8) / 0.7) * 100));
+const ringColor = (rank: number) => rank === 1 ? "#F5C542" : rank === 2 ? "#CFD3DC" : "#C8773E";
 
 interface LeaderboardContentProps {
   initialLeaderboard?: LeaderboardEntry[];
@@ -98,22 +104,15 @@ export function LeaderboardContent({ initialLeaderboard, initialSeasons }: Leade
   });
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-20">
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="py-8"
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-10 pb-20">
+      <PageHeader
+        kicker="Ranking · HLTV Rating 1.0"
+        title="Leaderboard"
+        accent="Global"
+        sub={selectedSeason ? "Ranking da season selecionada" : "Classificação geral dos jogadores"}
       >
-        <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-          <div className="flex items-center gap-3">
-            <Trophy size={20} className="text-orbital-purple" />
-            <h1 className="font-[family-name:var(--font-orbitron)] text-xl font-bold tracking-wider text-orbital-text">
-              RANKING
-            </h1>
-          </div>
-
-          <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             {/* Season Filter */}
             {seasons.length > 0 && (
               <div className="flex items-center gap-1.5 sm:gap-2">
@@ -142,7 +141,7 @@ export function LeaderboardContent({ initialLeaderboard, initialSeasons }: Leade
               />
             </div>
             {/* Compare + Teams + CSV */}
-            <Link href="/comparar" className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 bg-cyan-500/10 border border-cyan-500/30 hover:border-cyan-500/60 transition-all font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-cyan-400">
+            <Link href="/comparar" className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 bg-white/5 border border-orbital-border hover:border-orbital-purple/30 transition-all font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim">
               <Users size={11} />
               <span className="hidden sm:inline">COMPARAR</span>
             </Link>
@@ -161,10 +160,7 @@ export function LeaderboardContent({ initialLeaderboard, initialSeasons }: Leade
             )}
           </div>
         </div>
-        <p className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text-dim">
-          {selectedSeason ? `Ranking da season selecionada` : "Classificação geral dos jogadores"}
-        </p>
-      </motion.div>
+      </PageHeader>
 
       {loading ? (
         <div className="flex items-center justify-center py-20">
@@ -228,10 +224,14 @@ export function LeaderboardContent({ initialLeaderboard, initialSeasons }: Leade
                           </span>
                         </td>
                         <td className="font-semibold">
-                          <Link href={`/perfil/${player.steamId}`} className="hover:text-orbital-purple transition-colors">
-                            {player.name}
+                          <Link href={`/perfil/${player.steamId}`} className="flex items-center gap-2.5 hover:text-orbital-purple transition-colors">
+                            <span className="relative w-7 h-7 shrink-0 flex items-center justify-center rounded-full bg-white/[0.05] border border-orbital-border overflow-hidden">
+                              <span className="absolute font-[family-name:var(--font-russo)] text-[0.6rem] text-orbital-text-dim">{initial(player.name)}</span>
+                              <img src={`/api/steam/avatar-image/${player.steamId}`} alt="" className="relative w-7 h-7 object-cover rounded-full" onError={onImgErr} />
+                            </span>
+                            <span className="font-[family-name:var(--font-russo)] tracking-wide">{player.name}</span>
+                            <RatingTier rating={rating} />
                           </Link>
-                          <RatingTier rating={rating} />
                         </td>
                         <td className="text-orbital-success">{player.kills}</td>
                         <td className="text-orbital-danger">{player.deaths}</td>
@@ -240,13 +240,18 @@ export function LeaderboardContent({ initialLeaderboard, initialSeasons }: Leade
                         <td>{player.wins}</td>
                         <td>{player.trp}</td>
                         <td>
-                          <span className={`font-bold ${
-                            rating >= 1.2 ? "text-orbital-success" :
-                            rating >= 0.8 ? "text-orbital-text" :
-                            "text-orbital-danger"
-                          }`}>
-                            {rating.toFixed(2)}
-                          </span>
+                          <div className="flex flex-col items-start gap-1.5">
+                            <span className={`font-bold ${
+                              rating >= 1.2 ? "text-orbital-success" :
+                              rating >= 0.8 ? "text-orbital-text" :
+                              "text-orbital-danger"
+                            }`}>
+                              {rating.toFixed(2)}
+                            </span>
+                            <span className="w-14 h-[3px] bg-white/[0.08] overflow-hidden">
+                              <span className="block h-full bg-gradient-to-r from-orbital-purple to-orbital-purple-bright" style={{ width: `${ratingBarPct(rating)}%` }} />
+                            </span>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -282,7 +287,7 @@ function SortableTh({
   return (
     <th
       onClick={() => onSort(sortKey)}
-      className={`cursor-pointer select-none hover:text-orbital-purple transition-colors font-[family-name:var(--font-orbitron)] ${active ? "text-orbital-purple" : ""}`}
+      className={`cursor-pointer select-none hover:text-orbital-purple transition-colors font-[family-name:var(--font-russo)] ${active ? "text-orbital-purple" : ""}`}
     >
       {icon && <>{icon}{" "}</>}
       {label}
@@ -302,35 +307,41 @@ function RatingTier({ rating }: { rating: number }) {
 function PodiumCard({ player, rank, delay }: { player: LeaderboardEntry; rank: number; delay: number }) {
   const rating = player.average_rating || 0;
   const isFirst = rank === 1;
+  const ring = ringColor(rank);
+  const avatarSize = isFirst ? 80 : 64;
 
   return (
-    <HudCard
-      glow={isFirst}
-      delay={delay}
-      className={`text-center ${isFirst ? "sm:-mt-4" : "sm:mt-4"}`}
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay }}
+      className={`relative text-center border bg-orbital-card px-4 ${isFirst ? "sm:-mt-4 pt-9 pb-7" : "sm:mt-4 pt-7 pb-6"}`}
+      style={{ borderColor: isFirst ? "rgba(245,197,66,0.35)" : "var(--color-orbital-border, #211E2B)", boxShadow: isFirst ? "0 0 44px -18px rgba(245,197,66,0.6)" : undefined }}
     >
-      <div className="py-2">
-        <Medal
-          size={isFirst ? 28 : 22}
-          className={
-            rank === 1 ? "text-yellow-400 mx-auto mb-2" :
-            rank === 2 ? "text-gray-300 mx-auto mb-2" :
-            "text-amber-600 mx-auto mb-2"
-          }
-        />
-        <div className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.2em] text-orbital-purple mb-1">
-          #{rank}
-        </div>
-        <div className={`font-[family-name:var(--font-orbitron)] ${isFirst ? "text-sm" : "text-xs"} font-bold tracking-wider text-orbital-text mb-2`}>
+      {isFirst && <Crown size={22} className="absolute -top-3 left-1/2 -translate-x-1/2 text-orbital-warning" fill="currentColor" />}
+
+      <Link href={`/perfil/${player.steamId}`} className="inline-block group">
+        <span
+          className="relative mx-auto flex items-center justify-center rounded-full bg-white/[0.05] overflow-hidden transition-transform group-hover:scale-105"
+          style={{ width: avatarSize, height: avatarSize, boxShadow: `0 0 0 2px ${ring}` }}
+        >
+          <span className="absolute font-[family-name:var(--font-russo)] text-xl text-orbital-text-dim">{initial(player.name)}</span>
+          <img src={`/api/steam/avatar-image/${player.steamId}`} alt="" className="relative rounded-full object-cover" style={{ width: avatarSize, height: avatarSize }} onError={onImgErr} />
+        </span>
+      </Link>
+
+      <div className="font-[family-name:var(--font-russo)] text-[0.62rem] tracking-[0.2em] mt-3" style={{ color: ring }}>#{rank}</div>
+      <Link href={`/perfil/${player.steamId}`}>
+        <div className={`font-[family-name:var(--font-russo)] uppercase tracking-wide text-orbital-text hover:text-orbital-purple transition-colors mt-0.5 ${isFirst ? "text-base" : "text-sm"}`}>
           {player.name}
         </div>
-        <div className="font-[family-name:var(--font-jetbrains)] text-2xl font-bold text-orbital-purple">
-          {rating.toFixed(2)}
-        </div>
-        <div className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim mt-1">
-          {player.kills}K / {player.deaths}D
-        </div>
+      </Link>
+      <div className={`font-[family-name:var(--font-russo)] mt-2 ${isFirst ? "text-4xl" : "text-3xl"} ${rating >= 1.2 ? "text-orbital-success" : rating >= 0.8 ? "text-orbital-text" : "text-orbital-danger"}`}>
+        {rating.toFixed(2)}
       </div>
-    </HudCard>
+      <div className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim mt-2">
+        {player.kills}K / {player.deaths}D · {Math.round(player.hsp || 0)}% HS
+      </div>
+    </motion.div>
   );
 }

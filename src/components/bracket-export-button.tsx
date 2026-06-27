@@ -113,7 +113,7 @@ export function BracketExportButton({ bracketRef, tournamentName }: BracketExpor
     <button
       onClick={handleExport}
       disabled={loading}
-      className="inline-flex items-center gap-2 px-4 py-2 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 transition-all font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-wider text-orbital-purple disabled:opacity-50 disabled:cursor-not-allowed"
+      className="inline-flex items-center gap-2 px-4 py-2 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 transition-all font-[family-name:var(--font-russo)] text-[0.6rem] tracking-wider text-orbital-purple disabled:opacity-50 disabled:cursor-not-allowed"
     >
       {loading ? <Loader2 size={12} className="animate-spin" /> : <Download size={12} />}
       {loading ? "EXPORTANDO..." : "EXPORTAR IMAGEM"}

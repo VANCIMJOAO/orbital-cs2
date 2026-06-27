@@ -146,19 +146,19 @@ export default function AdminSeasons() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h2 className="font-[family-name:var(--font-orbitron)] text-sm font-bold text-orbital-text tracking-wider">
+        <h2 className="font-[family-name:var(--font-russo)] text-sm font-bold text-orbital-text tracking-wider">
           SEASONS ({seasons.length})
         </h2>
         {!showForm && (
           <div className="flex items-center gap-2">
-            <label className={`flex items-center gap-2 px-4 py-2 border transition-all font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-wider cursor-pointer ${
+            <label className={`flex items-center gap-2 px-4 py-2 border transition-all font-[family-name:var(--font-russo)] text-[0.6rem] tracking-wider cursor-pointer ${
               importing ? "bg-orbital-purple/5 border-orbital-border text-orbital-text-dim" : "bg-orbital-card border-orbital-border hover:border-orbital-purple/40 text-orbital-text-dim hover:text-orbital-purple"
             }`}>
               <Upload size={14} />
               {importing ? "IMPORTANDO..." : "IMPORTAR"}
               <input type="file" accept=".json" onChange={handleImport} className="hidden" disabled={importing} />
             </label>
-            <button onClick={() => { resetForm(); setShowForm(true); }} className="flex items-center gap-2 px-4 py-2 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 transition-all font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-wider text-orbital-purple">
+            <button onClick={() => { resetForm(); setShowForm(true); }} className="flex items-center gap-2 px-4 py-2 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 transition-all font-[family-name:var(--font-russo)] text-[0.6rem] tracking-wider text-orbital-purple">
               <Plus size={14} />
               NOVA SEASON
             </button>
@@ -172,17 +172,17 @@ export default function AdminSeasons() {
             <HudCard label={editing ? "EDITAR SEASON" : "NOVA SEASON"} className="mb-6">
               <form onSubmit={handleSubmit} className="space-y-4 py-2">
                 <div>
-                  <label className="block font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-[0.15em] text-orbital-text-dim mb-2">NOME</label>
+                  <label className="block font-[family-name:var(--font-russo)] text-[0.6rem] tracking-[0.15em] text-orbital-text-dim mb-2">NOME</label>
                   <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Season 1" className="w-full bg-[#0A0A0A] border border-orbital-border text-orbital-text font-[family-name:var(--font-jetbrains)] text-sm px-3 py-2.5 focus:border-orbital-purple/50 focus:outline-none transition-colors placeholder:text-orbital-text-dim/50" />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-[0.15em] text-orbital-text-dim mb-2">INÍCIO</label>
+                    <label className="block font-[family-name:var(--font-russo)] text-[0.6rem] tracking-[0.15em] text-orbital-text-dim mb-2">INÍCIO</label>
                     <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="w-full bg-[#0A0A0A] border border-orbital-border text-orbital-text font-[family-name:var(--font-jetbrains)] text-sm px-3 py-2.5 focus:border-orbital-purple/50 focus:outline-none transition-colors" />
                   </div>
                   <div>
-                    <label className="block font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-[0.15em] text-orbital-text-dim mb-2">FIM (opcional)</label>
+                    <label className="block font-[family-name:var(--font-russo)] text-[0.6rem] tracking-[0.15em] text-orbital-text-dim mb-2">FIM (opcional)</label>
                     <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="w-full bg-[#0A0A0A] border border-orbital-border text-orbital-text font-[family-name:var(--font-jetbrains)] text-sm px-3 py-2.5 focus:border-orbital-purple/50 focus:outline-none transition-colors" />
                   </div>
                 </div>
@@ -195,11 +195,11 @@ export default function AdminSeasons() {
                 )}
 
                 <div className="flex gap-3">
-                  <button type="submit" disabled={submitting} className="flex items-center gap-2 px-6 py-2.5 bg-orbital-purple/20 border border-orbital-purple/50 hover:bg-orbital-purple/30 transition-all font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-wider text-orbital-purple disabled:opacity-50">
+                  <button type="submit" disabled={submitting} className="flex items-center gap-2 px-6 py-2.5 bg-orbital-purple/20 border border-orbital-purple/50 hover:bg-orbital-purple/30 transition-all font-[family-name:var(--font-russo)] text-[0.6rem] tracking-wider text-orbital-purple disabled:opacity-50">
                     {submitting ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
                     {editing ? "SALVAR" : "CRIAR"}
                   </button>
-                  <button type="button" onClick={resetForm} className="px-6 py-2.5 border border-orbital-border hover:border-orbital-text-dim transition-all font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-wider text-orbital-text-dim">
+                  <button type="button" onClick={resetForm} className="px-6 py-2.5 border border-orbital-border hover:border-orbital-text-dim transition-all font-[family-name:var(--font-russo)] text-[0.6rem] tracking-wider text-orbital-text-dim">
                     CANCELAR
                   </button>
                 </div>
@@ -229,11 +229,11 @@ export default function AdminSeasons() {
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="font-[family-name:var(--font-orbitron)] text-xs font-bold text-orbital-text tracking-wider">
+                  <h3 className="font-[family-name:var(--font-russo)] text-xs font-bold text-orbital-text tracking-wider">
                     {season.name}
                   </h3>
                   {isActive(season) && (
-                    <span className="px-2 py-0.5 bg-orbital-success/10 border border-orbital-success/30 font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-success">
+                    <span className="px-2 py-0.5 bg-orbital-success/10 border border-orbital-success/30 font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-success">
                       ATIVA
                     </span>
                   )}

@@ -167,7 +167,7 @@ export default function LiveOverlay({ matchId }: { matchId: number }) {
         <div className="relative px-8 py-4 bg-[#111111] border border-[#1A1A1A]">
           <HudCorners size={12} />
           <AccentLine />
-          <span className="font-[family-name:var(--font-orbitron)] text-[0.7rem] tracking-[0.4em] text-[#A855F7] animate-pulse">
+          <span className="font-[family-name:var(--font-russo)] text-[0.7rem] tracking-[0.4em] text-[#A855F7] animate-pulse">
             CONECTANDO...
           </span>
         </div>
@@ -224,14 +224,14 @@ export default function LiveOverlay({ matchId }: { matchId: number }) {
           {/* Corner bracket bottom-left (chamfered) */}
           <div className="absolute bottom-[16px] left-0 w-3 h-3 border-l-2 border-[#A855F7]/70" style={{ height: 10 }} />
 
-          <span className="font-[family-name:var(--font-orbitron)] text-white text-sm font-bold tracking-wider uppercase">
+          <span className="font-[family-name:var(--font-russo)] text-white text-sm font-bold tracking-wider uppercase">
             {t1Name}
           </span>
           {t1Logo ? (
             <img src={t1Logo} alt="" className="w-9 h-9 rounded-sm border border-[#1A1A1A]" />
           ) : (
             <div className="w-9 h-9 bg-[#A855F7]/20 border border-[#A855F7]/30 flex items-center justify-center">
-              <span className="font-[family-name:var(--font-orbitron)] text-[#A855F7] text-[0.5rem] font-bold">
+              <span className="font-[family-name:var(--font-russo)] text-[#A855F7] text-[0.5rem] font-bold">
                 {t1Name.slice(0, 2)}
               </span>
             </div>
@@ -253,11 +253,11 @@ export default function LiveOverlay({ matchId }: { matchId: number }) {
 
           {/* Map + status */}
           <div className="flex flex-col items-center px-4 py-1.5 border-x border-[#1A1A1A]">
-            <span className="font-[family-name:var(--font-orbitron)] text-[#A855F7] text-[0.6rem] tracking-[0.25em] uppercase">{mapName}</span>
+            <span className="font-[family-name:var(--font-russo)] text-[#A855F7] text-[0.6rem] tracking-[0.25em] uppercase">{mapName}</span>
             {isLive && (
               <div className="flex items-center gap-1.5 mt-1">
                 <div className="w-2 h-2 rounded-full bg-[#EF4444] animate-pulse" style={{ boxShadow: "0 0 8px rgba(239,68,68,0.6)" }} />
-                <span className="font-[family-name:var(--font-orbitron)] text-[#EF4444] text-[0.5rem] tracking-[0.3em]">LIVE</span>
+                <span className="font-[family-name:var(--font-russo)] text-[#EF4444] text-[0.5rem] tracking-[0.3em]">LIVE</span>
               </div>
             )}
             {mapStats.length > 1 && (
@@ -289,12 +289,12 @@ export default function LiveOverlay({ matchId }: { matchId: number }) {
             <img src={t2Logo} alt="" className="w-9 h-9 rounded-sm border border-[#1A1A1A]" />
           ) : (
             <div className="w-9 h-9 bg-[#A855F7]/20 border border-[#A855F7]/30 flex items-center justify-center">
-              <span className="font-[family-name:var(--font-orbitron)] text-[#A855F7] text-[0.5rem] font-bold">
+              <span className="font-[family-name:var(--font-russo)] text-[#A855F7] text-[0.5rem] font-bold">
                 {t2Name.slice(0, 2)}
               </span>
             </div>
           )}
-          <span className="font-[family-name:var(--font-orbitron)] text-white text-sm font-bold tracking-wider uppercase">
+          <span className="font-[family-name:var(--font-russo)] text-white text-sm font-bold tracking-wider uppercase">
             {t2Name}
           </span>
         </div>
@@ -310,7 +310,7 @@ export default function LiveOverlay({ matchId }: { matchId: number }) {
               {/* Accent line on top player */}
               {isTop && <div className="absolute top-0 left-[10%] right-[10%] h-[1px]" style={{ background: "linear-gradient(90deg, transparent, #A855F7/60, transparent)" }} />}
 
-              <span className={`font-[family-name:var(--font-orbitron)] text-[0.6rem] font-medium truncate w-[95px] ${isTop ? "text-[#A855F7]" : "text-[#E2E8F0]"}`}>
+              <span className={`font-[family-name:var(--font-russo)] text-[0.6rem] font-medium truncate w-[95px] ${isTop ? "text-[#A855F7]" : "text-[#E2E8F0]"}`}>
                 {p.name}
               </span>
               <div className="flex items-center gap-2.5 ml-auto font-[family-name:var(--font-jetbrains)] text-[0.6rem]">
@@ -341,7 +341,7 @@ export default function LiveOverlay({ matchId }: { matchId: number }) {
                 <span className="text-[#1A1A1A]">/</span>
                 <span className="text-[#F59E0B]">{p.assists || 0}</span>
               </div>
-              <span className={`font-[family-name:var(--font-orbitron)] text-[0.6rem] font-medium truncate w-[95px] text-right ${isTop ? "text-[#A855F7]" : "text-[#E2E8F0]"}`}>
+              <span className={`font-[family-name:var(--font-russo)] text-[0.6rem] font-medium truncate w-[95px] text-right ${isTop ? "text-[#A855F7]" : "text-[#E2E8F0]"}`}>
                 {p.name}
               </span>
             </div>
@@ -362,7 +362,7 @@ export default function LiveOverlay({ matchId }: { matchId: number }) {
               <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-[#A855F7]/50" />
               <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-[#A855F7]/50" />
 
-              <span className={`font-[family-name:var(--font-orbitron)] text-[0.6rem] font-semibold ${kill.attackerSide === "CT" ? "text-[#38BDF8]" : "text-[#FBBF24]"}`}>
+              <span className={`font-[family-name:var(--font-russo)] text-[0.6rem] font-semibold ${kill.attackerSide === "CT" ? "text-[#38BDF8]" : "text-[#FBBF24]"}`}>
                 {kill.attacker}
               </span>
               <div className="flex items-center gap-1">
@@ -372,7 +372,7 @@ export default function LiveOverlay({ matchId }: { matchId: number }) {
                 </span>
               </div>
               <span className="text-[#A855F7] text-[0.55rem]">&raquo;</span>
-              <span className={`font-[family-name:var(--font-orbitron)] text-[0.6rem] ${kill.victimSide === "CT" ? "text-[#38BDF8]/50" : "text-[#FBBF24]/50"}`}>
+              <span className={`font-[family-name:var(--font-russo)] text-[0.6rem] ${kill.victimSide === "CT" ? "text-[#38BDF8]/50" : "text-[#FBBF24]/50"}`}>
                 {kill.victim}
               </span>
             </div>
@@ -387,7 +387,7 @@ export default function LiveOverlay({ matchId }: { matchId: number }) {
             style={{ boxShadow: "0 0 20px rgba(239,68,68,0.2)" }}>
             <HudCorners size={8} color="#EF4444" opacity={0.6} />
             <div className="w-2 h-2 rounded-full bg-[#EF4444] animate-pulse" />
-            <span className="font-[family-name:var(--font-orbitron)] text-[#EF4444] text-sm font-bold tracking-wider">BOMB PLANTED</span>
+            <span className="font-[family-name:var(--font-russo)] text-[#EF4444] text-sm font-bold tracking-wider">BOMB PLANTED</span>
             <div className="w-[150px] h-1.5 bg-[#1A1A1A] overflow-hidden">
               <div className="h-full bg-gradient-to-r from-[#EF4444] to-[#F59E0B] transition-all duration-100"
                 style={{ width: `${(bombTimer / 40) * 100}%` }} />
@@ -402,7 +402,7 @@ export default function LiveOverlay({ matchId }: { matchId: number }) {
           <div className="relative bg-[#111111] border border-[#38BDF8]/40 px-6 py-2.5"
             style={{ boxShadow: "0 0 20px rgba(56,189,248,0.15)" }}>
             <HudCorners size={8} color="#38BDF8" opacity={0.6} />
-            <span className="font-[family-name:var(--font-orbitron)] text-[#38BDF8] text-sm font-bold tracking-wider">BOMB DEFUSED</span>
+            <span className="font-[family-name:var(--font-russo)] text-[#38BDF8] text-sm font-bold tracking-wider">BOMB DEFUSED</span>
           </div>
         </div>
       )}
@@ -413,7 +413,7 @@ export default function LiveOverlay({ matchId }: { matchId: number }) {
         <div className="relative px-3 py-1 border border-[#1A1A1A]/60">
           <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-[#A855F7]/40" />
           <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-[#A855F7]/40" />
-          <span className="font-[family-name:var(--font-orbitron)] text-[#A855F7]/50 text-[0.45rem] tracking-[0.5em]">ORBITAL ROXA</span>
+          <span className="font-[family-name:var(--font-russo)] text-[#A855F7]/50 text-[0.45rem] tracking-[0.5em]">ORBITAL ROXA</span>
         </div>
         <div className="w-8 h-[1px]" style={{ background: "linear-gradient(270deg, transparent, #A855F7)" }} />
       </div>
@@ -425,7 +425,7 @@ export default function LiveOverlay({ matchId }: { matchId: number }) {
             style={{ boxShadow: "0 0 30px rgba(239,68,68,0.2)" }}>
             <HudCorners size={12} color="#EF4444" />
             <AccentLine />
-            <span className="font-[family-name:var(--font-orbitron)] text-[#EF4444] font-bold text-sm tracking-[0.3em] animate-pulse">
+            <span className="font-[family-name:var(--font-russo)] text-[#EF4444] font-bold text-sm tracking-[0.3em] animate-pulse">
               SEM CONEXAO
             </span>
           </div>

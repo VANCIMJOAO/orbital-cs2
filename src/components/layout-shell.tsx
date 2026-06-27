@@ -5,9 +5,9 @@ import { LiveToastProvider } from "@/components/live-toast";
 
 export function LayoutShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isLive = pathname.startsWith("/live");
+  const isFullscreen = pathname.startsWith("/live") || pathname.startsWith("/inscricao");
 
-  if (isLive) {
+  if (isFullscreen) {
     return <>{children}</>;
   }
 

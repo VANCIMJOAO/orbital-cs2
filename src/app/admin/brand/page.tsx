@@ -69,7 +69,7 @@ export default function BrandDashboard() {
       <div className="flex items-center gap-3">
         <Instagram size={20} className="text-orbital-purple" />
         <div>
-          <h1 className="font-[family-name:var(--font-orbitron)] text-lg tracking-wider text-orbital-text">INSTAGRAM</h1>
+          <h1 className="font-[family-name:var(--font-russo)] text-lg tracking-wider text-orbital-text">INSTAGRAM</h1>
           <p className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim">
             Gerenciamento de conteúdo @orbitalroxa.gg
           </p>
@@ -84,7 +84,7 @@ export default function BrandDashboard() {
           <div className="flex items-center gap-3">
             {connected ? <Wifi size={16} className="text-green-400" /> : <WifiOff size={16} className="text-yellow-400" />}
             <div>
-              <div className="font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-wider text-orbital-text">
+              <div className="font-[family-name:var(--font-russo)] text-[0.6rem] tracking-wider text-orbital-text">
                 {connected ? "CONECTADO" : "NÃO CONECTADO"}
               </div>
               {connected && account ? (
@@ -122,7 +122,7 @@ export default function BrandDashboard() {
           >
             <m.icon size={12} className={`${m.color} mx-auto mb-1 opacity-60`} />
             <div className={`font-[family-name:var(--font-jetbrains)] text-xl font-bold ${m.color}`}>{m.value}</div>
-            <div className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-text-dim/50">{m.label}</div>
+            <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-text-dim/50">{m.label}</div>
           </motion.div>
         ))}
       </div>
@@ -137,7 +137,7 @@ export default function BrandDashboard() {
               <Image size={18} className="text-orbital-purple" />
             </div>
             <div>
-              <h2 className="font-[family-name:var(--font-orbitron)] text-sm tracking-wider text-orbital-text group-hover:text-orbital-purple transition-colors">
+              <h2 className="font-[family-name:var(--font-russo)] text-sm tracking-wider text-orbital-text group-hover:text-orbital-purple transition-colors">
                 CONTEÚDO
               </h2>
               <p className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim">
@@ -158,7 +158,7 @@ export default function BrandDashboard() {
               <BarChart3 size={18} className="text-orbital-purple" />
             </div>
             <div>
-              <h2 className="font-[family-name:var(--font-orbitron)] text-sm tracking-wider text-orbital-text group-hover:text-orbital-purple transition-colors">
+              <h2 className="font-[family-name:var(--font-russo)] text-sm tracking-wider text-orbital-text group-hover:text-orbital-purple transition-colors">
                 ANALYTICS
               </h2>
               <p className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim">
@@ -177,7 +177,7 @@ export default function BrandDashboard() {
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
           className="bg-[#0A0A0A] border border-orbital-border p-5 space-y-3"
         >
-          <h3 className="font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-wider text-orbital-purple">
+          <h3 className="font-[family-name:var(--font-russo)] text-[0.6rem] tracking-wider text-orbital-purple">
             COMO CONECTAR O INSTAGRAM
           </h3>
           <ol className="space-y-2 font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text-dim">

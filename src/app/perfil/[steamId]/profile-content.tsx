@@ -408,7 +408,7 @@ export function ProfileContent({ steamId }: { steamId: string }) {
         </div>
         <HudCard className="text-center py-12">
           <Skull size={32} className="text-orbital-border mx-auto mb-4" />
-          <p className="font-[family-name:var(--font-orbitron)] text-sm text-orbital-text-dim">
+          <p className="font-[family-name:var(--font-russo)] text-sm text-orbital-text-dim">
             Jogador não encontrado
           </p>
           <p className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text-dim mt-2">
@@ -446,7 +446,7 @@ export function ProfileContent({ steamId }: { steamId: string }) {
                 <img src={avatar} alt={displayName} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full bg-orbital-border flex items-center justify-center">
-                  <span className="font-[family-name:var(--font-orbitron)] text-2xl text-orbital-text-dim">
+                  <span className="font-[family-name:var(--font-russo)] text-2xl text-orbital-text-dim">
                     {displayName?.charAt(0)?.toUpperCase() || "?"}
                   </span>
                 </div>
@@ -463,16 +463,16 @@ export function ProfileContent({ steamId }: { steamId: string }) {
           {/* Info */}
           <div className="text-center sm:text-left flex-1">
             <div className="flex items-center gap-2 justify-center sm:justify-start flex-wrap">
-              <h1 className="font-[family-name:var(--font-orbitron)] text-xl sm:text-2xl font-bold text-orbital-text tracking-wider">
+              <h1 className="font-[family-name:var(--font-russo)] text-xl sm:text-2xl font-bold text-orbital-text tracking-wider">
                 {displayName}
               </h1>
               {steamId === "76561198023055702" && (
-                <span className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.1em] px-2 py-0.5 bg-red-500/20 border border-red-500/50 text-red-400">
+                <span className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.1em] px-2 py-0.5 bg-red-500/20 border border-red-500/50 text-red-400">
                   CRIADOR
                 </span>
               )}
               {userRole.admin && (
-                <span className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.1em] px-2 py-0.5 bg-yellow-500/20 border border-yellow-500/50 text-yellow-400">
+                <span className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.1em] px-2 py-0.5 bg-yellow-500/20 border border-yellow-500/50 text-yellow-400">
                   ADMIN
                 </span>
               )}
@@ -490,7 +490,7 @@ export function ProfileContent({ steamId }: { steamId: string }) {
             <div className="flex items-center gap-2 mt-2 flex-wrap justify-center sm:justify-start">
               <Link
                 href={`/comparar?p1=${steamId}`}
-                className="inline-flex items-center gap-1.5 px-3 py-1 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 hover:bg-orbital-purple/20 transition-all font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-purple"
+                className="inline-flex items-center gap-1.5 px-3 py-1 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 hover:bg-orbital-purple/20 transition-all font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-purple"
               >
                 <Swords size={11} />
                 COMPARAR
@@ -657,7 +657,7 @@ export function ProfileContent({ steamId }: { steamId: string }) {
                   </span>
 
                   {/* Result label */}
-                  <span className={`font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.1em] w-16 text-center shrink-0 ${resultColor}`}>
+                  <span className={`font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.1em] w-16 text-center shrink-0 ${resultColor}`}>
                     {resultLabel}
                   </span>
                 </div>
@@ -680,11 +680,11 @@ export function ProfileContent({ steamId }: { steamId: string }) {
                 <div className="p-2">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 min-w-0">
-                      <span className="font-[family-name:var(--font-orbitron)] text-[0.65rem] text-orbital-purple shrink-0">
+                      <span className="font-[family-name:var(--font-russo)] text-[0.65rem] text-orbital-purple shrink-0">
                         #{clip.rank}
                       </span>
                       {clip.kills_count >= 2 && (
-                        <span className="font-[family-name:var(--font-orbitron)] text-[0.65rem] text-orbital-purple bg-orbital-purple/10 px-1.5 py-0.5 shrink-0">
+                        <span className="font-[family-name:var(--font-russo)] text-[0.65rem] text-orbital-purple bg-orbital-purple/10 px-1.5 py-0.5 shrink-0">
                           {clip.kills_count >= 5 ? "ACE" : `${clip.kills_count}K`}
                         </span>
                       )}
@@ -727,7 +727,7 @@ export function ProfileContent({ steamId }: { steamId: string }) {
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <Map size={12} className="text-orbital-purple" />
-                      <span className="font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-wider text-orbital-text">
+                      <span className="font-[family-name:var(--font-russo)] text-[0.6rem] tracking-wider text-orbital-text">
                         {map.replace("de_", "").toUpperCase()}
                       </span>
                       <span className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim">
@@ -832,7 +832,7 @@ function EvolutionChart({ data, label, color, refLine, format }: {
       <div className="flex items-center justify-between mb-1.5">
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
-          <span className="font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-wider text-orbital-text">
+          <span className="font-[family-name:var(--font-russo)] text-[0.6rem] tracking-wider text-orbital-text">
             {label}
           </span>
         </div>

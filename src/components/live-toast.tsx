@@ -208,7 +208,7 @@ export function LiveToastProvider() {
                     ) : (
                       <Trophy size={12} className="text-orbital-success" />
                     )}
-                    <span className={`font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.15em] ${
+                    <span className={`font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.15em] ${
                       toast.type === "started"
                         ? "text-orbital-live"
                         : toast.type === "highlight"

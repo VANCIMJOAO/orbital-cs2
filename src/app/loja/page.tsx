@@ -160,7 +160,7 @@ export default function LojaPage() {
           <div className="flex items-center gap-3">
             <ShoppingBag size={24} className="text-orbital-purple" />
             <div>
-              <h1 className="font-[family-name:var(--font-orbitron)] text-xl tracking-wider text-orbital-text">LOJA</h1>
+              <h1 className="font-[family-name:var(--font-russo)] text-xl tracking-wider text-orbital-text">LOJA</h1>
               <p className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text-dim">Streetwear ORBITAL ROXA</p>
             </div>
           </div>
@@ -170,7 +170,7 @@ export default function LojaPage() {
         {cartCount > 0 && (
           <button
             onClick={() => setShowCart(!showCart)}
-            className="relative flex items-center gap-2 px-4 py-2 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-wider text-orbital-purple transition-colors"
+            className="relative flex items-center gap-2 px-4 py-2 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 font-[family-name:var(--font-russo)] text-[0.6rem] tracking-wider text-orbital-purple transition-colors"
           >
             <ShoppingBag size={14} />
             CARRINHO
@@ -195,7 +195,7 @@ export default function LojaPage() {
               <div className="flex items-center gap-3">
                 <CheckCircle2 size={24} className="text-green-400" />
                 <div>
-                  <h2 className="font-[family-name:var(--font-orbitron)] text-sm tracking-wider text-green-400">PEDIDO #{orderReceipt.id}</h2>
+                  <h2 className="font-[family-name:var(--font-russo)] text-sm tracking-wider text-green-400">PEDIDO #{orderReceipt.id}</h2>
                   <p className="font-[family-name:var(--font-jetbrains)] text-xs text-green-400/70">Aguardando pagamento PIX</p>
                 </div>
               </div>
@@ -207,7 +207,7 @@ export default function LojaPage() {
             <div className="p-4 space-y-4">
               {/* Items */}
               <div>
-                <div className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-purple mb-2">ITENS</div>
+                <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-purple mb-2">ITENS</div>
                 <div className="space-y-1">
                   {orderReceipt.items.map((item, i) => (
                     <div key={i} className="flex justify-between font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text-dim">
@@ -217,14 +217,14 @@ export default function LojaPage() {
                   ))}
                 </div>
                 <div className="flex justify-between mt-2 pt-2 border-t border-orbital-border">
-                  <span className="font-[family-name:var(--font-orbitron)] text-xs tracking-wider text-orbital-text">TOTAL</span>
-                  <span className="font-[family-name:var(--font-orbitron)] text-lg text-orbital-purple">{formatPrice(orderReceipt.total)}</span>
+                  <span className="font-[family-name:var(--font-russo)] text-xs tracking-wider text-orbital-text">TOTAL</span>
+                  <span className="font-[family-name:var(--font-russo)] text-lg text-orbital-purple">{formatPrice(orderReceipt.total)}</span>
                 </div>
               </div>
 
               {/* PIX Info */}
               <div className="bg-[#111] border border-orbital-border p-4 space-y-3">
-                <div className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-purple">
+                <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-purple">
                   PAGAMENTO VIA PIX
                 </div>
                 <div className="flex items-center gap-2">
@@ -299,7 +299,7 @@ export default function LojaPage() {
           >
             {/* Cart header */}
             <div className="flex items-center justify-between p-4 border-b border-orbital-border">
-              <span className="font-[family-name:var(--font-orbitron)] text-sm tracking-wider text-orbital-text">CARRINHO</span>
+              <span className="font-[family-name:var(--font-russo)] text-sm tracking-wider text-orbital-text">CARRINHO</span>
               <button onClick={() => setShowCart(false)} className="text-orbital-text-dim hover:text-orbital-text">
                 <X size={18} />
               </button>
@@ -338,14 +338,14 @@ export default function LojaPage() {
             {/* Cart total + checkout */}
             <div className="p-4 border-t border-orbital-border space-y-3">
               <div className="flex items-center justify-between">
-                <span className="font-[family-name:var(--font-orbitron)] text-xs tracking-wider text-orbital-text-dim">TOTAL</span>
-                <span className="font-[family-name:var(--font-orbitron)] text-lg text-orbital-purple">{formatPrice(cartTotal)}</span>
+                <span className="font-[family-name:var(--font-russo)] text-xs tracking-wider text-orbital-text-dim">TOTAL</span>
+                <span className="font-[family-name:var(--font-russo)] text-lg text-orbital-purple">{formatPrice(cartTotal)}</span>
               </div>
 
               {!showCheckout ? (
                 <button
                   onClick={() => setShowCheckout(true)}
-                  className="w-full py-3 bg-orbital-purple hover:bg-orbital-purple/80 text-white font-[family-name:var(--font-orbitron)] text-sm tracking-wider transition-colors"
+                  className="w-full py-3 bg-orbital-purple hover:bg-orbital-purple/80 text-white font-[family-name:var(--font-russo)] text-sm tracking-wider transition-colors"
                 >
                   FINALIZAR PEDIDO
                 </button>
@@ -358,7 +358,7 @@ export default function LojaPage() {
                   <button
                     onClick={handleCheckout}
                     disabled={!name || !whatsapp || submitting}
-                    className="w-full py-3 bg-orbital-purple hover:bg-orbital-purple/80 disabled:opacity-30 text-white font-[family-name:var(--font-orbitron)] text-sm tracking-wider transition-colors flex items-center justify-center gap-2"
+                    className="w-full py-3 bg-orbital-purple hover:bg-orbital-purple/80 disabled:opacity-30 text-white font-[family-name:var(--font-russo)] text-sm tracking-wider transition-colors flex items-center justify-center gap-2"
                   >
                     {submitting ? <Loader2 size={16} className="animate-spin" /> : <ShoppingBag size={16} />}
                     {submitting ? "ENVIANDO..." : `PEDIR — ${formatPrice(cartTotal)}`}
@@ -410,7 +410,7 @@ function ProductCard({ product, onAdd, delay }: { product: Product; onAdd: (p: P
         )}
         {product.stock <= 0 && (
           <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-            <span className="font-[family-name:var(--font-orbitron)] text-xs tracking-wider text-red-400">ESGOTADO</span>
+            <span className="font-[family-name:var(--font-russo)] text-xs tracking-wider text-red-400">ESGOTADO</span>
           </div>
         )}
       </div>
@@ -418,13 +418,13 @@ function ProductCard({ product, onAdd, delay }: { product: Product; onAdd: (p: P
       {/* Info */}
       <div className="p-4 space-y-3">
         <div>
-          <h3 className="font-[family-name:var(--font-orbitron)] text-sm tracking-wider text-orbital-text">{product.name}</h3>
+          <h3 className="font-[family-name:var(--font-russo)] text-sm tracking-wider text-orbital-text">{product.name}</h3>
           {product.description && (
             <p className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim mt-1">{product.description}</p>
           )}
         </div>
 
-        <div className="font-[family-name:var(--font-orbitron)] text-lg text-orbital-purple">
+        <div className="font-[family-name:var(--font-russo)] text-lg text-orbital-purple">
           {formatPrice(product.price)}
         </div>
 
@@ -451,7 +451,7 @@ function ProductCard({ product, onAdd, delay }: { product: Product; onAdd: (p: P
         <button
           onClick={() => onAdd(product, selectedSize)}
           disabled={product.stock <= 0}
-          className="w-full py-2.5 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 hover:bg-orbital-purple/20 disabled:opacity-30 disabled:cursor-not-allowed text-orbital-purple font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-wider transition-colors flex items-center justify-center gap-2"
+          className="w-full py-2.5 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 hover:bg-orbital-purple/20 disabled:opacity-30 disabled:cursor-not-allowed text-orbital-purple font-[family-name:var(--font-russo)] text-[0.6rem] tracking-wider transition-colors flex items-center justify-center gap-2"
         >
           <Plus size={12} /> ADICIONAR
         </button>

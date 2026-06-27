@@ -286,45 +286,45 @@ export default function MidiaKitPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-[family-name:var(--font-orbitron)] text-lg tracking-wider text-orbital-text">MÍDIA KIT</h1>
+        <h1 className="font-[family-name:var(--font-russo)] text-lg tracking-wider text-orbital-text">MÍDIA KIT</h1>
         <p className="font-[family-name:var(--font-jetbrains)] text-[0.7rem] text-orbital-text-dim">Gere automaticamente com dados reais do sistema</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Config */}
         <div className="bg-[#0A0A0A] border border-orbital-border p-5 space-y-4">
-          <div className="font-[family-name:var(--font-orbitron)] text-[0.7rem] tracking-wider text-orbital-purple">PERSONALIZAR</div>
+          <div className="font-[family-name:var(--font-russo)] text-[0.7rem] tracking-wider text-orbital-purple">PERSONALIZAR</div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-purple mb-1 block">EVENTO</label>
+              <label className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-purple mb-1 block">EVENTO</label>
               <input type="text" value={eventName} onChange={e => setEventName(e.target.value)} className={inputClass} />
             </div>
             <div>
-              <label className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-purple mb-1 block">DATA</label>
+              <label className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-purple mb-1 block">DATA</label>
               <input type="text" value={eventDate} onChange={e => setEventDate(e.target.value)} className={inputClass} />
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-purple mb-1 block">LOCAL</label>
+              <label className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-purple mb-1 block">LOCAL</label>
               <input type="text" value={eventLocal} onChange={e => setEventLocal(e.target.value)} className={inputClass} />
             </div>
             <div>
-              <label className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-purple mb-1 block">WHATSAPP</label>
+              <label className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-purple mb-1 block">WHATSAPP</label>
               <input type="text" value={contactWhatsapp} onChange={e => setContactWhatsapp(e.target.value)} placeholder="16999999999" className={inputClass} />
             </div>
           </div>
 
           <div className="bg-[#111] border border-orbital-border p-3 space-y-1">
-            <div className="font-[family-name:var(--font-orbitron)] text-[0.6rem] text-orbital-text-dim">DADOS AUTOMÁTICOS (do sistema)</div>
+            <div className="font-[family-name:var(--font-russo)] text-[0.6rem] text-orbital-text-dim">DADOS AUTOMÁTICOS (do sistema)</div>
             <div className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text">
               {stats.matches} partidas • {stats.teams} times • {stats.players} jogadores • {stats.highlights} highlights • {stats.viewers} viewers • {stats.presentes} presentes
             </div>
           </div>
 
           <button onClick={generate} disabled={generating}
-            className="w-full py-3 bg-orbital-purple hover:bg-orbital-purple/80 disabled:opacity-40 text-white font-[family-name:var(--font-orbitron)] text-[0.7rem] tracking-wider transition-colors flex items-center justify-center gap-2"
+            className="w-full py-3 bg-orbital-purple hover:bg-orbital-purple/80 disabled:opacity-40 text-white font-[family-name:var(--font-russo)] text-[0.7rem] tracking-wider transition-colors flex items-center justify-center gap-2"
           >
             {generating ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />}
             GERAR MÍDIA KIT
@@ -347,7 +347,7 @@ export default function MidiaKitPage() {
           </div>
           {previewUrl && (
             <button onClick={downloadPDF}
-              className="w-full py-2.5 bg-green-500/10 border border-green-500/30 hover:border-green-500/60 text-green-400 font-[family-name:var(--font-orbitron)] text-[0.7rem] tracking-wider transition-colors flex items-center justify-center gap-2"
+              className="w-full py-2.5 bg-green-500/10 border border-green-500/30 hover:border-green-500/60 text-green-400 font-[family-name:var(--font-russo)] text-[0.7rem] tracking-wider transition-colors flex items-center justify-center gap-2"
             >
               <Download size={16} />
               DOWNLOAD PNG (A4)

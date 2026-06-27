@@ -195,12 +195,12 @@ export default function ConteudoPage() {
         <div className="flex items-center gap-3">
           <Calendar size={18} className="text-orbital-purple" />
           <div>
-            <h1 className="font-[family-name:var(--font-orbitron)] text-lg tracking-wider text-orbital-text">CONTEÚDO</h1>
+            <h1 className="font-[family-name:var(--font-russo)] text-lg tracking-wider text-orbital-text">CONTEÚDO</h1>
             <p className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim">{posts.length} posts — {posts.filter(p => p.status === "published").length} publicados</p>
           </div>
         </div>
         <button onClick={() => setShowCreate(!showCreate)}
-          className="flex items-center gap-1.5 px-4 py-2 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 text-orbital-purple font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider transition-colors"
+          className="flex items-center gap-1.5 px-4 py-2 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 text-orbital-purple font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider transition-colors"
         >
           {showCreate ? <X size={14} /> : <Plus size={14} />}
           {showCreate ? "CANCELAR" : "NOVO POST"}
@@ -209,10 +209,10 @@ export default function ConteudoPage() {
 
       {/* View toggle */}
       <div className="flex items-center gap-2">
-        <button onClick={() => setViewMode("list")} className={`px-3 py-1.5 font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider border transition-colors ${viewMode === "list" ? "bg-orbital-purple/10 border-orbital-purple/50 text-orbital-purple" : "bg-[#0A0A0A] border-orbital-border text-orbital-text-dim"}`}>
+        <button onClick={() => setViewMode("list")} className={`px-3 py-1.5 font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider border transition-colors ${viewMode === "list" ? "bg-orbital-purple/10 border-orbital-purple/50 text-orbital-purple" : "bg-[#0A0A0A] border-orbital-border text-orbital-text-dim"}`}>
           LISTA
         </button>
-        <button onClick={() => setViewMode("calendar")} className={`px-3 py-1.5 font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider border transition-colors ${viewMode === "calendar" ? "bg-orbital-purple/10 border-orbital-purple/50 text-orbital-purple" : "bg-[#0A0A0A] border-orbital-border text-orbital-text-dim"}`}>
+        <button onClick={() => setViewMode("calendar")} className={`px-3 py-1.5 font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider border transition-colors ${viewMode === "calendar" ? "bg-orbital-purple/10 border-orbital-purple/50 text-orbital-purple" : "bg-[#0A0A0A] border-orbital-border text-orbital-text-dim"}`}>
           CALENDÁRIO
         </button>
       </div>
@@ -238,13 +238,13 @@ export default function ConteudoPage() {
             <div className="flex items-center justify-between mb-4">
               <button onClick={() => setCalendarMonth(p => p.month === 0 ? { year: p.year - 1, month: 11 } : { ...p, month: p.month - 1 })}
                 className="px-3 py-1 text-orbital-text-dim hover:text-orbital-purple font-[family-name:var(--font-jetbrains)] text-xs transition-colors">←</button>
-              <span className="font-[family-name:var(--font-orbitron)] text-sm tracking-wider text-orbital-text capitalize">{monthName}</span>
+              <span className="font-[family-name:var(--font-russo)] text-sm tracking-wider text-orbital-text capitalize">{monthName}</span>
               <button onClick={() => setCalendarMonth(p => p.month === 11 ? { year: p.year + 1, month: 0 } : { ...p, month: p.month + 1 })}
                 className="px-3 py-1 text-orbital-text-dim hover:text-orbital-purple font-[family-name:var(--font-jetbrains)] text-xs transition-colors">→</button>
             </div>
             <div className="grid grid-cols-7 gap-px">
               {["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map(d => (
-                <div key={d} className="p-2 text-center font-[family-name:var(--font-orbitron)] text-[0.6rem] text-orbital-text-dim/50">{d}</div>
+                <div key={d} className="p-2 text-center font-[family-name:var(--font-russo)] text-[0.6rem] text-orbital-text-dim/50">{d}</div>
               ))}
               {days.map((day, i) => {
                 if (!day) return <div key={`e${i}`} className="min-h-[80px] bg-[#080808]" />;
@@ -296,18 +296,18 @@ export default function ConteudoPage() {
             <div className="bg-[#0A0A0A] border border-orbital-purple/30 p-5 space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-purple mb-1 block">TÍTULO *</label>
+                  <label className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-purple mb-1 block">TÍTULO *</label>
                   <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="Ex: Resultado Cup #1" className={inputClass} />
                 </div>
                 <div className="flex gap-3">
                   <div className="flex-1">
-                    <label className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-purple mb-1 block">TIPO</label>
+                    <label className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-purple mb-1 block">TIPO</label>
                     <div className="flex gap-1.5">
                       {(["feed", "reel", "story"] as const).map(t => {
                         const cfg = typeConfig[t];
                         return (
                           <button key={t} onClick={() => setPostType(t)}
-                            className={`flex-1 py-2 font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider border transition-colors ${postType === t ? `${cfg.bg} border-current ${cfg.color}` : "bg-[#111] border-orbital-border text-orbital-text-dim"}`}
+                            className={`flex-1 py-2 font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider border transition-colors ${postType === t ? `${cfg.bg} border-current ${cfg.color}` : "bg-[#111] border-orbital-border text-orbital-text-dim"}`}
                           >
                             {cfg.label}
                           </button>
@@ -320,7 +320,7 @@ export default function ConteudoPage() {
 
               {/* Media upload */}
               <div>
-                <label className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-purple mb-1 block">MÍDIA</label>
+                <label className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-purple mb-1 block">MÍDIA</label>
                 <div className="flex gap-2">
                   <input type="text" value={mediaUrl} onChange={e => setMediaUrl(e.target.value)} placeholder="URL da imagem/vídeo ou faça upload →" className={`${inputClass} flex-1`} />
                   <label className={`flex items-center gap-1.5 px-3 py-2 bg-[#111] border border-orbital-border hover:border-orbital-purple/30 text-orbital-text-dim font-[family-name:var(--font-jetbrains)] text-xs cursor-pointer transition-colors ${uploading ? "opacity-50" : ""}`}>
@@ -343,7 +343,7 @@ export default function ConteudoPage() {
               {/* Caption + AI */}
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-purple">CAPTION</label>
+                  <label className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-purple">CAPTION</label>
                   <button
                     onClick={() => callAI("gerar-caption", `Post: ${title}. Tipo: ${postType}`, setCaption)}
                     disabled={!!aiLoading || !title}
@@ -359,7 +359,7 @@ export default function ConteudoPage() {
               {/* Hashtags + AI */}
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-purple">HASHTAGS</label>
+                  <label className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-purple">HASHTAGS</label>
                   <button
                     onClick={() => callAI("gerar-hashtags", `Post: ${title}. Tipo: ${postType}. Caption: ${caption}`, setHashtags)}
                     disabled={!!aiLoading || !title}
@@ -375,18 +375,18 @@ export default function ConteudoPage() {
               {/* Schedule */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-purple mb-1 block">DATA</label>
+                  <label className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-purple mb-1 block">DATA</label>
                   <input type="date" value={schedDate} onChange={e => setSchedDate(e.target.value)} className={inputClass} />
                 </div>
                 <div>
-                  <label className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-purple mb-1 block">HORÁRIO</label>
+                  <label className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-purple mb-1 block">HORÁRIO</label>
                   <input type="time" value={schedTime} onChange={e => setSchedTime(e.target.value)} className={inputClass} />
                 </div>
               </div>
 
               {/* Submit */}
               <button onClick={createPost} disabled={!title || submitting}
-                className="w-full py-2.5 bg-orbital-purple hover:bg-orbital-purple/80 disabled:opacity-30 text-white font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-wider transition-colors flex items-center justify-center gap-2"
+                className="w-full py-2.5 bg-orbital-purple hover:bg-orbital-purple/80 disabled:opacity-30 text-white font-[family-name:var(--font-russo)] text-[0.6rem] tracking-wider transition-colors flex items-center justify-center gap-2"
               >
                 {submitting ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
                 CRIAR POST
@@ -401,7 +401,7 @@ export default function ConteudoPage() {
         <div className="flex gap-2">
           {(["all", "draft", "scheduled", "published"] as const).map(f => (
             <button key={f} onClick={() => setFilter(f)}
-              className={`px-3 py-1.5 font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider border transition-colors ${filter === f ? "bg-orbital-purple/10 border-orbital-purple/50 text-orbital-purple" : "bg-[#0A0A0A] border-orbital-border text-orbital-text-dim hover:text-orbital-text"}`}
+              className={`px-3 py-1.5 font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider border transition-colors ${filter === f ? "bg-orbital-purple/10 border-orbital-purple/50 text-orbital-purple" : "bg-[#0A0A0A] border-orbital-border text-orbital-text-dim hover:text-orbital-text"}`}
             >
               {f === "all" ? "TODOS" : f === "draft" ? "RASCUNHOS" : f === "scheduled" ? "AGENDADOS" : "PUBLICADOS"}
               <span className="ml-1 opacity-50">({posts.filter(p => f === "all" || p.status === f).length})</span>
@@ -434,7 +434,7 @@ export default function ConteudoPage() {
                 className="w-full flex items-center gap-3 p-3 hover:bg-white/[0.02] transition-colors text-left"
               >
                 {/* Type badge */}
-                <span className={`font-[family-name:var(--font-orbitron)] text-[0.65rem] px-2 py-0.5 ${tc.bg} ${tc.color} shrink-0`}>
+                <span className={`font-[family-name:var(--font-russo)] text-[0.65rem] px-2 py-0.5 ${tc.bg} ${tc.color} shrink-0`}>
                   {tc.label}
                 </span>
 
@@ -491,7 +491,7 @@ export default function ConteudoPage() {
 
                       {/* Caption */}
                       <div>
-                        <label className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-purple mb-1 block">CAPTION</label>
+                        <label className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-purple mb-1 block">CAPTION</label>
                         <textarea
                           value={post.caption || ""}
                           onChange={e => updatePost(post.id, { caption: e.target.value })}
@@ -503,7 +503,7 @@ export default function ConteudoPage() {
 
                       {/* Hashtags */}
                       <div>
-                        <label className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-purple mb-1 block">HASHTAGS</label>
+                        <label className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-purple mb-1 block">HASHTAGS</label>
                         <input
                           type="text"
                           value={post.hashtags || ""}
@@ -526,7 +526,7 @@ export default function ConteudoPage() {
                           {Object.entries(post.insights).map(([key, val]) => (
                             <div key={key} className="bg-[#111] border border-orbital-border p-2 text-center">
                               <div className="font-[family-name:var(--font-jetbrains)] text-sm text-orbital-text font-bold">{val}</div>
-                              <div className="font-[family-name:var(--font-orbitron)] text-[0.65rem] text-orbital-text-dim/50">{key.toUpperCase()}</div>
+                              <div className="font-[family-name:var(--font-russo)] text-[0.65rem] text-orbital-text-dim/50">{key.toUpperCase()}</div>
                             </div>
                           ))}
                         </div>
@@ -598,7 +598,7 @@ export default function ConteudoPage() {
                           >
                             <X size={14} />
                           </button>
-                          <div className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-purple mb-2">
+                          <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-purple mb-2">
                             RESULTADO DA IA
                           </div>
                           <div className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text whitespace-pre-wrap leading-relaxed max-h-[400px] overflow-y-auto">

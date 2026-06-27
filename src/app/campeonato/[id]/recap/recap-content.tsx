@@ -47,7 +47,7 @@ function SectionHeader({ icon: Icon, title }: { icon: React.ElementType; title: 
   return (
     <div className="flex items-center gap-3 mb-6">
       <Icon size={16} className="text-orbital-purple" />
-      <h2 className="font-[family-name:var(--font-orbitron)] text-xs tracking-[0.2em] text-orbital-purple">{title}</h2>
+      <h2 className="font-[family-name:var(--font-russo)] text-xs tracking-[0.2em] text-orbital-purple">{title}</h2>
       <div className="h-[1px] flex-1 bg-gradient-to-r from-orbital-purple/40 to-transparent" />
     </div>
   );
@@ -159,7 +159,7 @@ export function RecapContent({ tournament, leaderboard, matchesData, highlights,
             >
               <span className="flex items-center gap-2 px-4 py-2 bg-orbital-purple/10 border border-orbital-purple/30">
                 <BarChart3 size={14} className="text-orbital-purple" />
-                <span className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.25em] text-orbital-purple">RECAP COMPLETO</span>
+                <span className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.25em] text-orbital-purple">RECAP COMPLETO</span>
               </span>
             </motion.div>
 
@@ -168,7 +168,7 @@ export function RecapContent({ tournament, leaderboard, matchesData, highlights,
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="font-[family-name:var(--font-orbitron)] text-3xl sm:text-5xl font-black tracking-wider mb-8"
+              className="font-[family-name:var(--font-russo)] text-3xl sm:text-5xl font-black tracking-wider mb-8"
             >
               <span className="text-orbital-purple glow-purple-text">{t.name}</span>
             </motion.h1>
@@ -186,7 +186,7 @@ export function RecapContent({ tournament, leaderboard, matchesData, highlights,
                   <div className="flex items-center gap-2">
                     <div className="h-[1px] w-8 bg-gradient-to-r from-transparent to-yellow-400/50" />
                     <Trophy size={18} className="text-yellow-400" />
-                    <span className="font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-[0.25em] text-yellow-400/80">
+                    <span className="font-[family-name:var(--font-russo)] text-[0.6rem] tracking-[0.25em] text-yellow-400/80">
                       CAMPEAO
                     </span>
                     <Trophy size={18} className="text-yellow-400" />
@@ -198,7 +198,7 @@ export function RecapContent({ tournament, leaderboard, matchesData, highlights,
                     </div>
                     <div>
                       <h3
-                        className="font-[family-name:var(--font-orbitron)] text-xl sm:text-3xl font-black tracking-wider text-yellow-400"
+                        className="font-[family-name:var(--font-russo)] text-xl sm:text-3xl font-black tracking-wider text-yellow-400"
                         style={{ textShadow: "0 0 20px rgba(234,179,8,0.4)" }}
                       >
                         {champion.name}
@@ -224,7 +224,7 @@ export function RecapContent({ tournament, leaderboard, matchesData, highlights,
                   <div className="flex items-center gap-2">
                     <div className="h-[1px] w-6 bg-gradient-to-r from-transparent to-red-400/50" />
                     <Star size={14} className="text-red-400 fill-red-400" />
-                    <span className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.25em] text-red-400/80">
+                    <span className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.25em] text-red-400/80">
                       MVP DO CAMPEONATO
                     </span>
                     <Star size={14} className="text-red-400 fill-red-400" />
@@ -233,7 +233,7 @@ export function RecapContent({ tournament, leaderboard, matchesData, highlights,
                   <Link href={`/perfil/${mvp.steamId}`} className="group flex items-center gap-4">
                     <div>
                       <h3
-                        className="font-[family-name:var(--font-orbitron)] text-base sm:text-lg font-bold tracking-wider text-red-400 group-hover:text-orbital-text transition-colors"
+                        className="font-[family-name:var(--font-russo)] text-base sm:text-lg font-bold tracking-wider text-red-400 group-hover:text-orbital-text transition-colors"
                         style={{ textShadow: "0 0 15px rgba(248,113,113,0.3)" }}
                       >
                         {mvp.name}
@@ -269,7 +269,7 @@ export function RecapContent({ tournament, leaderboard, matchesData, highlights,
                   className="block bg-[#0A0A0A] border border-orbital-border hover:border-orbital-purple/40 p-4 text-center transition-colors group h-full"
                 >
                   <div className="text-3xl mb-2">{award.emoji}</div>
-                  <div className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.15em] text-orbital-purple mb-2">
+                  <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.15em] text-orbital-purple mb-2">
                     {award.title}
                   </div>
                   <div className="font-[family-name:var(--font-jetbrains)] text-sm text-orbital-text group-hover:text-orbital-purple transition-colors truncate">
@@ -329,12 +329,12 @@ export function RecapContent({ tournament, leaderboard, matchesData, highlights,
             <table className="w-full">
               <thead>
                 <tr className="border-b border-orbital-border">
-                  <th className="text-left py-3 px-3 font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.2em] text-orbital-purple">#</th>
-                  <th className="text-left py-3 px-3 font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.2em] text-orbital-purple">JOGADOR</th>
-                  <th className="text-center py-3 px-3 font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.2em] text-orbital-purple">RATING</th>
-                  <th className="text-center py-3 px-3 font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.2em] text-orbital-purple">K/D</th>
-                  <th className="text-center py-3 px-3 font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.2em] text-orbital-purple">HS%</th>
-                  <th className="text-center py-3 px-3 font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.2em] text-orbital-purple hidden sm:table-cell">KILLS</th>
+                  <th className="text-left py-3 px-3 font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.2em] text-orbital-purple">#</th>
+                  <th className="text-left py-3 px-3 font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.2em] text-orbital-purple">JOGADOR</th>
+                  <th className="text-center py-3 px-3 font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.2em] text-orbital-purple">RATING</th>
+                  <th className="text-center py-3 px-3 font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.2em] text-orbital-purple">K/D</th>
+                  <th className="text-center py-3 px-3 font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.2em] text-orbital-purple">HS%</th>
+                  <th className="text-center py-3 px-3 font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.2em] text-orbital-purple hidden sm:table-cell">KILLS</th>
                 </tr>
               </thead>
               <tbody>
@@ -348,7 +348,7 @@ export function RecapContent({ tournament, leaderboard, matchesData, highlights,
                     className="border-b border-orbital-border/50 hover:bg-orbital-purple/5 transition-colors"
                   >
                     <td className="py-3 px-3">
-                      <span className={`font-[family-name:var(--font-orbitron)] text-sm font-bold ${
+                      <span className={`font-[family-name:var(--font-russo)] text-sm font-bold ${
                         i === 0 ? "text-yellow-400" : i === 1 ? "text-gray-400" : i === 2 ? "text-amber-600" : "text-orbital-text-dim"
                       }`}>
                         {i + 1}
@@ -442,7 +442,7 @@ export function RecapContent({ tournament, leaderboard, matchesData, highlights,
                         }`}>
                           {/* Label */}
                           <div className="flex items-center justify-between mb-2">
-                            <span className={`font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.15em] ${
+                            <span className={`font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.15em] ${
                               isGrandFinal ? "text-yellow-400" : "text-orbital-purple"
                             }`}>
                               {md.bracketMatch.label}
@@ -457,7 +457,7 @@ export function RecapContent({ tournament, leaderboard, matchesData, highlights,
                           {/* Score */}
                           <div className="flex items-center justify-between gap-2">
                             <div className="flex-1 text-right">
-                              <span className={`font-[family-name:var(--font-orbitron)] text-xs font-bold ${
+                              <span className={`font-[family-name:var(--font-russo)] text-xs font-bold ${
                                 match.winner === match.team1_id ? (isGrandFinal ? "text-yellow-400" : "text-orbital-success") : "text-orbital-text-dim"
                               }`}>
                                 {match.team1_string || getTeamName(t, md.bracketMatch.team1_id)}
@@ -473,7 +473,7 @@ export function RecapContent({ tournament, leaderboard, matchesData, highlights,
                               </span>
                             </div>
                             <div className="flex-1">
-                              <span className={`font-[family-name:var(--font-orbitron)] text-xs font-bold ${
+                              <span className={`font-[family-name:var(--font-russo)] text-xs font-bold ${
                                 match.winner === match.team2_id ? (isGrandFinal ? "text-yellow-400" : "text-orbital-success") : "text-orbital-text-dim"
                               }`}>
                                 {match.team2_string || getTeamName(t, md.bracketMatch.team2_id)}
@@ -534,7 +534,7 @@ export function RecapContent({ tournament, leaderboard, matchesData, highlights,
                   className="flex items-center gap-4"
                 >
                   <div className="w-24 sm:w-32 text-right shrink-0">
-                    <span className="font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-wider text-orbital-text">
+                    <span className="font-[family-name:var(--font-russo)] text-[0.6rem] tracking-wider text-orbital-text">
                       {mapName.replace("de_", "").toUpperCase()}
                     </span>
                   </div>
@@ -568,11 +568,11 @@ export function RecapContent({ tournament, leaderboard, matchesData, highlights,
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
                   <Star size={14} className="text-yellow-400 fill-yellow-400" />
-                  <span className="font-[family-name:var(--font-orbitron)] text-xs tracking-wider text-yellow-400">
+                  <span className="font-[family-name:var(--font-russo)] text-xs tracking-wider text-yellow-400">
                     SCORE: {bestHighlight.score}
                   </span>
                 </div>
-                <h3 className="font-[family-name:var(--font-orbitron)] text-base font-bold text-orbital-text mb-1">
+                <h3 className="font-[family-name:var(--font-russo)] text-base font-bold text-orbital-text mb-1">
                   {bestHighlight.player_name}
                 </h3>
                 <p className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text-dim mb-2">
@@ -585,7 +585,7 @@ export function RecapContent({ tournament, leaderboard, matchesData, highlights,
                 </div>
                 <Link
                   href={`/partidas/${bestHighlight.match_id}`}
-                  className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 transition-all font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-purple"
+                  className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 transition-all font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-purple"
                 >
                   <Play size={12} /> VER PARTIDA
                 </Link>
@@ -610,20 +610,20 @@ export function RecapContent({ tournament, leaderboard, matchesData, highlights,
           <div className="flex items-center justify-center gap-4 flex-wrap">
             <Link
               href={`/campeonato/${t.id}`}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 transition-all font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-wider text-orbital-purple"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 transition-all font-[family-name:var(--font-russo)] text-[0.6rem] tracking-wider text-orbital-purple"
             >
               <Swords size={14} /> VER BRACKET
             </Link>
             <Link
               href="/leaderboard"
-              className="inline-flex items-center gap-2 px-6 py-3 border border-orbital-border hover:border-orbital-purple/30 transition-all font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-wider text-orbital-text-dim hover:text-orbital-purple"
+              className="inline-flex items-center gap-2 px-6 py-3 border border-orbital-border hover:border-orbital-purple/30 transition-all font-[family-name:var(--font-russo)] text-[0.6rem] tracking-wider text-orbital-text-dim hover:text-orbital-purple"
             >
               <BarChart3 size={14} /> LEADERBOARD
             </Link>
             {highlights.length > 0 && (
               <Link
                 href="/highlights"
-                className="inline-flex items-center gap-2 px-6 py-3 border border-orbital-border hover:border-orbital-purple/30 transition-all font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-wider text-orbital-text-dim hover:text-orbital-purple"
+                className="inline-flex items-center gap-2 px-6 py-3 border border-orbital-border hover:border-orbital-purple/30 transition-all font-[family-name:var(--font-russo)] text-[0.6rem] tracking-wider text-orbital-text-dim hover:text-orbital-purple"
               >
                 <Zap size={14} /> HIGHLIGHTS
               </Link>

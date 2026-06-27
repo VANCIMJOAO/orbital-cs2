@@ -387,7 +387,7 @@ export function PlayerCardExport({ steamId, displayName, stats }: PlayerCardExpo
     <button
       onClick={handleExport}
       disabled={exporting}
-      className="inline-flex items-center gap-1.5 px-3 py-1 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 hover:bg-orbital-purple/20 transition-all font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-purple disabled:opacity-50 disabled:cursor-not-allowed"
+      className="inline-flex items-center gap-1.5 px-3 py-1 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 hover:bg-orbital-purple/20 transition-all font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-purple disabled:opacity-50 disabled:cursor-not-allowed"
     >
       {exporting ? <Loader2 size={11} className="animate-spin" /> : <Download size={11} />}
       {exporting ? "GERANDO..." : "EXPORTAR CARD"}

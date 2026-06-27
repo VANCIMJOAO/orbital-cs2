@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Sparkles, Loader2, Swords } from "lucide-react";
 import Link from "next/link";
 import { HudCard } from "@/components/hud-card";
+import { PageHeader } from "@/components/page-header";
 import { VideoPlayer } from "@/components/video-player";
 import type { HighlightClip } from "@/lib/api";
 
@@ -48,24 +49,13 @@ export function HighlightsContent() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-20 pt-8">
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mb-8"
-      >
-        <div className="flex items-center gap-3 mb-2">
-          <Sparkles size={18} className="text-orbital-purple" />
-          <h1 className="font-[family-name:var(--font-orbitron)] text-sm tracking-[0.3em] text-orbital-text">
-            HIGHLIGHTS
-          </h1>
-        </div>
-        <div className="h-[1px] bg-gradient-to-r from-orbital-purple/50 to-transparent mb-2" />
-        <p className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim">
-          Melhores momentos de todas as partidas
-        </p>
-      </motion.div>
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-20 pt-10">
+      <PageHeader
+        kicker="Recortados automaticamente"
+        title="Os melhores"
+        accent="Highlights"
+        sub="Clutchs, aces e retakes de todas as partidas, em vídeo."
+      />
 
       {/* Filters */}
       {!loading && clips.length > 0 && (
@@ -81,7 +71,7 @@ export function HighlightsContent() {
             <button
               key={f}
               onClick={() => setFilterKills(f)}
-              className={`px-3 py-1.5 font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider border transition-colors ${
+              className={`px-3 py-1.5 font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider border transition-colors ${
                 filterKills === f
                   ? "bg-orbital-purple/10 border-orbital-purple/50 text-orbital-purple"
                   : "bg-[#0A0A0A] border-orbital-border text-orbital-text-dim hover:text-orbital-text"
@@ -146,7 +136,7 @@ export function HighlightsContent() {
               <div className="p-2.5">
                 {/* Player + kills */}
                 <div className="flex items-center gap-2 mb-1.5">
-                  <span className="font-[family-name:var(--font-orbitron)] text-[0.65rem] text-orbital-purple shrink-0">
+                  <span className="font-[family-name:var(--font-russo)] text-[0.65rem] text-orbital-purple shrink-0">
                     #{clip.rank}
                   </span>
                   {clip.steam_id ? (
@@ -162,7 +152,7 @@ export function HighlightsContent() {
                     </span>
                   )}
                   {clip.kills_count >= 2 && (
-                    <span className="font-[family-name:var(--font-orbitron)] text-[0.65rem] text-orbital-purple bg-orbital-purple/10 px-1.5 py-0.5 shrink-0">
+                    <span className="font-[family-name:var(--font-russo)] text-[0.65rem] text-orbital-purple bg-orbital-purple/10 px-1.5 py-0.5 shrink-0">
                       {clip.kills_count >= 5 ? "ACE" : `${clip.kills_count}K`}
                     </span>
                   )}
@@ -196,7 +186,7 @@ export function HighlightsContent() {
           <button
             onClick={loadMore}
             disabled={loadingMore}
-            className="inline-flex items-center gap-2 px-6 py-2.5 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 hover:bg-orbital-purple/20 transition-all font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-wider text-orbital-purple disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-6 py-2.5 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 hover:bg-orbital-purple/20 transition-all font-[family-name:var(--font-russo)] text-[0.6rem] tracking-wider text-orbital-purple disabled:opacity-50"
           >
             {loadingMore ? <Loader2 size={14} className="animate-spin" /> : null}
             {loadingMore ? "CARREGANDO..." : "CARREGAR MAIS"}

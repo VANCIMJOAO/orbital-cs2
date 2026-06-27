@@ -86,7 +86,7 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
   } catch {
     return (
       <div className="max-w-5xl mx-auto px-4 py-20 text-center">
-        <p className="font-[family-name:var(--font-orbitron)] text-orbital-text-dim">
+        <p className="font-[family-name:var(--font-russo)] text-orbital-text-dim">
           Partida #{id} não encontrada
         </p>
       </div>

@@ -6,6 +6,7 @@ import { Swords, ChevronDown, User } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { HudCard } from "@/components/hud-card";
+import { PageHeader } from "@/components/page-header";
 import { LeaderboardEntry } from "@/lib/api";
 
 /* ── Types ── */
@@ -140,7 +141,7 @@ function PlayerSelect({
         className="w-full flex items-center justify-between gap-2 px-4 py-3 bg-[#0A0A0A] border border-orbital-border hover:border-orbital-purple/50 transition-colors"
       >
         <span
-          className={`font-[family-name:var(--font-orbitron)] text-xs tracking-wider truncate ${
+          className={`font-[family-name:var(--font-russo)] text-xs tracking-wider truncate ${
             selected ? "text-orbital-text" : "text-orbital-text-dim"
           }`}
         >
@@ -244,7 +245,7 @@ function StatBar({
     >
       {/* Stat label centered */}
       <div className="text-center mb-2">
-        <span className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.2em] text-orbital-text-dim uppercase">
+        <span className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.2em] text-orbital-text-dim uppercase">
           {stat.label}
         </span>
       </div>
@@ -348,7 +349,7 @@ function PlayerCard({
 
       <Link
         href={`/perfil/${player.steamId}`}
-        className={`font-[family-name:var(--font-orbitron)] text-sm sm:text-lg font-bold tracking-wider hover:opacity-80 transition-opacity ${
+        className={`font-[family-name:var(--font-russo)] text-sm sm:text-lg font-bold tracking-wider hover:opacity-80 transition-opacity ${
           side === "left" ? "text-purple-400" : "text-red-400"
         }`}
       >
@@ -362,7 +363,7 @@ function PlayerCard({
       {/* Mini stats */}
       <div className="flex items-center gap-3 mt-2">
         <div className="text-center">
-          <div className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.15em] text-orbital-text-dim uppercase">
+          <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.15em] text-orbital-text-dim uppercase">
             Rating
           </div>
           <div
@@ -375,7 +376,7 @@ function PlayerCard({
         </div>
         <div className={`w-px h-6 ${side === "left" ? "bg-purple-500/30" : "bg-red-500/30"}`} />
         <div className="text-center">
-          <div className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.15em] text-orbital-text-dim uppercase">
+          <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.15em] text-orbital-text-dim uppercase">
             Maps
           </div>
           <div
@@ -422,7 +423,7 @@ function ScoreSummary({ p1, p2 }: { p1: LeaderboardEntry; p2: LeaderboardEntry }
       >
         {p1Score}
       </span>
-      <span className="font-[family-name:var(--font-orbitron)] text-xs text-orbital-text-dim tracking-widest">
+      <span className="font-[family-name:var(--font-russo)] text-xs text-orbital-text-dim tracking-widest">
         STATS WON
       </span>
       <span
@@ -478,23 +479,13 @@ export function CompareContent({ initialPlayers }: CompareContentProps) {
   const bothSelected = player1 !== null && player2 !== null;
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 pb-20">
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="py-8"
-      >
-        <div className="flex items-center gap-3 mb-2">
-          <Swords size={20} className="text-orbital-purple" />
-          <h1 className="font-[family-name:var(--font-orbitron)] text-xl font-bold tracking-wider text-orbital-text">
-            COMPARAR JOGADORES
-          </h1>
-        </div>
-        <p className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text-dim">
-          Selecione dois jogadores para comparar suas estatísticas
-        </p>
-      </motion.div>
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-10 pb-20">
+      <PageHeader
+        kicker="Head to head"
+        title="Comparar"
+        accent="Jogadores"
+        sub="Selecione dois jogadores para comparar suas estatísticas lado a lado."
+      />
 
       {/* Player Selection */}
       <HudCard label="SELECIONAR" className="mb-8">
@@ -508,7 +499,7 @@ export function CompareContent({ initialPlayers }: CompareContentProps) {
           />
 
           <div className="flex items-center justify-center">
-            <div className="font-[family-name:var(--font-orbitron)] text-xl sm:text-2xl font-bold text-orbital-purple/60">
+            <div className="font-[family-name:var(--font-russo)] text-xl sm:text-2xl font-bold text-orbital-purple/60">
               VS
             </div>
           </div>
@@ -559,7 +550,7 @@ export function CompareContent({ initialPlayers }: CompareContentProps) {
                 >
                   {/* Glowing VS */}
                   <div className="relative">
-                    <span className="font-[family-name:var(--font-orbitron)] text-3xl sm:text-5xl font-black text-orbital-purple drop-shadow-[0_0_20px_rgba(168,85,247,0.5)]">
+                    <span className="font-[family-name:var(--font-russo)] text-3xl sm:text-5xl font-black text-orbital-purple drop-shadow-[0_0_20px_rgba(168,85,247,0.5)]">
                       VS
                     </span>
                     {/* Pulse ring */}
@@ -609,7 +600,7 @@ export function CompareContent({ initialPlayers }: CompareContentProps) {
               >
                 <Swords size={48} className="text-orbital-border mx-auto mb-4" />
               </motion.div>
-              <p className="font-[family-name:var(--font-orbitron)] text-sm text-orbital-text-dim tracking-wider mb-2">
+              <p className="font-[family-name:var(--font-russo)] text-sm text-orbital-text-dim tracking-wider mb-2">
                 AGUARDANDO JOGADORES
               </p>
               <p className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text-dim/60">

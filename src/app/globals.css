@@ -1,35 +1,37 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-orbital-purple: #A855F7;
-  --color-orbital-purple-dim: #7C3AED;
-  --color-orbital-purple-bright: #C084FC;
-  --color-orbital-bg: #0A0A0A;
-  --color-orbital-card: #111111;
-  --color-orbital-border: #1A1A1A;
-  --color-orbital-border-light: #2A2A2A;
-  --color-orbital-text: #E2E8F0;
-  --color-orbital-text-dim: #94A3B8;
-  --color-orbital-success: #22C55E;
-  --color-orbital-danger: #EF4444;
-  --color-orbital-warning: #F59E0B;
-  --color-orbital-live: #EF4444;
-  --font-heading: var(--font-orbitron);
+  /* ── Paleta editorial ORBITAL ROXA (Exaggerated Minimalism) ── */
+  --color-orbital-purple: #7C5CFF;
+  --color-orbital-purple-dim: #6A4BE0;
+  --color-orbital-purple-bright: #A892FF;
+  --color-orbital-bg: #0A0A0C;
+  --color-orbital-card: #110F17;
+  --color-orbital-border: #211E2B;
+  --color-orbital-border-light: #322E40;
+  --color-orbital-text: #F4F2F7;
+  --color-orbital-text-dim: #86838F;
+  --color-orbital-success: #3DD68C;
+  --color-orbital-danger: #FF3B57;
+  --color-orbital-warning: #F5C542;
+  --color-orbital-live: #FF3B57;
+  --color-orbital-gold: #F5C542;
+  --font-heading: var(--font-russo);
   --font-mono: var(--font-jetbrains);
-  --font-body: var(--font-inter);
+  --font-body: var(--font-chakra);
 }
 
 /* ===== BASE ===== */
 body {
-  background: #0A0A0A;
-  color: #E2E8F0;
-  font-family: var(--font-body), sans-serif;
+  background: #0A0A0C;
+  color: #F4F2F7;
+  font-family: var(--font-chakra), var(--font-inter), sans-serif;
   overflow-x: hidden;
 }
 
 /* ===== A2: FOCUS VISIBLE — keyboard navigation indicator ===== */
 *:focus-visible {
-  outline: 2px solid #A855F7;
+  outline: 2px solid #7C5CFF;
   outline-offset: 2px;
 }
 
@@ -65,8 +67,8 @@ body {
 /* ===== GRID BACKGROUND ===== */
 .grid-bg {
   background-image:
-    linear-gradient(rgba(168, 85, 247, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(168, 85, 247, 0.03) 1px, transparent 1px);
+    linear-gradient(rgba(124, 92, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(124, 92, 255, 0.03) 1px, transparent 1px);
   background-size: 60px 60px;
 }
 
@@ -104,25 +106,25 @@ body {
 .hud-corners::before {
   top: 0;
   left: 0;
-  border-top: 2px solid #A855F7;
-  border-left: 2px solid #A855F7;
+  border-top: 2px solid #7C5CFF;
+  border-left: 2px solid #7C5CFF;
 }
 .hud-corners::after {
   bottom: 0;
   right: 0;
-  border-bottom: 2px solid #A855F7;
-  border-right: 2px solid #A855F7;
+  border-bottom: 2px solid #7C5CFF;
+  border-right: 2px solid #7C5CFF;
 }
 
 /* ===== GLOW EFFECTS ===== */
 .glow-purple {
-  box-shadow: 0 0 30px rgba(168, 85, 247, 0.3);
+  box-shadow: 0 0 30px rgba(124, 92, 255, 0.3);
 }
 .glow-purple-sm {
-  box-shadow: 0 0 15px rgba(168, 85, 247, 0.2);
+  box-shadow: 0 0 15px rgba(124, 92, 255, 0.2);
 }
 .glow-purple-text {
-  text-shadow: 0 0 20px rgba(168, 85, 247, 0.5);
+  text-shadow: 0 0 20px rgba(124, 92, 255, 0.5);
 }
 
 /* ===== PULSE LIVE INDICATOR ===== */
@@ -159,7 +161,7 @@ body {
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #A855F7;
+  background: #7C5CFF;
 }
 
 /* ===== TECH BORDER ===== */
@@ -174,7 +176,7 @@ body {
   left: 20%;
   width: 60%;
   height: 1px;
-  background: linear-gradient(90deg, transparent, #A855F7, transparent);
+  background: linear-gradient(90deg, transparent, #7C5CFF, transparent);
 }
 
 /* ===== STATUS INDICATOR ===== */
@@ -199,7 +201,7 @@ body {
   font-size: 0.65rem;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: #A855F7;
+  color: #7C5CFF;
   padding: 12px 16px;
   border-bottom: 1px solid #1A1A1A;
   text-align: left;
@@ -212,5 +214,5 @@ body {
   color: #E2E8F0;
 }
 .data-table tr:hover td {
-  background: rgba(168, 85, 247, 0.05);
+  background: rgba(124, 92, 255, 0.05);
 }

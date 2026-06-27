@@ -5,10 +5,10 @@ export default function NotFound() {
     <div className="min-h-[70vh] flex flex-col items-center justify-center px-4">
       {/* Glitch 404 */}
       <div className="relative mb-6">
-        <h1 className="font-[family-name:var(--font-orbitron)] text-[8rem] sm:text-[12rem] font-black tracking-wider text-orbital-purple/10 leading-none select-none">
+        <h1 className="font-[family-name:var(--font-russo)] text-[8rem] sm:text-[12rem] font-black tracking-wider text-orbital-purple/10 leading-none select-none">
           404
         </h1>
-        <h1 className="absolute inset-0 font-[family-name:var(--font-orbitron)] text-[8rem] sm:text-[12rem] font-black tracking-wider text-orbital-purple leading-none select-none text-center"
+        <h1 className="absolute inset-0 font-[family-name:var(--font-russo)] text-[8rem] sm:text-[12rem] font-black tracking-wider text-orbital-purple leading-none select-none text-center"
           style={{ textShadow: "0 0 40px rgba(168,85,247,0.3), 0 0 80px rgba(168,85,247,0.1)" }}
         >
           404
@@ -16,7 +16,7 @@ export default function NotFound() {
       </div>
 
       <div className="text-center max-w-md">
-        <h2 className="font-[family-name:var(--font-orbitron)] text-sm tracking-[0.3em] text-orbital-text-dim mb-3">
+        <h2 className="font-[family-name:var(--font-russo)] text-sm tracking-[0.3em] text-orbital-text-dim mb-3">
           PÁGINA NÃO ENCONTRADA
         </h2>
         <p className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text-dim/60 mb-8">
@@ -26,13 +26,13 @@ export default function NotFound() {
         <div className="flex items-center justify-center gap-3">
           <Link
             href="/"
-            className="px-5 py-2.5 bg-orbital-purple/15 border border-orbital-purple/50 hover:bg-orbital-purple/25 transition-all font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-wider text-orbital-purple"
+            className="px-5 py-2.5 bg-orbital-purple/15 border border-orbital-purple/50 hover:bg-orbital-purple/25 transition-all font-[family-name:var(--font-russo)] text-[0.6rem] tracking-wider text-orbital-purple"
           >
             VOLTAR AO INÍCIO
           </Link>
           <Link
             href="/partidas"
-            className="px-5 py-2.5 border border-orbital-border hover:border-orbital-purple/30 transition-all font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-wider text-orbital-text-dim hover:text-orbital-text"
+            className="px-5 py-2.5 border border-orbital-border hover:border-orbital-purple/30 transition-all font-[family-name:var(--font-russo)] text-[0.6rem] tracking-wider text-orbital-text-dim hover:text-orbital-text"
           >
             VER PARTIDAS
           </Link>

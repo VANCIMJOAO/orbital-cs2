@@ -444,7 +444,7 @@ export default function GeradorPage() {
   };
 
   const inputClass = "w-full bg-[#111] border border-orbital-border px-3 py-2 text-orbital-text font-[family-name:var(--font-jetbrains)] text-xs placeholder:text-orbital-text-dim/50 focus:outline-none focus:border-orbital-purple/50";
-  const labelClass = "font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-purple mb-1 block";
+  const labelClass = "font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-purple mb-1 block";
 
   if (loading) return <div className="flex items-center justify-center h-64"><Loader2 size={24} className="text-orbital-purple animate-spin" /></div>;
 
@@ -453,7 +453,7 @@ export default function GeradorPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-[family-name:var(--font-orbitron)] text-lg tracking-wider text-orbital-text">GERADOR DE CARDS</h1>
+          <h1 className="font-[family-name:var(--font-russo)] text-lg tracking-wider text-orbital-text">GERADOR DE CARDS</h1>
           <p className="font-[family-name:var(--font-jetbrains)] text-[0.7rem] text-orbital-text-dim">Crie imagens 1080x1080 prontas pro Instagram</p>
         </div>
       </div>
@@ -467,7 +467,7 @@ export default function GeradorPage() {
               className={`p-3 border text-center transition-all ${template === t.id ? "bg-orbital-purple/10 border-orbital-purple/50 text-orbital-purple" : "bg-[#0A0A0A] border-orbital-border text-orbital-text-dim hover:border-orbital-purple/30"}`}
             >
               <Icon size={18} className="mx-auto mb-1.5" />
-              <div className="font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-wider">{t.label}</div>
+              <div className="font-[family-name:var(--font-russo)] text-[0.6rem] tracking-wider">{t.label}</div>
             </button>
           );
         })}
@@ -477,7 +477,7 @@ export default function GeradorPage() {
         {/* Controls */}
         <div className="space-y-4">
           <div className="bg-[#0A0A0A] border border-orbital-border p-5 space-y-4">
-            <div className="font-[family-name:var(--font-orbitron)] text-[0.7rem] tracking-wider text-orbital-purple">CONFIGURAÇÃO</div>
+            <div className="font-[family-name:var(--font-russo)] text-[0.7rem] tracking-wider text-orbital-purple">CONFIGURAÇÃO</div>
 
             {template === "resultado" && (
               <div>
@@ -555,7 +555,7 @@ export default function GeradorPage() {
             )}
 
             <button onClick={generate} disabled={generating}
-              className="w-full py-3 bg-orbital-purple hover:bg-orbital-purple/80 disabled:opacity-40 text-white font-[family-name:var(--font-orbitron)] text-[0.7rem] tracking-wider transition-colors flex items-center justify-center gap-2"
+              className="w-full py-3 bg-orbital-purple hover:bg-orbital-purple/80 disabled:opacity-40 text-white font-[family-name:var(--font-russo)] text-[0.7rem] tracking-wider transition-colors flex items-center justify-center gap-2"
             >
               {generating ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />}
               GERAR CARD
@@ -579,7 +579,7 @@ export default function GeradorPage() {
           </div>
           {previewUrl && (
             <button onClick={downloadImage}
-              className="w-full py-2.5 bg-green-500/10 border border-green-500/30 hover:border-green-500/60 text-green-400 font-[family-name:var(--font-orbitron)] text-[0.7rem] tracking-wider transition-colors flex items-center justify-center gap-2"
+              className="w-full py-2.5 bg-green-500/10 border border-green-500/30 hover:border-green-500/60 text-green-400 font-[family-name:var(--font-russo)] text-[0.7rem] tracking-wider transition-colors flex items-center justify-center gap-2"
             >
               <Download size={16} />
               DOWNLOAD PNG (1080x1080)

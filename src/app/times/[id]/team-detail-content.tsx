@@ -190,7 +190,7 @@ export function TeamDetailContent({ team, matches, playerStats, mapStats, teamsM
             <div className="min-w-0">
               <div className="flex items-center gap-2 mb-1">
                 {team.flag && <span className="text-lg">{team.flag}</span>}
-                <h1 className="font-[family-name:var(--font-orbitron)] text-2xl font-bold text-orbital-text tracking-wider">
+                <h1 className="font-[family-name:var(--font-russo)] text-2xl font-bold text-orbital-text tracking-wider">
                   {team.name}
                 </h1>
               </div>
@@ -243,7 +243,7 @@ export function TeamDetailContent({ team, matches, playerStats, mapStats, teamsM
           <button
             key={t.value}
             onClick={() => setTab(t.value)}
-            className={`relative px-5 py-3 font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-[0.12em] transition-colors ${
+            className={`relative px-5 py-3 font-[family-name:var(--font-russo)] text-[0.6rem] tracking-[0.12em] transition-colors ${
               tab === t.value ? "text-orbital-purple" : "text-orbital-text-dim hover:text-orbital-text"
             }`}
           >
@@ -296,7 +296,7 @@ export function TeamDetailContent({ team, matches, playerStats, mapStats, teamsM
                       <span className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim truncate max-w-[60px] text-center">
                         {oppName}
                       </span>
-                      <span className={`font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider px-2 py-0.5 ${
+                      <span className={`font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider px-2 py-0.5 ${
                         won ? "bg-orbital-success/20 text-orbital-success" : "bg-orbital-danger/20 text-orbital-danger"
                       }`}>
                         {won ? "WON" : "LOST"}
@@ -370,12 +370,12 @@ export function TeamDetailContent({ team, matches, playerStats, mapStats, teamsM
                               {p.name}
                             </Link>
                             {players.find(pl => pl.steamId === p.steamId)?.isCaptain && (
-                              <span className="px-1.5 py-0.5 bg-orbital-purple/10 border border-orbital-purple/30 font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-purple">
+                              <span className="px-1.5 py-0.5 bg-orbital-purple/10 border border-orbital-purple/30 font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-purple">
                                 CAP
                               </span>
                             )}
                             {players.find(pl => pl.steamId === p.steamId)?.isCoach && (
-                              <span className="px-1.5 py-0.5 bg-orbital-warning/10 border border-orbital-warning/30 font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-warning">
+                              <span className="px-1.5 py-0.5 bg-orbital-warning/10 border border-orbital-warning/30 font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-warning">
                                 COACH
                               </span>
                             )}
@@ -452,7 +452,7 @@ export function TeamDetailContent({ team, matches, playerStats, mapStats, teamsM
                 <div className="font-[family-name:var(--font-jetbrains)] text-2xl font-bold text-orbital-text">
                   {streak.count}
                 </div>
-                <div className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.2em] text-orbital-text-dim mt-1">
+                <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.2em] text-orbital-text-dim mt-1">
                   {streak.type === "W" ? "SEQUÊNCIA DE VITÓRIAS" : streak.type === "L" ? "SEQUÊNCIA DE DERROTAS" : "NEUTRO"}
                 </div>
               </div>
@@ -460,7 +460,7 @@ export function TeamDetailContent({ team, matches, playerStats, mapStats, teamsM
                 <div className={`font-[family-name:var(--font-jetbrains)] text-2xl font-bold ${parseFloat(winRate) >= 50 ? "text-orbital-success" : "text-orbital-danger"}`}>
                   {winRate}%
                 </div>
-                <div className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.2em] text-orbital-text-dim mt-1">
+                <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.2em] text-orbital-text-dim mt-1">
                   WIN RATE
                 </div>
               </div>
@@ -526,7 +526,7 @@ export function TeamDetailContent({ team, matches, playerStats, mapStats, teamsM
                           </span>
                         </div>
                         {statusType === "live" && (
-                          <span className="flex items-center gap-1 font-[family-name:var(--font-orbitron)] text-[0.65rem] text-orbital-live">
+                          <span className="flex items-center gap-1 font-[family-name:var(--font-russo)] text-[0.65rem] text-orbital-live">
                             <span className="w-1.5 h-1.5 rounded-full bg-orbital-live animate-pulse" /> LIVE
                           </span>
                         )}
@@ -552,7 +552,7 @@ export function TeamDetailContent({ team, matches, playerStats, mapStats, teamsM
 
                   return (
                     <Link key={m.id} href={`/partidas/${m.id}`} className="flex items-center gap-3 px-3 py-2.5 bg-[#0A0A0A] border border-orbital-border hover:border-orbital-purple/30 transition-all group">
-                      <span className={`w-5 h-5 flex items-center justify-center font-[family-name:var(--font-orbitron)] text-[0.65rem] ${
+                      <span className={`w-5 h-5 flex items-center justify-center font-[family-name:var(--font-russo)] text-[0.65rem] ${
                         won ? "bg-orbital-success/20 text-orbital-success" : "bg-orbital-danger/20 text-orbital-danger"
                       }`}>
                         {won ? "W" : "L"}
@@ -612,7 +612,7 @@ export function TeamDetailContent({ team, matches, playerStats, mapStats, teamsM
                       <span className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim max-w-[70px] text-center truncate">
                         {oppName}
                       </span>
-                      <span className={`font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider px-2 py-0.5 ${
+                      <span className={`font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider px-2 py-0.5 ${
                         won ? "bg-orbital-success/20 text-orbital-success" : "bg-orbital-danger/20 text-orbital-danger"
                       }`}>
                         {won ? "WON" : "LOST"}
@@ -633,7 +633,7 @@ export function TeamDetailContent({ team, matches, playerStats, mapStats, teamsM
                   const displayName = mapLabel.charAt(0).toUpperCase() + mapLabel.slice(1);
                   return (
                     <div key={ms.map} className="flex items-center gap-3">
-                      <div className="w-20 font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-text">
+                      <div className="w-20 font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-text">
                         {displayName}
                       </div>
                       <div className="flex-1 h-6 bg-[#0A0A0A] border border-orbital-border relative overflow-hidden">
@@ -727,7 +727,7 @@ function StatCard({ label, value, color }: { label: string; value: string | numb
       <div className={`font-[family-name:var(--font-jetbrains)] text-2xl font-bold ${color || "text-orbital-text"}`}>
         {value}
       </div>
-      <div className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.2em] text-orbital-text-dim mt-1">
+      <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.2em] text-orbital-text-dim mt-1">
         {label}
       </div>
     </div>

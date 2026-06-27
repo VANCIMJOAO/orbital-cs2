@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import { getMatches, getTeams, getMapStats, parseMapStats, Match, Team, getStatusType } from "@/lib/api";
+import { getTournamentsFromDB } from "@/lib/tournaments-db";
 import { PartidasContent } from "./partidas-content";
 
 export const metadata: Metadata = {
@@ -12,20 +13,32 @@ export const revalidate = 30;
 export default async function PartidasPage() {
   let matches: Match[] = [];
   let teams: Team[] = [];
+  let tournaments: Awaited<ReturnType<typeof getTournamentsFromDB>> = [];
 
   try {
-    const [matchesRes, teamsRes] = await Promise.all([
+    const [matchesRes, teamsRes, toursRes] = await Promise.all([
       getMatches(),
       getTeams().catch(() => ({ teams: [] })),
+      getTournamentsFromDB().catch(() => []),
     ]);
     matches = matchesRes.matches || [];
     teams = teamsRes.teams || [];
+    tournaments = toursRes || [];
   } catch {
     // API offline
   }
 
   const teamsMap: Record<number, { name: string; logo: string | null }> = {};
   teams.forEach((t) => { teamsMap[t.id] = { name: t.name, logo: t.logo }; });
+
+  // Vínculo partida → campeonato (match_id carrega seu evento)
+  const matchTournamentMap: Record<number, { id: string; name: string; logo?: string | null }> = {};
+  for (const tour of tournaments) {
+    const ref = { id: tour.id, name: tour.name };
+    for (const bm of tour.matches) {
+      if (bm.match_id != null) matchTournamentMap[bm.match_id] = ref;
+    }
+  }
 
   // Fetch map stats for recent finished + live matches (limit to 16 for performance)
   const displayedMatches = [
@@ -49,5 +62,5 @@ export default async function PartidasPage() {
     })
   );
 
-  return <PartidasContent matches={matches} teamsMap={teamsMap} mapScoresMap={mapScoresMap} />;
+  return <PartidasContent matches={matches} teamsMap={teamsMap} mapScoresMap={mapScoresMap} matchTournamentMap={matchTournamentMap} />;
 }

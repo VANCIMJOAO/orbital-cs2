@@ -50,7 +50,7 @@ function BracketTeamRow({ name, teamId, isWinner, isLoser, score, isLive, logo }
       </span>
       <div className="flex items-center gap-1.5 ml-auto">
         {isLive && (
-          <span className="flex items-center gap-1 text-orbital-live text-[0.65rem] font-[family-name:var(--font-orbitron)]">
+          <span className="flex items-center gap-1 text-orbital-live text-[0.65rem] font-[family-name:var(--font-russo)]">
             <span className="w-1.5 h-1.5 rounded-full bg-orbital-live animate-pulse shadow-[0_0_6px_rgba(239,68,68,0.6)]" />
             LIVE
           </span>
@@ -117,11 +117,11 @@ export function BracketMatchCard({
     }`}>
       {/* Label row */}
       <div className="flex items-center justify-between mb-2">
-        <span className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.15em] text-orbital-text-dim">
+        <span className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.15em] text-orbital-text-dim">
           {match.label}
         </span>
         {isLive && (
-          <span className="flex items-center gap-1 font-[family-name:var(--font-orbitron)] text-[0.65rem] text-orbital-live animate-pulse">
+          <span className="flex items-center gap-1 font-[family-name:var(--font-russo)] text-[0.65rem] text-orbital-live animate-pulse">
             <span className="w-1.5 h-1.5 rounded-full bg-orbital-live shadow-[0_0_6px_rgba(239,68,68,0.6)]" />
             LIVE
           </span>
@@ -185,7 +185,7 @@ export function BracketMatchCard({
           {isReady && match.status === "pending" && (
             <button
               onClick={() => admin.onStartVeto(match)}
-              className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 transition-all font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-purple"
+              className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 transition-all font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-purple"
             >
               <Swords size={10} /> VETO
             </button>
@@ -264,7 +264,7 @@ export function BracketSection({
         {sortedRounds.map(([round, roundMatches], idx) => (
           <div key={round} className="flex items-center">
             <div className="flex flex-col gap-4 min-w-[180px] sm:min-w-[220px]">
-              <div className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.2em] text-orbital-text-dim text-center mb-2">
+              <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.2em] text-orbital-text-dim text-center mb-2">
                 {isWinnerBracket
                   ? round === 1 ? "QUARTAS" : round === 2 ? "SEMIFINAL" : "FINAL"
                   : `RODADA ${round}`
@@ -327,7 +327,7 @@ export function FullBracket({
         <div>
           <div className="flex items-center gap-2 mb-1">
             <div className="h-[1px] w-4 bg-orbital-purple/40" />
-            <span className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.2em] text-orbital-purple">WINNER BRACKET</span>
+            <span className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.2em] text-orbital-purple">WINNER BRACKET</span>
             <div className="h-[1px] flex-1 bg-orbital-purple/20" />
           </div>
           <BracketSection
@@ -346,7 +346,7 @@ export function FullBracket({
         <div>
           <div className="flex items-center gap-2 mb-1">
             <div className="h-[1px] w-4 bg-orbital-danger/40" />
-            <span className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.2em] text-orbital-danger/80">LOWER BRACKET</span>
+            <span className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.2em] text-orbital-danger/80">LOWER BRACKET</span>
             <div className="h-[1px] flex-1 bg-orbital-danger/15" />
           </div>
           <BracketSection
@@ -364,7 +364,7 @@ export function FullBracket({
         <div>
           <div className="flex items-center gap-2 mb-3">
             <Trophy size={12} className="text-amber-500" />
-            <span className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.2em] text-amber-500">GRAND FINAL — BO3</span>
+            <span className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.2em] text-amber-500">GRAND FINAL — BO3</span>
             <div className="h-[1px] flex-1 bg-amber-500/30" />
           </div>
           <div className="flex justify-center">

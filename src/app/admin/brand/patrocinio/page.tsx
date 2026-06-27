@@ -116,7 +116,7 @@ export default function PatrocinioPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-[family-name:var(--font-orbitron)] text-lg tracking-wider text-orbital-text">PATROCÍNIO</h1>
+          <h1 className="font-[family-name:var(--font-russo)] text-lg tracking-wider text-orbital-text">PATROCÍNIO</h1>
           <p className="font-[family-name:var(--font-jetbrains)] text-[0.7rem] text-orbital-text-dim">Pipeline de sponsors — {sponsors.length} total, {sponsors.filter(s => s.status === "closed").length} fechados</p>
         </div>
         <div className="flex gap-2">
@@ -126,13 +126,13 @@ export default function PatrocinioPage() {
             if (res.ok) { const d = await res.json(); setAiResult({ id: 0, content: d.result }); }
             setAiLoading(null);
           }} disabled={!!aiLoading}
-            className="flex items-center gap-1.5 px-3 py-2 bg-cyan-500/10 border border-cyan-500/30 hover:border-cyan-500/60 text-cyan-400 font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider transition-colors disabled:opacity-40"
+            className="flex items-center gap-1.5 px-3 py-2 bg-cyan-500/10 border border-cyan-500/30 hover:border-cyan-500/60 text-cyan-400 font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider transition-colors disabled:opacity-40"
           >
             {aiLoading === "buscar" ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
             BUSCAR COM IA
           </button>
           <button onClick={() => setShowForm(!showForm)}
-            className="flex items-center gap-1.5 px-3 py-2 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 text-orbital-purple font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 text-orbital-purple font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider transition-colors"
           >
             {showForm ? <X size={12} /> : <Plus size={12} />}
             {showForm ? "CANCELAR" : "ADICIONAR"}
@@ -156,7 +156,7 @@ export default function PatrocinioPage() {
       {aiResult && aiResult.id === 0 && (
         <div className="bg-[#0A0A0A] border border-cyan-500/30 p-4 relative">
           <button onClick={() => setAiResult(null)} className="absolute top-2 right-2 text-orbital-text-dim hover:text-orbital-text"><X size={14} /></button>
-          <div className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-cyan-400 mb-2">SUGESTÕES DA IA</div>
+          <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-cyan-400 mb-2">SUGESTÕES DA IA</div>
           <div className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text whitespace-pre-wrap leading-relaxed max-h-[400px] overflow-y-auto">{aiResult.content}</div>
           <button onClick={() => { navigator.clipboard.writeText(aiResult.content); showFeedback("success", "Copiado!"); }}
             className="mt-2 flex items-center gap-1 px-2 py-1 text-orbital-text-dim hover:text-cyan-400 font-[family-name:var(--font-jetbrains)] text-[0.6rem] transition-colors"
@@ -171,11 +171,11 @@ export default function PatrocinioPage() {
             <div className="bg-[#0A0A0A] border border-orbital-purple/30 p-5 space-y-3">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-purple mb-1 block">EMPRESA *</label>
+                  <label className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-purple mb-1 block">EMPRESA *</label>
                   <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Nome da empresa" className={inputClass} />
                 </div>
                 <div>
-                  <label className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-purple mb-1 block">TIPO</label>
+                  <label className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-purple mb-1 block">TIPO</label>
                   <select value={type} onChange={e => setType(e.target.value)} className={inputClass}>
                     <option value="local">Comércio local</option>
                     <option value="energetico">Energético</option>
@@ -192,11 +192,11 @@ export default function PatrocinioPage() {
               </div>
               <div className="flex gap-3 items-end">
                 <div className="flex-1">
-                  <label className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-purple mb-1 block">VALOR ESTIMADO</label>
+                  <label className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-purple mb-1 block">VALOR ESTIMADO</label>
                   <input type="text" value={estimatedValue} onChange={e => setEstimatedValue(e.target.value)} placeholder="R$ 600-1.500" className={inputClass} />
                 </div>
                 <button onClick={createSponsor} disabled={!name.trim()}
-                  className="px-4 py-2 bg-orbital-purple text-white font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider hover:bg-orbital-purple/80 disabled:opacity-30 transition-colors"
+                  className="px-4 py-2 bg-orbital-purple text-white font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider hover:bg-orbital-purple/80 disabled:opacity-30 transition-colors"
                 >ADICIONAR</button>
               </div>
             </div>
@@ -208,8 +208,8 @@ export default function PatrocinioPage() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {PACKAGES.map(pkg => (
           <div key={pkg.tier} className={`p-4 border ${pkg.tier === "ouro" ? "border-yellow-500/30 bg-yellow-500/5" : pkg.tier === "prata" ? "border-gray-400/30 bg-gray-400/5" : "border-orange-700/30 bg-orange-700/5"}`}>
-            <div className={`font-[family-name:var(--font-orbitron)] text-sm tracking-wider mb-1 ${pkg.tier === "ouro" ? "text-yellow-400" : pkg.tier === "prata" ? "text-gray-300" : "text-orange-400"}`}>{pkg.label}</div>
-            <div className="font-[family-name:var(--font-orbitron)] text-lg text-orbital-text">{pkg.price}</div>
+            <div className={`font-[family-name:var(--font-russo)] text-sm tracking-wider mb-1 ${pkg.tier === "ouro" ? "text-yellow-400" : pkg.tier === "prata" ? "text-gray-300" : "text-orange-400"}`}>{pkg.label}</div>
+            <div className="font-[family-name:var(--font-russo)] text-lg text-orbital-text">{pkg.price}</div>
             <ul className="mt-2 space-y-1">
               {pkg.items.map(item => (
                 <li key={item} className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim flex items-start gap-1">
@@ -227,7 +227,7 @@ export default function PatrocinioPage() {
           const stageSponsors = sponsors.filter(s => s.status === stage.id);
           return (
             <div key={stage.id} className="space-y-2">
-              <div className={`font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider ${stage.color} flex items-center gap-2`}>
+              <div className={`font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider ${stage.color} flex items-center gap-2`}>
                 {stage.label} <span className="opacity-50">({stageSponsors.length})</span>
               </div>
               {stageSponsors.map(s => (

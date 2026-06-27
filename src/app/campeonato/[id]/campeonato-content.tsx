@@ -425,10 +425,10 @@ export function CampeonatoContent({ id, initialTournament, initialTeamsMap, init
     return (
       <div className="max-w-5xl mx-auto px-4 py-20 text-center">
         <Trophy size={48} className="text-orbital-border mx-auto mb-4" />
-        <p className="font-[family-name:var(--font-orbitron)] text-orbital-text-dim">
+        <p className="font-[family-name:var(--font-russo)] text-orbital-text-dim">
           Campeonato nao encontrado
         </p>
-        <Link href="/admin/campeonatos" className="inline-flex items-center gap-2 mt-6 px-4 py-2 border border-orbital-border text-orbital-text-dim hover:text-orbital-purple hover:border-orbital-purple/30 transition-all font-[family-name:var(--font-orbitron)] text-xs">
+        <Link href="/admin/campeonatos" className="inline-flex items-center gap-2 mt-6 px-4 py-2 border border-orbital-border text-orbital-text-dim hover:text-orbital-purple hover:border-orbital-purple/30 transition-all font-[family-name:var(--font-russo)] text-xs">
           <ArrowLeft size={14} /> VOLTAR
         </Link>
       </div>
@@ -470,11 +470,11 @@ export function CampeonatoContent({ id, initialTournament, initialTeamsMap, init
               <Link href="/admin/campeonatos" className="text-orbital-text-dim hover:text-orbital-purple transition-colors">
                 <ArrowLeft size={16} />
               </Link>
-              <span className={`font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.2em] px-3 py-1 border ${statusColor} ${statusBorder} uppercase`}>
+              <span className={`font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.2em] px-3 py-1 border ${statusColor} ${statusBorder} uppercase`}>
                 {statusLabel}
               </span>
               {tournament.status === "active" && liveCount > 0 && (
-                <span className="flex items-center gap-1.5 font-[family-name:var(--font-orbitron)] text-[0.65rem] text-[#EF4444]">
+                <span className="flex items-center gap-1.5 font-[family-name:var(--font-russo)] text-[0.65rem] text-[#EF4444]">
                   <span className="w-2 h-2 rounded-full bg-[#EF4444] animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.6)]" />
                   {liveCount} PARTIDA{liveCount > 1 ? "S" : ""} AO VIVO
                 </span>
@@ -496,7 +496,7 @@ export function CampeonatoContent({ id, initialTournament, initialTeamsMap, init
                 <Trophy size={24} className="text-orbital-purple" />
               </div>
               <div>
-                <h1 className="font-[family-name:var(--font-orbitron)] text-2xl sm:text-3xl font-bold tracking-wider text-orbital-text">
+                <h1 className="font-[family-name:var(--font-russo)] text-2xl sm:text-3xl font-bold tracking-wider text-orbital-text">
                   {tournament.name}
                 </h1>
                 <p className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text-dim mt-0.5">
@@ -539,7 +539,7 @@ export function CampeonatoContent({ id, initialTournament, initialTeamsMap, init
               {tournament.status === "finished" && (
                 <Link
                   href={`/campeonato/${tournament.id}/recap`}
-                  className="flex items-center gap-2 px-3 py-1.5 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 hover:bg-orbital-purple/20 transition-all font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-purple"
+                  className="flex items-center gap-2 px-3 py-1.5 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 hover:bg-orbital-purple/20 transition-all font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-purple"
                 >
                   <BarChart3 size={12} /> RECAP
                 </Link>
@@ -561,7 +561,7 @@ export function CampeonatoContent({ id, initialTournament, initialTeamsMap, init
                 role="tab"
                 aria-selected={activeTab === tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`relative px-5 py-3 font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-[0.2em] transition-colors whitespace-nowrap ${
+                className={`relative px-5 py-3 font-[family-name:var(--font-russo)] text-[0.6rem] tracking-[0.2em] transition-colors whitespace-nowrap ${
                   activeTab === tab.id
                     ? "text-orbital-purple"
                     : "text-orbital-text-dim hover:text-orbital-text"
@@ -618,8 +618,8 @@ export function CampeonatoContent({ id, initialTournament, initialTeamsMap, init
                           )}
                         </div>
                         <div>
-                          <div className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.3em] text-amber-500/80 mb-1">CAMPEAO</div>
-                          <div className="font-[family-name:var(--font-orbitron)] text-xl font-bold tracking-wider text-amber-400">{champion}</div>
+                          <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.3em] text-amber-500/80 mb-1">CAMPEAO</div>
+                          <div className="font-[family-name:var(--font-russo)] text-xl font-bold tracking-wider text-amber-400">{champion}</div>
                           {grandFinal?.winner_id && teamsMap[grandFinal.winner_id]?.players && (
                             <div className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-amber-500/60 mt-1">
                               {teamsMap[grandFinal.winner_id].players!.map(p => p.name).join(" • ")}
@@ -647,8 +647,8 @@ export function CampeonatoContent({ id, initialTournament, initialTeamsMap, init
                       <div className="flex items-center gap-4">
                         <Star size={28} className="text-red-500 shrink-0" />
                         <div>
-                          <div className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.3em] text-red-500/80 mb-1">MVP DO CAMPEONATO</div>
-                          <Link href={`/perfil/${mvp.steamId}`} className="font-[family-name:var(--font-orbitron)] text-lg font-bold tracking-wider text-red-400 hover:text-red-300 transition-colors">
+                          <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.3em] text-red-500/80 mb-1">MVP DO CAMPEONATO</div>
+                          <Link href={`/perfil/${mvp.steamId}`} className="font-[family-name:var(--font-russo)] text-lg font-bold tracking-wider text-red-400 hover:text-red-300 transition-colors">
                             {mvp.name}
                           </Link>
                           <div className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text-dim mt-1">
@@ -663,7 +663,7 @@ export function CampeonatoContent({ id, initialTournament, initialTeamsMap, init
                   {isAdmin && nextMatch && !vetoMatch && (
                     <div className="bg-orbital-purple/5 border border-orbital-purple/30 p-4 flex items-center justify-between">
                       <div>
-                        <div className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.2em] text-orbital-purple mb-1">PROXIMA PARTIDA</div>
+                        <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.2em] text-orbital-purple mb-1">PROXIMA PARTIDA</div>
                         <div className="font-[family-name:var(--font-jetbrains)] text-sm text-orbital-text">
                           {getTeamName(tournament, nextMatch.team1_id)} <span className="text-orbital-text-dim">vs</span> {getTeamName(tournament, nextMatch.team2_id)}
                         </div>
@@ -673,7 +673,7 @@ export function CampeonatoContent({ id, initialTournament, initialTeamsMap, init
                       </div>
                       <button
                         onClick={() => openVeto(nextMatch)}
-                        className="flex items-center gap-2 px-5 py-2.5 bg-orbital-purple/20 border border-orbital-purple/50 hover:bg-orbital-purple/30 transition-all font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-wider text-orbital-purple"
+                        className="flex items-center gap-2 px-5 py-2.5 bg-orbital-purple/20 border border-orbital-purple/50 hover:bg-orbital-purple/30 transition-all font-[family-name:var(--font-russo)] text-[0.6rem] tracking-wider text-orbital-purple"
                       >
                         <Swords size={14} /> INICIAR VETO
                       </button>
@@ -760,14 +760,14 @@ export function CampeonatoContent({ id, initialTournament, initialTeamsMap, init
                           <table className="w-full text-left">
                             <thead>
                               <tr className="border-b border-orbital-border">
-                                <th className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.15em] text-orbital-text-dim py-2 px-2 w-8">#</th>
-                                <th className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.15em] text-orbital-text-dim py-2 px-2">TIME</th>
-                                <th className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.15em] text-orbital-text-dim py-2 px-2 text-center">J</th>
-                                <th className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.15em] text-orbital-text-dim py-2 px-2 text-center">V</th>
-                                <th className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.15em] text-orbital-text-dim py-2 px-2 text-center">D</th>
-                                <th className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.15em] text-orbital-text-dim py-2 px-2 text-center">MW</th>
-                                <th className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.15em] text-orbital-text-dim py-2 px-2 text-center">ML</th>
-                                <th className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.15em] text-orbital-text-dim py-2 px-2 text-center">+/−</th>
+                                <th className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.15em] text-orbital-text-dim py-2 px-2 w-8">#</th>
+                                <th className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.15em] text-orbital-text-dim py-2 px-2">TIME</th>
+                                <th className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.15em] text-orbital-text-dim py-2 px-2 text-center">J</th>
+                                <th className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.15em] text-orbital-text-dim py-2 px-2 text-center">V</th>
+                                <th className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.15em] text-orbital-text-dim py-2 px-2 text-center">D</th>
+                                <th className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.15em] text-orbital-text-dim py-2 px-2 text-center">MW</th>
+                                <th className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.15em] text-orbital-text-dim py-2 px-2 text-center">ML</th>
+                                <th className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.15em] text-orbital-text-dim py-2 px-2 text-center">+/−</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -862,7 +862,7 @@ export function CampeonatoContent({ id, initialTournament, initialTeamsMap, init
                             className="bg-[#0A0A0A] border border-orbital-border hover:border-orbital-purple/40 p-3 text-center transition-colors group"
                           >
                             <div className="text-2xl mb-1">{award.emoji}</div>
-                            <div className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.15em] text-orbital-purple mb-1">
+                            <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.15em] text-orbital-purple mb-1">
                               {award.title}
                             </div>
                             <div className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text group-hover:text-orbital-purple transition-colors truncate">
@@ -902,7 +902,7 @@ export function CampeonatoContent({ id, initialTournament, initialTeamsMap, init
                                 {team.name}
                               </div>
                               {grandFinal?.winner_id === team.id && (
-                                <div className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-amber-500">CAMPEÃO</div>
+                                <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-amber-500">CAMPEÃO</div>
                               )}
                             </div>
                           </motion.div>
@@ -973,7 +973,7 @@ export function CampeonatoContent({ id, initialTournament, initialTeamsMap, init
                                   {showPhase && (
                                     <div className="flex items-center gap-2 mb-3 mt-2">
                                       <div className="h-[1px] w-4 bg-orbital-purple/40" />
-                                      <span className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.2em] text-orbital-purple">{phase}</span>
+                                      <span className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.2em] text-orbital-purple">{phase}</span>
                                       <div className="h-[1px] flex-1 bg-orbital-purple/15" />
                                     </div>
                                   )}
@@ -993,17 +993,17 @@ export function CampeonatoContent({ id, initialTournament, initialTeamsMap, init
                                         {/* Status */}
                                         <div className="shrink-0 w-12 text-center">
                                           {isLive ? (
-                                            <span className="inline-flex items-center gap-1 font-[family-name:var(--font-orbitron)] text-[0.65rem] text-red-500">
+                                            <span className="inline-flex items-center gap-1 font-[family-name:var(--font-russo)] text-[0.65rem] text-red-500">
                                               <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse shadow-[0_0_6px_rgba(239,68,68,0.6)]" />
                                               LIVE
                                             </span>
                                           ) : isFinished ? (
-                                            <span className="font-[family-name:var(--font-orbitron)] text-[0.65rem] text-emerald-500/70">FIM</span>
+                                            <span className="font-[family-name:var(--font-russo)] text-[0.65rem] text-emerald-500/70">FIM</span>
                                           ) : (
-                                            <span className="font-[family-name:var(--font-orbitron)] text-[0.65rem] text-yellow-500/70">TBD</span>
+                                            <span className="font-[family-name:var(--font-russo)] text-[0.65rem] text-yellow-500/70">TBD</span>
                                           )}
                                           {bm && (
-                                            <div className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-purple/60 mt-0.5">
+                                            <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-purple/60 mt-0.5">
                                               {bm.num_maps === 1 ? "BO1" : "BO3"}
                                             </div>
                                           )}
@@ -1029,7 +1029,7 @@ export function CampeonatoContent({ id, initialTournament, initialTeamsMap, init
                                                 <div key={mi} className="flex items-center">
                                                   {mi > 0 && <div className="w-[1px] h-6 bg-orbital-border/40 mx-2" />}
                                                   <div className="text-center px-1.5">
-                                                    <div className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.15em] text-orbital-purple/50 uppercase mb-0.5">
+                                                    <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.15em] text-orbital-purple/50 uppercase mb-0.5">
                                                       {ms.map_name?.replace("de_", "") || `M${mi + 1}`}
                                                     </div>
                                                     <div className="flex items-center justify-center gap-1">
@@ -1154,8 +1154,8 @@ export function CampeonatoContent({ id, initialTournament, initialTeamsMap, init
                               <HudCard key={p.steamId} glow={isFirst} delay={pos * 0.1} className={`text-center ${isFirst ? "sm:-mt-4" : "sm:mt-4"}`}>
                                 <div className="py-2">
                                   <Medal size={isFirst ? 28 : 22} className={`mx-auto mb-2 ${rank === 1 ? "text-yellow-400" : rank === 2 ? "text-gray-300" : "text-amber-600"}`} />
-                                  <div className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.2em] text-orbital-purple mb-1">#{rank}</div>
-                                  <Link href={`/perfil/${p.steamId}`} className="font-[family-name:var(--font-orbitron)] text-xs font-bold tracking-wider text-orbital-text hover:text-orbital-purple transition-colors">
+                                  <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.2em] text-orbital-purple mb-1">#{rank}</div>
+                                  <Link href={`/perfil/${p.steamId}`} className="font-[family-name:var(--font-russo)] text-xs font-bold tracking-wider text-orbital-text hover:text-orbital-purple transition-colors">
                                     {p.name}
                                   </Link>
                                   <div className="font-[family-name:var(--font-jetbrains)] text-2xl font-bold text-orbital-purple mt-1">{(p.average_rating || 0).toFixed(2)}</div>
@@ -1281,7 +1281,7 @@ export function CampeonatoContent({ id, initialTournament, initialTeamsMap, init
                           />
                           <div className="p-2.5">
                             <div className="flex items-center gap-2 mb-1.5">
-                              <span className="font-[family-name:var(--font-orbitron)] text-[0.65rem] text-orbital-purple shrink-0">#{clip.rank}</span>
+                              <span className="font-[family-name:var(--font-russo)] text-[0.65rem] text-orbital-purple shrink-0">#{clip.rank}</span>
                               {clip.steam_id ? (
                                 <Link href={`/perfil/${clip.steam_id}`} className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text hover:text-orbital-purple transition-colors truncate">
                                   {clip.player_name || "Player"}
@@ -1290,7 +1290,7 @@ export function CampeonatoContent({ id, initialTournament, initialTeamsMap, init
                                 <span className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text truncate">{clip.player_name || "Player"}</span>
                               )}
                               {clip.kills_count >= 2 && (
-                                <span className="font-[family-name:var(--font-orbitron)] text-[0.65rem] text-orbital-purple bg-orbital-purple/10 px-1.5 py-0.5 shrink-0">
+                                <span className="font-[family-name:var(--font-russo)] text-[0.65rem] text-orbital-purple bg-orbital-purple/10 px-1.5 py-0.5 shrink-0">
                                   {clip.kills_count >= 5 ? "ACE" : `${clip.kills_count}K`}
                                 </span>
                               )}
@@ -1342,7 +1342,7 @@ export function CampeonatoContent({ id, initialTournament, initialTeamsMap, init
                   <div className="flex items-start gap-3">
                     <Calendar size={14} className="text-orbital-purple mt-0.5 shrink-0" />
                     <div>
-                      <div className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.15em] text-orbital-text-dim mb-0.5">DATAS</div>
+                      <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.15em] text-orbital-text-dim mb-0.5">DATAS</div>
                       <div className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text">
                         {new Date(tournament.start_date + "T00:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" })}
                         {tournament.end_date && (
@@ -1358,7 +1358,7 @@ export function CampeonatoContent({ id, initialTournament, initialTeamsMap, init
                   <div className="flex items-start gap-3">
                     <DollarSign size={14} className="text-orbital-purple mt-0.5 shrink-0" />
                     <div>
-                      <div className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.15em] text-orbital-text-dim mb-0.5">PREMIACAO</div>
+                      <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.15em] text-orbital-text-dim mb-0.5">PREMIACAO</div>
                       <div className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text">{tournament.prize_pool}</div>
                     </div>
                   </div>
@@ -1367,7 +1367,7 @@ export function CampeonatoContent({ id, initialTournament, initialTeamsMap, init
                   <div className="flex items-start gap-3">
                     <MapPin size={14} className="text-orbital-purple mt-0.5 shrink-0" />
                     <div>
-                      <div className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.15em] text-orbital-text-dim mb-0.5">LOCAL</div>
+                      <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.15em] text-orbital-text-dim mb-0.5">LOCAL</div>
                       <div className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text">{tournament.location}</div>
                     </div>
                   </div>
@@ -1375,7 +1375,7 @@ export function CampeonatoContent({ id, initialTournament, initialTeamsMap, init
                 <div className="flex items-start gap-3">
                   <Layers size={14} className="text-orbital-purple mt-0.5 shrink-0" />
                   <div>
-                    <div className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.15em] text-orbital-text-dim mb-0.5">FORMATO</div>
+                    <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.15em] text-orbital-text-dim mb-0.5">FORMATO</div>
                     <div className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text">
                       {tournament.format === "double_elimination" ? "Eliminacao Dupla" : tournament.format || "Eliminacao Dupla"}
                     </div>
@@ -1384,7 +1384,7 @@ export function CampeonatoContent({ id, initialTournament, initialTeamsMap, init
                 <div className="flex items-start gap-3">
                   <Swords size={14} className="text-orbital-purple mt-0.5 shrink-0" />
                   <div>
-                    <div className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.15em] text-orbital-text-dim mb-0.5">PROGRESSO</div>
+                    <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.15em] text-orbital-text-dim mb-0.5">PROGRESSO</div>
                     <div className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text">
                       {finishedCount}/{tournament.matches.length} partidas
                     </div>
@@ -1540,7 +1540,7 @@ function VetoModal({
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-orbital-border">
           <div>
-            <div className="font-[family-name:var(--font-orbitron)] text-xs tracking-wider text-orbital-purple">
+            <div className="font-[family-name:var(--font-russo)] text-xs tracking-wider text-orbital-purple">
               {match.label} — VETO
             </div>
             <div className="font-[family-name:var(--font-jetbrains)] text-sm text-orbital-text mt-1">
@@ -1556,7 +1556,7 @@ function VetoModal({
           {/* Team Selection - Who vetoes first */}
           {!vetoFirstTeam && (
             <div className="space-y-3">
-              <div className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.2em] text-orbital-purple text-center">
+              <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.2em] text-orbital-purple text-center">
                 QUEM COMECA O VETO?
               </div>
               <div className="grid grid-cols-2 gap-3">
@@ -1591,7 +1591,7 @@ function VetoModal({
                     ? "bg-orbital-danger/5 border-orbital-danger/20"
                     : "bg-orbital-success/5 border-orbital-success/20"
                 }`}>
-                  <span className={`font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider ${
+                  <span className={`font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider ${
                     action.action === "ban" ? "text-orbital-danger" : "text-orbital-success"
                   }`}>
                     {action.action === "ban" ? "BAN" : "PICK"}
@@ -1610,7 +1610,7 @@ function VetoModal({
           {/* Current Action */}
           {vetoFirstTeam && !isComplete && currentAction && (
             <div className="border border-orbital-purple/30 p-4">
-              <div className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.2em] text-orbital-purple mb-1">
+              <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.2em] text-orbital-purple mb-1">
                 {currentAction === "ban" ? "BANIR MAPA" : "ESCOLHER MAPA"}
               </div>
               <div className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text mb-3">
@@ -1639,7 +1639,7 @@ function VetoModal({
             <div className="space-y-4">
               <div className="bg-orbital-success/10 border border-orbital-success/30 p-4 text-center">
                 <Check size={20} className="text-orbital-success mx-auto mb-2" />
-                <div className="font-[family-name:var(--font-orbitron)] text-xs tracking-wider text-orbital-success mb-1">
+                <div className="font-[family-name:var(--font-russo)] text-xs tracking-wider text-orbital-success mb-1">
                   VETO CONCLUIDO
                 </div>
                 <div className="font-[family-name:var(--font-jetbrains)] text-sm text-orbital-text">
@@ -1658,7 +1658,7 @@ function VetoModal({
 
               {/* Server Selection */}
               <div>
-                <label className="block font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-[0.15em] text-orbital-text-dim mb-2">
+                <label className="block font-[family-name:var(--font-russo)] text-[0.6rem] tracking-[0.15em] text-orbital-text-dim mb-2">
                   SERVIDOR
                 </label>
                 <select
@@ -1683,14 +1683,14 @@ function VetoModal({
                     <button
                       onClick={onStartMatch}
                       disabled={!selectedServer || actionLoading}
-                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-orbital-purple/20 border border-orbital-purple/50 hover:bg-orbital-purple/30 transition-all font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-purple disabled:opacity-30 disabled:cursor-not-allowed"
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-orbital-purple/20 border border-orbital-purple/50 hover:bg-orbital-purple/30 transition-all font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-purple disabled:opacity-30 disabled:cursor-not-allowed"
                     >
                       {actionLoading ? <Loader2 size={14} className="animate-spin" /> : <Play size={14} />}
                       TENTAR NOVAMENTE
                     </button>
                     <button
                       onClick={onResetVeto}
-                      className="flex items-center justify-center gap-2 px-4 py-2 border border-orbital-border hover:border-orbital-danger/50 transition-all font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-text-dim hover:text-orbital-danger"
+                      className="flex items-center justify-center gap-2 px-4 py-2 border border-orbital-border hover:border-orbital-danger/50 transition-all font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-text-dim hover:text-orbital-danger"
                     >
                       <X size={14} />
                       RESETAR VETO
@@ -1703,7 +1703,7 @@ function VetoModal({
                 <button
                   onClick={onStartMatch}
                   disabled={!selectedServer || actionLoading}
-                  className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-orbital-purple/20 border border-orbital-purple/50 hover:bg-orbital-purple/30 transition-all font-[family-name:var(--font-orbitron)] text-xs tracking-wider text-orbital-purple disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-orbital-purple/20 border border-orbital-purple/50 hover:bg-orbital-purple/30 transition-all font-[family-name:var(--font-russo)] text-xs tracking-wider text-orbital-purple disabled:opacity-30 disabled:cursor-not-allowed"
                 >
                   {actionLoading ? <Loader2 size={16} className="animate-spin" /> : <Play size={16} />}
                   {actionLoading ? "CRIANDO..." : "CRIAR PARTIDA E INICIAR"}
@@ -1773,7 +1773,7 @@ function SwissStandingsView({
                       </Link>
                     </td>
                     <td className="text-center py-2.5 px-2">
-                      <span className="font-[family-name:var(--font-orbitron)] text-xs">
+                      <span className="font-[family-name:var(--font-russo)] text-xs">
                         <span className="text-green-400">{s.wins}</span>
                         <span className="text-orbital-text-dim/50">-</span>
                         <span className="text-red-400/70">{s.losses}</span>
@@ -1782,7 +1782,7 @@ function SwissStandingsView({
                     <td className="text-center py-2.5 px-2 text-orbital-text-dim">{s.buchholz}</td>
                     <td className="text-center py-2.5 px-2">
                       <span
-                        className={`font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider px-2 py-0.5 border ${
+                        className={`font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider px-2 py-0.5 border ${
                           s.status === "advanced"
                             ? "text-green-400 border-green-400/30 bg-green-400/5"
                             : s.status === "eliminated"
@@ -1819,13 +1819,13 @@ function SwissStandingsView({
           <HudCard key={round} className="p-4" label={`ROUND ${round}`}>
             <div className="flex items-center gap-2 mb-3">
               {hasLive && (
-                <span className="flex items-center gap-1 font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-red-400">
+                <span className="flex items-center gap-1 font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-red-400">
                   <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
                   AO VIVO
                 </span>
               )}
               {allDone && (
-                <span className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-green-400/50">
+                <span className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-green-400/50">
                   CONCLUÍDO
                 </span>
               )}
@@ -1867,7 +1867,7 @@ function SwissStandingsView({
                     </div>
 
                     {/* Score / VS */}
-                    <div className="font-[family-name:var(--font-orbitron)] text-xs text-orbital-text-dim shrink-0 w-12 text-center">
+                    <div className="font-[family-name:var(--font-russo)] text-xs text-orbital-text-dim shrink-0 w-12 text-center">
                       {isDone ? (
                         <span>
                           <span className={m.winner_id === m.team1_id ? "text-green-400" : ""}>{/* map score if available */}</span>

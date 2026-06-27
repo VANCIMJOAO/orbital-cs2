@@ -72,14 +72,14 @@ export function BrandAIButton({ action, label, onComplete, confirmMessage, varia
         <div className="flex items-center gap-2">
           <Brain size={16} className="text-orbital-purple" />
           <div>
-            <div className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.15em] text-orbital-purple">{label}</div>
+            <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.15em] text-orbital-purple">{label}</div>
             <div className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-white/25 mt-0.5">Powered by Claude AI</div>
           </div>
         </div>
         <button
           onClick={execute}
           disabled={loading}
-          className="flex items-center gap-2 px-4 py-2 bg-orbital-purple/15 border border-orbital-purple/30 text-orbital-purple font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.15em] hover:bg-orbital-purple/25 hover:border-orbital-purple/50 disabled:opacity-40 transition-all"
+          className="flex items-center gap-2 px-4 py-2 bg-orbital-purple/15 border border-orbital-purple/30 text-orbital-purple font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.15em] hover:bg-orbital-purple/25 hover:border-orbital-purple/50 disabled:opacity-40 transition-all"
         >
           {loading ? <Loader2 size={12} className="animate-spin" /> : <Brain size={12} />}
           {loading ? "GERANDO..." : "EXECUTAR"}

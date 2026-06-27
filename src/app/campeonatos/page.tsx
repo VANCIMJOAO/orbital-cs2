@@ -2,10 +2,11 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Trophy, Users, MapPin, Calendar, Swords, Crown, ChevronRight, DollarSign, Star } from "lucide-react";
+import { Trophy, MapPin, Calendar, Swords, Crown, ChevronRight, DollarSign } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { HudCard } from "@/components/hud-card";
+import { PageHeader } from "@/components/page-header";
 import { Tournament, getTeamName } from "@/lib/tournament";
 import { getTeams } from "@/lib/api";
 
@@ -69,34 +70,18 @@ export default function CampeonatosPage() {
   const finished = filtered.filter(t => t.status === "finished");
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-20">
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="py-8"
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-10 pb-20">
+      <PageHeader
+        kicker="Temporadas · Edições"
+        title="Todos os"
+        accent="Campeonatos"
+        sub={`${tournaments.length} ${tournaments.length === 1 ? "campeonato registrado" : "campeonatos registrados"}`}
       >
-        <div className="flex items-center gap-3 mb-2">
-          <Trophy size={22} className="text-orbital-purple" />
-          <h1 className="font-[family-name:var(--font-orbitron)] text-2xl font-bold tracking-wider text-orbital-text">
-            CAMPEONATOS
-          </h1>
-        </div>
-        <p className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text-dim">
-          {tournaments.length} {tournaments.length === 1 ? "campeonato registrado" : "campeonatos registrados"}
-        </p>
-      </motion.div>
-
-      {/* Filters */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.05 }}
-        className="flex flex-wrap items-center gap-4 mb-8"
-      >
+        {/* Filters */}
+        <div className="flex flex-wrap items-center gap-4">
         {/* Status filter */}
         <div className="flex items-center gap-1">
-          <span className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.15em] text-orbital-text-dim mr-2">STATUS</span>
+          <span className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.15em] text-orbital-text-dim mr-2">STATUS</span>
           {([
             { value: "all", label: "Todos" },
             { value: "active", label: "Ao Vivo" },
@@ -119,7 +104,7 @@ export default function CampeonatosPage() {
 
         {/* Format filter */}
         <div className="flex items-center gap-1">
-          <span className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.15em] text-orbital-text-dim mr-2">FORMATO</span>
+          <span className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.15em] text-orbital-text-dim mr-2">FORMATO</span>
           {([
             { value: "all", label: "Todos" },
             { value: "double_elimination", label: "Eliminação Dupla" },
@@ -138,7 +123,8 @@ export default function CampeonatosPage() {
             </button>
           ))}
         </div>
-      </motion.div>
+        </div>
+      </PageHeader>
 
       {/* Active */}
       {active.length > 0 && (
@@ -164,7 +150,7 @@ export default function CampeonatosPage() {
           {tournaments.length > 0 && (
             <button
               onClick={() => { setFilterStatus("all"); setFilterFormat("all"); }}
-              className="mt-3 px-4 py-1.5 font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-purple border border-orbital-purple/30 hover:bg-orbital-purple/10 transition-all"
+              className="mt-3 px-4 py-1.5 font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-purple border border-orbital-purple/30 hover:bg-orbital-purple/10 transition-all"
             >
               LIMPAR FILTROS
             </button>
@@ -183,12 +169,13 @@ function Section({ title, color, tournaments, teamsMap, delay }: { title: string
       transition={{ delay }}
       className="mb-10"
     >
-      <div className="flex items-center gap-2 mb-4">
-        <div className={`h-[1px] w-4 ${color === "text-red-500" ? "bg-red-500/40" : color === "text-yellow-500" ? "bg-yellow-500/40" : "bg-emerald-500/40"}`} />
-        <span className={`font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.2em] ${color}`}>
+      <div className="flex items-center gap-3 mb-5">
+        <span className={`w-1.5 h-1.5 rounded-full ${color === "text-red-500" ? "bg-red-500 animate-pulse" : color === "text-yellow-500" ? "bg-yellow-500" : "bg-emerald-500"}`} />
+        <span className={`font-[family-name:var(--font-chakra)] text-[0.7rem] font-semibold tracking-[0.3em] uppercase ${color}`}>
           {title}
         </span>
-        <div className={`h-[1px] flex-1 ${color === "text-red-500" ? "bg-red-500/15" : color === "text-yellow-500" ? "bg-yellow-500/15" : "bg-emerald-500/15"}`} />
+        <span className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim/70">{tournaments.length}</span>
+        <div className="h-px flex-1 bg-orbital-border" />
       </div>
       <div className="grid gap-4">
         {tournaments.map((t, i) => (
@@ -225,17 +212,14 @@ function TournamentCard({ tournament: t, teamsMap, delay }: { tournament: Tourna
             <div className="absolute inset-0 bg-gradient-to-r from-[#0A0A0A] via-[#0A0A0A]/90 to-[#0A0A0A]/70" />
           </div>
 
-          {/* Corner accents */}
-          <div className="absolute top-0 left-0 w-5 h-5 border-t-2 border-l-2 border-orbital-purple/30" />
-          <div className="absolute top-0 right-0 w-5 h-5 border-t-2 border-r-2 border-orbital-purple/30" />
-          <div className="absolute bottom-0 left-0 w-5 h-5 border-b-2 border-l-2 border-orbital-purple/30" />
-          <div className="absolute bottom-0 right-0 w-5 h-5 border-b-2 border-r-2 border-orbital-purple/30" />
+          {/* Acento editorial no topo (aparece no hover) */}
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-orbital-purple via-orbital-purple/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity z-10" />
 
           {/* Live indicator */}
           {t.status === "active" && (
             <div className="absolute top-3 right-3 flex items-center gap-1.5 px-2 py-1 bg-red-500/20 border border-red-500/40">
               <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.6)]" />
-              <span className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.2em] text-red-500">LIVE</span>
+              <span className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.2em] text-red-500">LIVE</span>
             </div>
           )}
 
@@ -246,12 +230,12 @@ function TournamentCard({ tournament: t, teamsMap, delay }: { tournament: Tourna
                 {t.status === "finished" && (
                   <span className="flex items-center gap-1.5 px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/30">
                     <Trophy size={10} className="text-emerald-500" />
-                    <span className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.15em] text-emerald-500">FINALIZADO</span>
+                    <span className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.15em] text-emerald-500">FINALIZADO</span>
                   </span>
                 )}
                 {t.status === "pending" && (
                   <span className="px-2 py-0.5 bg-yellow-500/10 border border-yellow-500/30">
-                    <span className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.15em] text-yellow-500">EM BREVE</span>
+                    <span className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.15em] text-yellow-500">EM BREVE</span>
                   </span>
                 )}
               </div>
@@ -263,7 +247,7 @@ function TournamentCard({ tournament: t, teamsMap, delay }: { tournament: Tourna
             {/* Tournament name + info */}
             <div className="flex items-start justify-between gap-4 mb-5">
               <div className="flex-1 min-w-0">
-                <h2 className="font-[family-name:var(--font-orbitron)] text-xl sm:text-2xl font-bold tracking-wider text-orbital-text group-hover:text-orbital-purple transition-colors mb-2">
+                <h2 className="font-[family-name:var(--font-russo)] text-xl sm:text-2xl font-bold tracking-wider text-orbital-text group-hover:text-orbital-purple transition-colors mb-2">
                   {t.name}
                 </h2>
                 <div className="flex items-center gap-4 flex-wrap">
@@ -295,12 +279,16 @@ function TournamentCard({ tournament: t, teamsMap, delay }: { tournament: Tourna
               {/* Champion badge */}
               {winnerTeam && (
                 <div className="flex items-center gap-3 shrink-0 px-4 py-3 bg-amber-500/5 border border-amber-500/30">
-                  {winnerLogo && (
+                  {winnerLogo ? (
                     <Image src={winnerLogo} alt={winnerTeam.name} width={36} height={36} className="object-contain" unoptimized />
+                  ) : (
+                    <span className="w-9 h-9 flex items-center justify-center font-[family-name:var(--font-russo)] text-sm text-amber-400">
+                      {(winnerTeam.name || "?").trim().charAt(0).toUpperCase()}
+                    </span>
                   )}
                   <div>
-                    <div className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.2em] text-amber-500/70">CAMPEÃO</div>
-                    <div className="font-[family-name:var(--font-orbitron)] text-sm font-bold tracking-wider text-amber-400">{winnerTeam.name}</div>
+                    <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.2em] text-amber-500/70">CAMPEÃO</div>
+                    <div className="font-[family-name:var(--font-russo)] text-sm font-bold tracking-wider text-amber-400">{winnerTeam.name}</div>
                   </div>
                   <Crown size={18} className="text-amber-500/40" />
                 </div>
@@ -323,7 +311,9 @@ function TournamentCard({ tournament: t, teamsMap, delay }: { tournament: Tourna
                       {logo ? (
                         <Image src={logo} alt={team.name} width={22} height={22} className="object-contain" unoptimized />
                       ) : (
-                        <Users size={12} className="text-orbital-text-dim/50" />
+                        <span className="font-[family-name:var(--font-russo)] text-[0.7rem] text-orbital-text-dim">
+                          {(team.name || "?").trim().charAt(0).toUpperCase()}
+                        </span>
                       )}
                     </div>
                   );

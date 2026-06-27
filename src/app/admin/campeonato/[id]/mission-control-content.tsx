@@ -292,7 +292,7 @@ export function MissionControlContent({ initialTournament }: { initialTournament
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <Radio size={14} className="text-orbital-purple shrink-0" />
-            <h1 className="font-[family-name:var(--font-orbitron)] text-sm font-bold tracking-wider text-orbital-text truncate">
+            <h1 className="font-[family-name:var(--font-russo)] text-sm font-bold tracking-wider text-orbital-text truncate">
               MISSION CONTROL
             </h1>
           </div>
@@ -300,7 +300,7 @@ export function MissionControlContent({ initialTournament }: { initialTournament
             {tournament.name} — {finishedCount}/{totalCount} partidas
           </p>
         </div>
-        <span className={`shrink-0 font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider px-2 py-1 border ${
+        <span className={`shrink-0 font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider px-2 py-1 border ${
           tournament.status === "active" ? "text-orbital-live border-orbital-live/30 bg-orbital-live/5" :
           tournament.status === "finished" ? "text-orbital-success border-orbital-success/30" :
           "text-orbital-warning border-orbital-warning/30"
@@ -318,7 +318,7 @@ export function MissionControlContent({ initialTournament }: { initialTournament
         >
           <div className="flex items-center gap-2 mb-2">
             <span className="w-2 h-2 rounded-full bg-orbital-live animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.6)]" />
-            <span className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.2em] text-orbital-live">
+            <span className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.2em] text-orbital-live">
               PARTIDA AO VIVO — {currentLiveMatch.label}
             </span>
           </div>
@@ -326,7 +326,7 @@ export function MissionControlContent({ initialTournament }: { initialTournament
             <span className="font-[family-name:var(--font-jetbrains)] text-sm text-orbital-text">
               {getTeamName(tournament, currentLiveMatch.team1_id)}
             </span>
-            <div className="font-[family-name:var(--font-orbitron)] text-lg text-orbital-text px-4">
+            <div className="font-[family-name:var(--font-russo)] text-lg text-orbital-text px-4">
               {liveScore ? `${liveScore.team1} : ${liveScore.team2}` : "— : —"}
             </div>
             <span className="font-[family-name:var(--font-jetbrains)] text-sm text-orbital-text text-right">
@@ -415,7 +415,7 @@ export function MissionControlContent({ initialTournament }: { initialTournament
                     <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-orbital-live shadow-[0_0_6px_rgba(239,68,68,0.6)]" />
                   )}
                 </div>
-                <span className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider">
+                <span className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider">
                   {tab.label}
                 </span>
                 {isActive && (
@@ -462,13 +462,13 @@ function BracketTab({
     <div className="space-y-6">
       {/* Winner */}
       <div>
-        <div className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.2em] text-orbital-purple mb-3">
+        <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.2em] text-orbital-purple mb-3">
           WINNER BRACKET
         </div>
         <div className="flex gap-3 overflow-x-auto pb-3">
           {rounds(winnerMatches).map(([round, matches]) => (
             <div key={round} className="flex flex-col gap-2 min-w-[160px]">
-              <div className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.15em] text-orbital-text-dim text-center">
+              <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.15em] text-orbital-text-dim text-center">
                 {round === 1 ? "QUARTAS" : round === 2 ? "SEMI" : "FINAL"}
               </div>
               {matches.map(m => (
@@ -487,13 +487,13 @@ function BracketTab({
 
       {/* Lower */}
       <div>
-        <div className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.2em] text-orbital-text-dim mb-3">
+        <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.2em] text-orbital-text-dim mb-3">
           LOWER BRACKET
         </div>
         <div className="flex gap-3 overflow-x-auto pb-3">
           {rounds(lowerMatches).map(([round, matches]) => (
             <div key={round} className="flex flex-col gap-2 min-w-[160px]">
-              <div className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.15em] text-orbital-text-dim text-center">
+              <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.15em] text-orbital-text-dim text-center">
                 R{round}
               </div>
               {matches.map(m => (
@@ -513,7 +513,7 @@ function BracketTab({
       {/* Grand Final */}
       {grandFinal && (
         <div>
-          <div className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.2em] text-orbital-purple mb-3">
+          <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.2em] text-orbital-purple mb-3">
             GRAND FINAL — BO3
           </div>
           <MiniMatchCard
@@ -556,7 +556,7 @@ function MiniMatchCard({
       "bg-orbital-card border-orbital-border"
     }`}>
       <div className="flex items-center justify-between mb-1">
-        <span className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-text-dim">
+        <span className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-text-dim">
           {match.label}
         </span>
         {isLive && (
@@ -598,7 +598,7 @@ function MiniMatchCard({
       {isReady && (
         <button
           onClick={() => onStartVeto(match)}
-          className="w-full mt-1.5 flex items-center justify-center gap-1 px-2 py-1.5 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 transition-all font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-purple"
+          className="w-full mt-1.5 flex items-center justify-center gap-1 px-2 py-1.5 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 transition-all font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-purple"
         >
           <Swords size={9} /> VETO
         </button>
@@ -665,7 +665,7 @@ function ControlsTab({
     return (
       <div className="py-16 text-center">
         <Gamepad2 size={32} className="text-orbital-text-dim/50 mx-auto mb-3" />
-        <p className="font-[family-name:var(--font-orbitron)] text-xs text-orbital-text-dim tracking-wider">
+        <p className="font-[family-name:var(--font-russo)] text-xs text-orbital-text-dim tracking-wider">
           NENHUMA PARTIDA AO VIVO
         </p>
         <p className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim/50 mt-1">
@@ -682,14 +682,14 @@ function ControlsTab({
     <div className="space-y-4">
       {/* Quick Actions */}
       <div>
-        <div className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.2em] text-orbital-purple mb-2">
+        <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.2em] text-orbital-purple mb-2">
           AÇÕES RÁPIDAS
         </div>
         <div className="grid grid-cols-2 gap-2">
           <button
             onClick={onPause}
             disabled={controlLoading === "pause"}
-            className="flex items-center justify-center gap-2 px-4 py-3 bg-orbital-warning/5 border border-orbital-warning/30 hover:border-orbital-warning/60 transition-all font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-warning disabled:opacity-50"
+            className="flex items-center justify-center gap-2 px-4 py-3 bg-orbital-warning/5 border border-orbital-warning/30 hover:border-orbital-warning/60 transition-all font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-warning disabled:opacity-50"
           >
             {controlLoading === "pause" ? <Loader2 size={14} className="animate-spin" /> : <Pause size={14} />}
             PAUSAR
@@ -697,7 +697,7 @@ function ControlsTab({
           <button
             onClick={onUnpause}
             disabled={controlLoading === "unpause"}
-            className="flex items-center justify-center gap-2 px-4 py-3 bg-orbital-success/5 border border-orbital-success/30 hover:border-orbital-success/60 transition-all font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-success disabled:opacity-50"
+            className="flex items-center justify-center gap-2 px-4 py-3 bg-orbital-success/5 border border-orbital-success/30 hover:border-orbital-success/60 transition-all font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-success disabled:opacity-50"
           >
             {controlLoading === "unpause" ? <Loader2 size={14} className="animate-spin" /> : <Play size={14} />}
             DESPAUSAR
@@ -707,7 +707,7 @@ function ControlsTab({
 
       {/* Manual Winner Override */}
       <div>
-        <div className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.2em] text-orbital-text-dim mb-2">
+        <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.2em] text-orbital-text-dim mb-2">
           DEFINIR VENCEDOR MANUAL
         </div>
         <div className="grid grid-cols-2 gap-2">
@@ -729,13 +729,13 @@ function ControlsTab({
       {/* Backups */}
       <div>
         <div className="flex items-center justify-between mb-2">
-          <div className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.2em] text-orbital-text-dim">
+          <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.2em] text-orbital-text-dim">
             BACKUPS / VOLTAR ROUND
           </div>
           <button
             onClick={onLoadBackups}
             disabled={controlLoading === "backups"}
-            className="flex items-center gap-1 px-3 py-1.5 border border-orbital-border hover:border-orbital-purple/30 transition-all font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-text-dim hover:text-orbital-purple"
+            className="flex items-center gap-1 px-3 py-1.5 border border-orbital-border hover:border-orbital-purple/30 transition-all font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-text-dim hover:text-orbital-purple"
           >
             {controlLoading === "backups" ? <Loader2 size={10} className="animate-spin" /> : <RotateCcw size={10} />}
             CARREGAR
@@ -760,7 +760,7 @@ function ControlsTab({
 
       {/* RCON Console */}
       <div>
-        <div className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.2em] text-orbital-text-dim mb-2">
+        <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.2em] text-orbital-text-dim mb-2">
           RCON CONSOLE
         </div>
         <div className="flex gap-2">
@@ -790,7 +790,7 @@ function ControlsTab({
 
       {/* Quick RCON presets */}
       <div>
-        <div className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.2em] text-orbital-text-dim mb-2">
+        <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.2em] text-orbital-text-dim mb-2">
           COMANDOS RÁPIDOS
         </div>
         <div className="flex flex-wrap gap-1.5">
@@ -853,7 +853,7 @@ function VetoTab({
       return (
         <div className="py-16 text-center">
           <Check size={32} className="text-orbital-success/30 mx-auto mb-3" />
-          <p className="font-[family-name:var(--font-orbitron)] text-xs text-orbital-text-dim tracking-wider">
+          <p className="font-[family-name:var(--font-russo)] text-xs text-orbital-text-dim tracking-wider">
             {tournament.status === "finished" ? "CAMPEONATO FINALIZADO" : "NENHUMA PARTIDA PRONTA PARA VETO"}
           </p>
           <p className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim/50 mt-1">
@@ -867,7 +867,7 @@ function VetoTab({
     return (
       <div className="py-8">
         <div className="bg-orbital-purple/5 border border-orbital-purple/30 p-4">
-          <div className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.2em] text-orbital-purple mb-3">
+          <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.2em] text-orbital-purple mb-3">
             PRÓXIMA PARTIDA
           </div>
           <div className="font-[family-name:var(--font-jetbrains)] text-sm text-orbital-text mb-1">
@@ -878,7 +878,7 @@ function VetoTab({
           </div>
           <button
             onClick={() => onOpenVeto(nextMatch)}
-            className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-orbital-purple/20 border border-orbital-purple/50 hover:bg-orbital-purple/30 transition-all font-[family-name:var(--font-orbitron)] text-xs tracking-wider text-orbital-purple"
+            className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-orbital-purple/20 border border-orbital-purple/50 hover:bg-orbital-purple/30 transition-all font-[family-name:var(--font-russo)] text-xs tracking-wider text-orbital-purple"
           >
             <Swords size={14} /> INICIAR VETO
           </button>
@@ -904,7 +904,7 @@ function VetoTab({
       {/* Match info */}
       <div className="flex items-center justify-between">
         <div>
-          <div className="font-[family-name:var(--font-orbitron)] text-xs tracking-wider text-orbital-purple">
+          <div className="font-[family-name:var(--font-russo)] text-xs tracking-wider text-orbital-purple">
             {vetoMatch.label} — VETO
           </div>
           <div className="font-[family-name:var(--font-jetbrains)] text-sm text-orbital-text mt-0.5">
@@ -922,7 +922,7 @@ function VetoTab({
       {/* Team Selection */}
       {!vetoFirstTeam && (
         <div className="space-y-3">
-          <div className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.2em] text-orbital-purple text-center">
+          <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.2em] text-orbital-purple text-center">
             QUEM COMEÇA O VETO?
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -955,7 +955,7 @@ function VetoTab({
                 ? "bg-orbital-danger/5 border-orbital-danger/20"
                 : "bg-orbital-success/5 border-orbital-success/20"
             }`}>
-              <span className={`font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider ${
+              <span className={`font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider ${
                 action.action === "ban" ? "text-orbital-danger" : "text-orbital-success"
               }`}>
                 {action.action === "ban" ? "BAN" : "PICK"}
@@ -974,7 +974,7 @@ function VetoTab({
       {/* Current Action */}
       {vetoFirstTeam && !isComplete && currentAction && (
         <div className="border border-orbital-purple/30 p-4">
-          <div className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.2em] text-orbital-purple mb-1">
+          <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.2em] text-orbital-purple mb-1">
             {currentAction === "ban" ? "BANIR MAPA" : "ESCOLHER MAPA"}
           </div>
           <div className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text mb-3">
@@ -1003,7 +1003,7 @@ function VetoTab({
         <div className="space-y-4">
           <div className="bg-orbital-success/10 border border-orbital-success/30 p-4 text-center">
             <Check size={20} className="text-orbital-success mx-auto mb-2" />
-            <div className="font-[family-name:var(--font-orbitron)] text-xs tracking-wider text-orbital-success mb-1">
+            <div className="font-[family-name:var(--font-russo)] text-xs tracking-wider text-orbital-success mb-1">
               VETO CONCLUÍDO
             </div>
             <div className="font-[family-name:var(--font-jetbrains)] text-sm text-orbital-text">
@@ -1016,7 +1016,7 @@ function VetoTab({
 
           {/* Server Selection */}
           <div>
-            <label className="block font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-[0.15em] text-orbital-text-dim mb-2">
+            <label className="block font-[family-name:var(--font-russo)] text-[0.6rem] tracking-[0.15em] text-orbital-text-dim mb-2">
               SERVIDOR
             </label>
             <select
@@ -1041,14 +1041,14 @@ function VetoTab({
                 <button
                   onClick={onStartMatch}
                   disabled={!selectedServer || actionLoading}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-orbital-purple/20 border border-orbital-purple/50 hover:bg-orbital-purple/30 transition-all font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-purple disabled:opacity-30"
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-orbital-purple/20 border border-orbital-purple/50 hover:bg-orbital-purple/30 transition-all font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-purple disabled:opacity-30"
                 >
                   {actionLoading ? <Loader2 size={14} className="animate-spin" /> : <Play size={14} />}
                   TENTAR NOVAMENTE
                 </button>
                 <button
                   onClick={onResetVeto}
-                  className="flex items-center justify-center gap-2 px-4 py-2 border border-orbital-border hover:border-orbital-danger/50 transition-all font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-text-dim hover:text-orbital-danger"
+                  className="flex items-center justify-center gap-2 px-4 py-2 border border-orbital-border hover:border-orbital-danger/50 transition-all font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-text-dim hover:text-orbital-danger"
                 >
                   <X size={14} /> RESETAR
                 </button>
@@ -1060,7 +1060,7 @@ function VetoTab({
             <button
               onClick={onStartMatch}
               disabled={!selectedServer || actionLoading}
-              className="w-full flex items-center justify-center gap-2 px-6 py-3.5 bg-orbital-purple/20 border border-orbital-purple/50 hover:bg-orbital-purple/30 transition-all font-[family-name:var(--font-orbitron)] text-xs tracking-wider text-orbital-purple disabled:opacity-30"
+              className="w-full flex items-center justify-center gap-2 px-6 py-3.5 bg-orbital-purple/20 border border-orbital-purple/50 hover:bg-orbital-purple/30 transition-all font-[family-name:var(--font-russo)] text-xs tracking-wider text-orbital-purple disabled:opacity-30"
             >
               {actionLoading ? <Loader2 size={16} className="animate-spin" /> : <Play size={16} />}
               {actionLoading ? "CRIANDO..." : "CRIAR PARTIDA E INICIAR"}
@@ -1099,7 +1099,7 @@ function QueueTab({
       {/* Swiss Standings */}
       {isSwiss && standings.length > 0 && (
         <div>
-          <div className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.2em] text-orbital-purple mb-2">
+          <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.2em] text-orbital-purple mb-2">
             CLASSIFICAÇÃO — ROUND {currentRound}
           </div>
           <div className="border border-orbital-border overflow-hidden">
@@ -1130,7 +1130,7 @@ function QueueTab({
                     <td className="text-center py-1.5 px-1 text-red-400/70">{s.losses}</td>
                     <td className="text-center py-1.5 px-1 text-orbital-text-dim">{s.buchholz}</td>
                     <td className="text-center py-1.5 px-2">
-                      <span className={`font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider px-1.5 py-0.5 border ${
+                      <span className={`font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider px-1.5 py-0.5 border ${
                         s.status === "advanced" ? "text-green-400 border-green-400/20" :
                         s.status === "eliminated" ? "text-red-400/50 border-red-400/10" :
                         "text-orbital-text-dim border-orbital-border"
@@ -1149,7 +1149,7 @@ function QueueTab({
       {/* Live */}
       {live.length > 0 && (
         <div>
-          <div className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.2em] text-orbital-live mb-2 flex items-center gap-2">
+          <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.2em] text-orbital-live mb-2 flex items-center gap-2">
             <span className="w-1.5 h-1.5 rounded-full bg-orbital-live animate-pulse" />
             AO VIVO ({live.length})
           </div>
@@ -1162,7 +1162,7 @@ function QueueTab({
       {/* Ready to play */}
       {pendingReady.length > 0 && (
         <div>
-          <div className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.2em] text-orbital-purple mb-2">
+          <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.2em] text-orbital-purple mb-2">
             {isSwiss ? `ROUND ${currentRound} — PARTIDAS` : "PRONTAS PARA JOGAR"} ({pendingReady.length})
           </div>
           {pendingReady.map(m => (
@@ -1171,7 +1171,7 @@ function QueueTab({
               {tournament.mode === "presencial" && (
                 <button
                   onClick={() => onStartVeto(m)}
-                  className="w-full mt-1 flex items-center justify-center gap-1 px-3 py-2 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 transition-all font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-purple"
+                  className="w-full mt-1 flex items-center justify-center gap-1 px-3 py-2 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 transition-all font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-purple"
                 >
                   <Swords size={10} /> INICIAR VETO
                 </button>
@@ -1184,7 +1184,7 @@ function QueueTab({
       {/* Waiting for teams */}
       {waitingTeams.length > 0 && !isSwiss && (
         <div>
-          <div className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.2em] text-orbital-text-dim mb-2">
+          <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.2em] text-orbital-text-dim mb-2">
             AGUARDANDO ({waitingTeams.length})
           </div>
           {waitingTeams.map(m => (
@@ -1196,7 +1196,7 @@ function QueueTab({
       {/* Finished */}
       {finished.length > 0 && (
         <div>
-          <div className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.2em] text-orbital-success/50 mb-2">
+          <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.2em] text-orbital-success/50 mb-2">
             FINALIZADAS ({finished.length})
           </div>
           {finished.map(m => (
@@ -1225,7 +1225,7 @@ function QueueItem({ match, tournament }: { match: BracketMatch; tournament: Tou
           {t1} <span className="text-orbital-text-dim/50">vs</span> {t2}
         </div>
         <div className="flex items-center gap-2 mt-0.5">
-          <span className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-text-dim">
+          <span className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-text-dim">
             {match.label}
           </span>
           {match.map && (
@@ -1235,7 +1235,7 @@ function QueueItem({ match, tournament }: { match: BracketMatch; tournament: Tou
           )}
         </div>
       </div>
-      <span className={`shrink-0 font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider px-1.5 py-0.5 border ${
+      <span className={`shrink-0 font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider px-1.5 py-0.5 border ${
         isLive ? "text-orbital-live border-orbital-live/30" :
         isFinished ? "text-orbital-success border-orbital-success/20" :
         match.team1_id && match.team2_id ? "text-orbital-purple border-orbital-purple/20" :

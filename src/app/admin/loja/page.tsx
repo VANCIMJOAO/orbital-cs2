@@ -227,7 +227,7 @@ export default function AdminLojaPage() {
         <div className="flex items-center gap-3">
           <ShoppingBag size={18} className="text-orbital-purple" />
           <div>
-            <h1 className="font-[family-name:var(--font-orbitron)] text-lg tracking-wider text-orbital-text">LOJA</h1>
+            <h1 className="font-[family-name:var(--font-russo)] text-lg tracking-wider text-orbital-text">LOJA</h1>
             <p className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim">
               {products.length} produtos — {orders.length} pedidos
             </p>
@@ -239,7 +239,7 @@ export default function AdminLojaPage() {
       <div className="flex gap-2">
         {(["produtos", "pedidos"] as const).map(t => (
           <button key={t} onClick={() => setTab(t)}
-            className={`px-4 py-2 font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider border transition-colors ${
+            className={`px-4 py-2 font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider border transition-colors ${
               tab === t ? "bg-orbital-purple/10 border-orbital-purple/50 text-orbital-purple" : "bg-[#0A0A0A] border-orbital-border text-orbital-text-dim hover:text-orbital-text"
             }`}
           >
@@ -272,38 +272,38 @@ export default function AdminLojaPage() {
               <div className="bg-[#0A0A0A] border border-orbital-purple/30 p-4 space-y-3">
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-purple mb-1 block">NOME *</label>
+                    <label className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-purple mb-1 block">NOME *</label>
                     <input type="text" value={pName} onChange={e => setPName(e.target.value)} placeholder="Camiseta Oversized" className={inputClass} />
                   </div>
                   <div>
-                    <label className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-purple mb-1 block">PREÇO (R$) *</label>
+                    <label className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-purple mb-1 block">PREÇO (R$) *</label>
                     <input type="number" value={pPrice} onChange={e => setPPrice(e.target.value)} placeholder="89" className={inputClass} />
                   </div>
                 </div>
                 <div>
-                  <label className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-purple mb-1 block">DESCRIÇÃO</label>
+                  <label className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-purple mb-1 block">DESCRIÇÃO</label>
                   <input type="text" value={pDesc} onChange={e => setPDesc(e.target.value)} placeholder="Streetwear com referências CS2" className={inputClass} />
                 </div>
                 <div className="grid grid-cols-4 gap-3">
                   <div>
-                    <label className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-purple mb-1 block">IMAGEM URL</label>
+                    <label className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-purple mb-1 block">IMAGEM URL</label>
                     <input type="text" value={pImage} onChange={e => setPImage(e.target.value)} placeholder="https://..." className={inputClass} />
                   </div>
                   <div>
-                    <label className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-purple mb-1 block">TAMANHOS</label>
+                    <label className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-purple mb-1 block">TAMANHOS</label>
                     <input type="text" value={pSizes} onChange={e => setPSizes(e.target.value)} placeholder="P,M,G,GG" className={inputClass} />
                   </div>
                   <div>
-                    <label className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-purple mb-1 block">ESTOQUE</label>
+                    <label className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-purple mb-1 block">ESTOQUE</label>
                     <input type="number" value={pStock} onChange={e => setPStock(e.target.value)} placeholder="10" className={inputClass} />
                   </div>
                   <div>
-                    <label className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-purple mb-1 block">MÁX/PEDIDO</label>
+                    <label className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-purple mb-1 block">MÁX/PEDIDO</label>
                     <input type="number" value={pMaxQty} onChange={e => setPMaxQty(e.target.value)} placeholder="5" className={inputClass} />
                   </div>
                 </div>
                 <button onClick={editingId ? saveEdit : createProduct} disabled={!pName || !pPrice || submitting}
-                  className="px-4 py-2 bg-orbital-purple text-white font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider hover:bg-orbital-purple/80 disabled:opacity-30 transition-colors flex items-center gap-1.5"
+                  className="px-4 py-2 bg-orbital-purple text-white font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider hover:bg-orbital-purple/80 disabled:opacity-30 transition-colors flex items-center gap-1.5"
                 >
                   {submitting ? <Loader2 size={12} className="animate-spin" /> : <Plus size={12} />}
                   {editingId ? "SALVAR ALTERAÇÕES" : "CRIAR PRODUTO"}
@@ -331,7 +331,7 @@ export default function AdminLojaPage() {
                 <div key={p.id} className={`flex items-center gap-3 p-3 bg-[#0A0A0A] border ${p.active ? "border-orbital-border" : "border-red-500/20 opacity-50"}`}>
                   {p.image_url && <img src={p.image_url} alt="" className="w-12 h-12 object-cover border border-orbital-border" />}
                   <div className="flex-1 min-w-0">
-                    <div className="font-[family-name:var(--font-orbitron)] text-xs tracking-wider text-orbital-text">{p.name}</div>
+                    <div className="font-[family-name:var(--font-russo)] text-xs tracking-wider text-orbital-text">{p.name}</div>
                     <div className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim">
                       R$ {p.price} — {(p.sizes || []).join(", ")} — Estoque: {p.stock} — Máx: {p.max_qty || 5}/pedido
                     </div>
@@ -389,7 +389,7 @@ export default function AdminLojaPage() {
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <span className="font-[family-name:var(--font-orbitron)] text-xs tracking-wider text-orbital-text">PEDIDO #{o.id}</span>
+                      <span className="font-[family-name:var(--font-russo)] text-xs tracking-wider text-orbital-text">PEDIDO #{o.id}</span>
                       <span className={`ml-2 font-[family-name:var(--font-jetbrains)] text-[0.65rem] px-1.5 py-0.5 ${sc.bg} ${sc.text}`}>
                         {o.status.toUpperCase()}
                       </span>
@@ -401,11 +401,11 @@ export default function AdminLojaPage() {
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <div className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-purple">CLIENTE</div>
+                      <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-purple">CLIENTE</div>
                       <div className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text">{o.customer_name}</div>
                     </div>
                     <div>
-                      <div className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-purple">WHATSAPP</div>
+                      <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-purple">WHATSAPP</div>
                       <a href={`https://wa.me/55${o.customer_whatsapp.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer"
                         className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text hover:text-orbital-purple flex items-center gap-1"
                       >
@@ -415,7 +415,7 @@ export default function AdminLojaPage() {
                   </div>
 
                   <div>
-                    <div className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-purple mb-1">ITENS</div>
+                    <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-purple mb-1">ITENS</div>
                     {o.items.map((item, i) => (
                       <div key={i} className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim">
                         {item.qty}x {item.name} ({item.size}) — R$ {item.price}
@@ -428,7 +428,7 @@ export default function AdminLojaPage() {
 
                   {o.address && (
                     <div>
-                      <div className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-purple">ENDEREÇO</div>
+                      <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-purple">ENDEREÇO</div>
                       <div className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim">{o.address}</div>
                     </div>
                   )}
@@ -436,7 +436,7 @@ export default function AdminLojaPage() {
                   {/* Comprovante PIX */}
                   {(o.status === "pendente" || o.status === "pago") && (
                     <div className="bg-[#111] border border-orbital-border p-3">
-                      <div className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-wider text-orbital-purple mb-2">
+                      <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-purple mb-2">
                         COMPROVANTE PIX
                       </div>
                       {o.pix_comprovante_url ? (

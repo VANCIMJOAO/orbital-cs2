@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Orbitron, JetBrains_Mono, Inter } from "next/font/google";
+import { Orbitron, JetBrains_Mono, Inter, Rajdhani, Anton, Russo_One, Chakra_Petch } from "next/font/google";
 import "./globals.css";
 import { LayoutShell } from "@/components/layout-shell";
 import { AuthProvider } from "@/lib/auth-context";
@@ -21,6 +21,34 @@ const jetbrains = JetBrains_Mono({
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
+  display: "swap",
+});
+
+const rajdhani = Rajdhani({
+  variable: "--font-rajdhani",
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+  display: "swap",
+});
+
+const anton = Anton({
+  variable: "--font-anton",
+  subsets: ["latin"],
+  weight: "400",
+  display: "swap",
+});
+
+const russoOne = Russo_One({
+  variable: "--font-russo",
+  subsets: ["latin"],
+  weight: "400",
+  display: "swap",
+});
+
+const chakraPetch = Chakra_Petch({
+  variable: "--font-chakra",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
   display: "swap",
 });
 
@@ -56,7 +84,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body
-        className={`${orbitron.variable} ${jetbrains.variable} ${inter.variable} antialiased scanlines grid-bg`}
+        className={`${orbitron.variable} ${jetbrains.variable} ${inter.variable} ${rajdhani.variable} ${anton.variable} ${russoOne.variable} ${chakraPetch.variable} antialiased`}
       >
         <AuthProvider>
           <LayoutShell>

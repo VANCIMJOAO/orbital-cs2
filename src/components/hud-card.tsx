@@ -23,19 +23,13 @@ export function HudCard({ children, className = "", label, glow = false, delay =
         ${className}
       `}
     >
-      {/* Top accent line */}
-      <div className="absolute top-0 left-[15%] right-[15%] h-[1px] bg-gradient-to-r from-transparent via-orbital-purple/60 to-transparent" />
-
-      {/* Corner brackets */}
-      <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-orbital-purple/70" />
-      <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-orbital-purple/70" />
-      <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-orbital-purple/70" />
-      <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-orbital-purple/70" />
+      {/* Top accent (editorial: traço curto no canto) */}
+      <div className="absolute top-0 left-0 w-16 h-[2px] bg-orbital-purple" />
 
       {/* Label */}
       {label && (
         <div className="absolute -top-3 left-6 px-2 bg-orbital-card">
-          <span className="font-[family-name:var(--font-orbitron)] text-[0.6rem] tracking-[0.2em] text-orbital-purple uppercase">
+          <span className="font-[family-name:var(--font-russo)] text-[0.6rem] tracking-[0.2em] text-orbital-purple uppercase">
             {label}
           </span>
         </div>
@@ -49,7 +43,7 @@ export function HudCard({ children, className = "", label, glow = false, delay =
 export function StatBox({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
   return (
     <div className="text-center">
-      <div className="font-[family-name:var(--font-orbitron)] text-[0.65rem] tracking-[0.2em] text-orbital-purple mb-1 uppercase">
+      <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.2em] text-orbital-purple mb-1 uppercase">
         {label}
       </div>
       <div className="font-[family-name:var(--font-jetbrains)] text-2xl font-bold text-orbital-text">
