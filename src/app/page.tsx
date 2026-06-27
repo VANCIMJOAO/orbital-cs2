@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { getMatches, getTeams, getLeaderboard, getMapStats, parseMapStats, Match, Team, LeaderboardEntry, getStatusType } from "@/lib/api";
 import { Tournament } from "@/lib/tournament";
-import { getTournamentsFromDB } from "@/lib/tournaments-db";
+import { getTournamentsFromDB, dbPool } from "@/lib/tournaments-db";
 import { HomeContent } from "./home-content";
 
 export const revalidate = 60;
@@ -30,35 +30,6 @@ export default async function HomePage() {
   ]);
 
   tournaments = tournamentsData;
-
-  // ═══ TEMP PREVIEW — Campeonato #2 "em breve" (só pra visualizar; REMOVER depois) ═══
-  tournaments = [
-    {
-      id: "preview-cup-2",
-      name: "ORBITAL ROXA CUP #2",
-      season_id: null,
-      server_id: null,
-      format: "double_elimination",
-      mode: "online",
-      teams: [
-        { id: 9001, name: "Time A", tag: "TA", seed: 1 },
-        { id: 9002, name: "Time B", tag: "TB", seed: 2 },
-        { id: 9003, name: "Time C", tag: "TC", seed: 3 },
-        { id: 9004, name: "Time D", tag: "TD", seed: 4 },
-        { id: 9005, name: "Time E", tag: "TE", seed: 5 },
-      ],
-      matches: [],
-      map_pool: [],
-      players_per_team: 5,
-      created_at: "2026-06-26T00:00:00.000Z",
-      status: "pending",
-      current_match_id: null,
-      start_date: "12/07/2026",
-      location: "Ribeirão Preto / SP",
-    },
-    ...tournaments,
-  ];
-  // ═══ FIM TEMP PREVIEW ═══
 
   matches = matchesData.matches || [];
   teams = teamsData.teams || [];
@@ -120,6 +91,18 @@ export default async function HomePage() {
     || tournaments[0]
     || null;
 
+  // Vagas preenchidas por campeonato = inscrições não-rejeitadas (pra contagem real
+  // antes do bracket ser montado, quando tour.teams ainda está vazio)
+  const inscritosCount: Record<string, number> = {};
+  try {
+    const [rows] = await dbPool.query(
+      "SELECT tournament_id, COUNT(*) AS c FROM inscricoes WHERE status IN ('pendente','aprovado','pago') AND tournament_id IS NOT NULL GROUP BY tournament_id"
+    );
+    for (const r of rows as { tournament_id: string; c: number }[]) {
+      inscritosCount[r.tournament_id] = Number(r.c);
+    }
+  } catch { /* tabela inscricoes pode não existir ainda */ }
+
   // Top 5 players
   const topPlayers = [...leaderboard]
     .sort((a, b) => (b.average_rating || 0) - (a.average_rating || 0))
@@ -154,6 +137,7 @@ export default async function HomePage() {
       matchTournamentMap={matchTournamentMap}
       seasonToTour={seasonToTour}
       recapMvp={recapMvp}
+      inscritosCount={inscritosCount}
     />
   );
 }

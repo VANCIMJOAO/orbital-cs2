@@ -31,6 +31,7 @@ export interface HomeContentProps {
   matchTournamentMap?: Record<number, { id: string; name: string }>;
   seasonToTour?: Record<number, { id: string; name: string }>;
   recapMvp?: { steamId: string; name: string; average_rating: number } | null;
+  inscritosCount?: Record<string, number>;
 }
 
 type TourRef = { id: string; name: string } | null;
@@ -49,6 +50,12 @@ const onImgErr = (e: React.SyntheticEvent<HTMLImageElement>) => { e.currentTarge
 const fmtDate = (ts?: string | null) =>
   ts ? new Date(ts).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", timeZone: "America/Sao_Paulo" }) : "";
 const cleanTitle = (t?: string | null) => (t && !t.includes("{") ? t : "");
+// Data do campeonato p/ exibição: ISO "2026-07-12" -> "12/07/2026" (ou mantém se já formatada)
+const fmtTourDate = (d?: string | null) => {
+  if (!d) return "";
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(d);
+  return m ? `${m[3]}/${m[2]}/${m[1]}` : d;
+};
 function championOf(t: Tournament) {
   const gf = t.matches.find((m) => m.id === "GF");
   return gf?.winner_id ? t.teams.find((tm) => tm.id === gf.winner_id) || null : null;
@@ -64,7 +71,7 @@ const fade = (d = 0) => ({
 export function HomeContent({
   tournaments, activeTournament, liveMatches, recentMatches, upcomingMatches,
   totalMatches, teamCount, playerCount, topPlayers, teamsMap, mapScoresMap,
-  matchTournamentMap, seasonToTour, recapMvp,
+  matchTournamentMap, seasonToTour, recapMvp, inscritosCount,
 }: HomeContentProps) {
   const tourOf = (m: Match): TourRef =>
     matchTournamentMap?.[m.id] || (m.season_id != null ? seasonToTour?.[m.season_id] : undefined) || null;
@@ -105,7 +112,7 @@ export function HomeContent({
 
       {/* ════════ HERO (slider de campeonatos) ════════ */}
       <section className="ovr-hero">
-        <HeroSlider slides={slides} teamsMap={teamsMap} />
+        <HeroSlider slides={slides} teamsMap={teamsMap} inscritosCount={inscritosCount} />
       </section>
 
       {/* ════════ 01 · CAMPEONATOS (esteira — todas as edições) ════════ */}
@@ -124,10 +131,10 @@ export function HomeContent({
                     <div className="ovr-ev-glow" aria-hidden />
                     <div className="ovr-ev-badge">
                       {state === "live" && <span className="ovr-livedot sm" />}
-                      {state === "live" ? "Ao vivo" : state === "soon" ? `Em breve${tour.start_date ? ` · ${tour.start_date}` : ""}` : "Encerrado"}
+                      {state === "live" ? "Ao vivo" : state === "soon" ? `Em breve${tour.start_date ? ` · ${fmtTourDate(tour.start_date)}` : ""}` : "Encerrado"}
                     </div>
                     <div className="ovr-ev-name">{tour.name}</div>
-                    <div className="ovr-ev-meta">{tour.teams.length} times{total > 0 ? ` · ${done}/${total} partidas` : ""}</div>
+                    <div className="ovr-ev-meta">{tour.teams.length || (inscritosCount?.[tour.id] ?? 0)} times{total > 0 ? ` · ${done}/${total} partidas` : ""}</div>
                     <div className="ovr-ev-foot">
                       {state === "live" && total > 0 && <div className="ovr-ev-prog"><i style={{ width: `${Math.round((done / total) * 100)}%` }} /></div>}
                       {state === "soon" && <span className="ovr-ev-mini">Inscrever time</span>}
@@ -334,7 +341,7 @@ function splitTitle(name: string) {
   return { head: parts.join(" "), last };
 }
 
-function HeroSlider({ slides, teamsMap }: { slides: HeroSlide[]; teamsMap?: HomeContentProps["teamsMap"] }) {
+function HeroSlider({ slides, teamsMap, inscritosCount }: { slides: HeroSlide[]; teamsMap?: HomeContentProps["teamsMap"]; inscritosCount?: Record<string, number> }) {
   const [idx, setIdx] = useState(0);
   const [paused, setPaused] = useState(false);
   const n = slides.length;
@@ -355,7 +362,7 @@ function HeroSlider({ slides, teamsMap }: { slides: HeroSlide[]; teamsMap?: Home
             {s.mode === "soon" && <span className="ovr-livedot soon" />}
             <span>
               {s.mode === "live" ? "Ao vivo agora"
-                : s.mode === "soon" ? `Próximo campeonato${s.tour?.start_date ? ` · ${s.tour.start_date}` : ""}`
+                : s.mode === "soon" ? `Próximo campeonato${s.tour?.start_date ? ` · ${fmtTourDate(s.tour.start_date)}` : ""}`
                 : s.mode === "recap" ? "Última edição"
                 : "Plataforma de campeonatos CS2"}
             </span>
@@ -370,7 +377,7 @@ function HeroSlider({ slides, teamsMap }: { slides: HeroSlide[]; teamsMap?: Home
               : "Campeonatos de Counter-Strike 2 com stats ao vivo, ranking e highlights. Ribeirão Preto / SP."}
           </p>
           {s.mode === "live" && s.match && <FeaturedMatch m={s.match} teamsMap={teamsMap} tour={s.tourRef ?? null} />}
-          {s.mode === "soon" && s.tour && <UpcomingTournament tour={s.tour} />}
+          {s.mode === "soon" && s.tour && <UpcomingTournament tour={s.tour} inscritos={inscritosCount?.[s.tour.id] ?? 0} />}
           {s.mode === "recap" && s.tour && (
             <div className="ovr-recap-row">
               <RecapTournament tour={s.tour} teamsMap={teamsMap} />
@@ -417,9 +424,11 @@ function FeaturedMatch({ m, teamsMap, tour }: { m: Match; teamsMap?: HomeContent
   );
 }
 
-function UpcomingTournament({ tour }: { tour: Tournament }) {
+function UpcomingTournament({ tour, inscritos = 0 }: { tour: Tournament; inscritos?: number }) {
   const fmt = tour.format === "swiss" ? "Suíço" : "Eliminação dupla";
   const vagas = tour.format === "swiss" ? 16 : 8;
+  // Antes do bracket: usa inscrições; depois: usa os times do bracket
+  const preenchidas = tour.teams.length || inscritos;
   return (
     <motion.div className="ovr-feature" {...fade(0.22)}>
       <div className="ovr-feat-head">
@@ -429,10 +438,10 @@ function UpcomingTournament({ tour }: { tour: Tournament }) {
       <div className="ovr-soon">
         <div className="ovr-soon-name">{tour.name}</div>
         <div className="ovr-soon-info">
-          {tour.start_date && <span><b>{tour.start_date}</b>data</span>}
+          {tour.start_date && <span><b>{fmtTourDate(tour.start_date)}</b>data</span>}
           {tour.location && <span><b>{tour.location}</b>local</span>}
           <span><b>{fmt}</b>formato</span>
-          <span><b>{tour.teams.length}/{vagas}</b>vagas</span>
+          <span><b>{preenchidas}/{vagas}</b>vagas</span>
         </div>
       </div>
       <div className="ovr-feat-cta">
