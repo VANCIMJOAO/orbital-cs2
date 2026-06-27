@@ -1,9 +1,33 @@
 import { NextRequest, NextResponse } from "next/server";
 import { G5API_URL, ADMIN_CHECK_TIMEOUT } from "./lib/constants";
 
+// Modo manutenção: cobre o site público com /manutencao.html (admin e API liberados).
+// Pra desligar: MAINTENANCE = false e dar deploy.
+const MAINTENANCE = true;
+
 export async function proxy(req: NextRequest) {
+  const { pathname } = req.nextUrl;
+
+  if (MAINTENANCE) {
+    const liberado =
+      pathname.startsWith("/admin") ||
+      pathname.startsWith("/api") ||
+      pathname.startsWith("/write-proxy") ||
+      pathname.startsWith("/_next") ||
+      pathname === "/manutencao.html" ||
+      pathname === "/favicon.ico" ||
+      pathname.startsWith("/app-icon") ||
+      /\.(png|jpe?g|svg|webp|ico|gif|txt|xml|json|webmanifest|woff2?)$/i.test(pathname);
+
+    if (!liberado) {
+      const url = req.nextUrl.clone();
+      url.pathname = "/manutencao.html";
+      return NextResponse.rewrite(url, { status: 503 });
+    }
+  }
+
   // Only protect /admin routes
-  if (!req.nextUrl.pathname.startsWith("/admin")) {
+  if (!pathname.startsWith("/admin")) {
     return NextResponse.next();
   }
 
@@ -47,5 +71,6 @@ export async function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  // Roda em tudo (pro modo manutenção), menos assets internos do Next.
+  matcher: ["/((?!_next/static|_next/image).*)"],
 };
