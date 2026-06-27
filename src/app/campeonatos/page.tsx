@@ -111,7 +111,6 @@ export default function CampeonatosPage() {
           {([
             { value: "all", label: "Todos" },
             { value: "double_elimination", label: "Eliminação Dupla" },
-            { value: "swiss", label: "Sistema Suíço" },
           ] as const).map(opt => (
             <button
               key={opt.value}
@@ -249,7 +248,7 @@ function TournamentCard({ tournament: t, teamsMap, inscritosCount, delay }: { to
             </div>
 
             {/* Tournament name + info */}
-            <div className="flex items-start justify-between gap-4 mb-5">
+            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-5">
               <div className="flex-1 min-w-0">
                 <h2 className="font-[family-name:var(--font-russo)] text-xl sm:text-2xl font-bold tracking-wider text-orbital-text group-hover:text-orbital-purple transition-colors mb-2">
                   {t.name}
@@ -282,7 +281,7 @@ function TournamentCard({ tournament: t, teamsMap, inscritosCount, delay }: { to
 
               {/* Champion badge */}
               {winnerTeam && (
-                <div className="flex items-center gap-3 shrink-0 px-4 py-3 bg-amber-500/5 border border-amber-500/30">
+                <div className="flex items-center gap-3 shrink-0 self-start px-4 py-3 bg-amber-500/5 border border-amber-500/30">
                   {winnerLogo ? (
                     <Image src={winnerLogo} alt={winnerTeam.name} width={36} height={36} className="object-contain" unoptimized />
                   ) : (
@@ -300,8 +299,8 @@ function TournamentCard({ tournament: t, teamsMap, inscritosCount, delay }: { to
             </div>
 
             {/* Teams row */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center gap-1">
                 {t.teams.slice(0, 8).map(team => {
                   const logo = teamsMap[team.id]?.logo;
                   return (

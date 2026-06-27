@@ -528,6 +528,14 @@ const CSS = `
 @media(max-width:680px){
   .ovr-hslider-nav{ position:static; transform:none; flex-direction:row; gap:9px; margin-top:28px; }
   .ovr-hdot.on{ height:11px; width:28px; }
+  /* hero: tira o vão gigante (100vh) e o padding enorme no mobile */
+  .ovr-hero{ min-height:auto; padding:6.5rem 0 2.5rem; }
+  .ovr-hslider{ min-height:auto; }
+  .ovr-lead{ margin-top:18px; }
+  /* recap campeão × vice: empilha em vez de espremer lado a lado */
+  .ovr-recap2{ flex-direction:column; align-items:flex-start; gap:16px; }
+  .ovr-recap2 .ovr-rc-item:last-child{ flex-direction:row; text-align:left; justify-content:flex-start; }
+  .ovr-rc-name{ white-space:normal; }
 }
 @keyframes ovrpulse{ 0%,100%{ box-shadow:0 0 0 0 rgba(255,59,87,.55);} 50%{ box-shadow:0 0 0 6px rgba(255,59,87,0);} }
 
