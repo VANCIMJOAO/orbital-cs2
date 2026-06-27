@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { dbPool, getTournamentsFromDB } from "@/lib/tournaments-db";
+import { dbPool } from "@/lib/tournaments-db";
 import { checkAdmin } from "@/lib/check-admin";
 
 let tableReady = false;
@@ -71,16 +71,7 @@ export async function GET(req: NextRequest) {
 
   // Público: verificar vagas
   if (checkSlots && tournamentId) {
-    let maxSlots = 8;
-    try {
-      const tournaments = await getTournamentsFromDB();
-      const tournament = tournaments.find(t => t.id === tournamentId);
-      if (tournament?.teams) {
-        maxSlots = tournament.teams.length || 8;
-      }
-    } catch {
-      // Fallback to default
-    }
+    const maxSlots = 8; // Eliminação Dupla = 8 times
 
     const [rows] = await pool.query(
       "SELECT COUNT(*) as c FROM inscricoes WHERE tournament_id = ? AND status IN ('pendente','aprovado','pago')",
@@ -121,18 +112,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Mínimo 4, máximo 6 jogadores" }, { status: 400 });
     }
 
-    // Verificar vagas no servidor (busca limite do torneio ou default 8)
+    // Verificar vagas no servidor (Eliminação Dupla = 8 times)
     if (tournament_id) {
-      let maxSlots = 8;
-      try {
-        const tournaments = await getTournamentsFromDB();
-        const tournament = tournaments.find(t => t.id === tournament_id);
-        if (tournament?.teams) {
-          maxSlots = tournament.teams.length || 8;
-        }
-      } catch {
-        // Fallback to default
-      }
+      const maxSlots = 8;
 
       const [slotRows] = await pool.query(
         "SELECT COUNT(*) as c FROM inscricoes WHERE tournament_id = ? AND status IN ('pendente','aprovado','pago')",

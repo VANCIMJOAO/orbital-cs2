@@ -161,7 +161,7 @@ export default function InscricoesAdminPage() {
       }
 
       // Procura time já cadastrado (ex: jogou campeonato anterior) comparando o roster.
-      // 3+ Steam IDs em comum = mesmo time (mesma convenção do sync do Faceit).
+      // 3+ Steam IDs em comum = mesmo time.
       let matchedTeam: { id: number; name: string } | null = null;
       try {
         const teamsRes = await fetch("/api/teams", { credentials: "include" });
