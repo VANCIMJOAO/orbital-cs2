@@ -168,9 +168,17 @@ function FlipSlot({ num, insc }: { num: number; insc: InscritoLite }) {
   );
 }
 
-function LobbyTeams({ inscritos }: { inscritos: InscritoLite[] }) {
+function LobbyTeams({ inscritos, teamsMap }: { inscritos: InscritoLite[]; teamsMap: TeamsMap }) {
+  // Fallback: inscrições antigas sem team_id resolvem o time pelo nome (G5API)
+  const nameToId: Record<string, number> = {};
+  for (const [tid, t] of Object.entries(teamsMap)) {
+    const n = (t.name || "").trim().toLowerCase();
+    if (n && !(n in nameToId)) nameToId[n] = Number(tid);
+  }
+  const resolve = (i: InscritoLite): InscritoLite =>
+    i.team_id ? i : { ...i, team_id: nameToId[(i.team_name || "").trim().toLowerCase()] ?? null };
   const SLOTS = 8;
-  const slots = Array.from({ length: SLOTS }, (_, i) => inscritos[i] || null);
+  const slots = Array.from({ length: SLOTS }, (_, i) => inscritos[i] ? resolve(inscritos[i]) : null);
   return (
     <>
       <style>{LOBBY_CSS}</style>
@@ -190,7 +198,7 @@ function LobbyTeams({ inscritos }: { inscritos: InscritoLite[] }) {
 }
 
 // Overview full-width do estado pendente (lobby) — layout "Mix"
-function MixLobby({ tournament, inscritos }: { tournament: Tournament; inscritos: InscritoLite[] }) {
+function MixLobby({ tournament, inscritos, teamsMap }: { tournament: Tournament; inscritos: InscritoLite[]; teamsMap: TeamsMap }) {
   const filled = inscritos.length;
   const fmtD = (d?: string | null) => d ? new Date(d + "T00:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" }) : "—";
   return (
@@ -232,7 +240,7 @@ function MixLobby({ tournament, inscritos }: { tournament: Tournament; inscritos
 
       {/* Times no lobby (flip) */}
       <HudCard className="p-5" label={`TIMES NO LOBBY · ${filled}/8`}>
-        <LobbyTeams inscritos={inscritos} />
+        <LobbyTeams inscritos={inscritos} teamsMap={teamsMap} />
       </HudCard>
 
       {/* Map pool — cards */}
@@ -799,7 +807,7 @@ export function CampeonatoContent({ id, initialTournament, initialTeamsMap, init
                   className="space-y-6"
                 >
                   {tournament.matches.length === 0 ? (
-                    <MixLobby tournament={tournament} inscritos={inscritos} />
+                    <MixLobby tournament={tournament} inscritos={inscritos} teamsMap={teamsMap} />
                   ) : (
                   <>
                   {/* Champion Banner */}
@@ -1103,11 +1111,6 @@ export function CampeonatoContent({ id, initialTournament, initialTeamsMap, init
                   )}
 
                   {/* Teams Grid */}
-                  {tournament.matches.length === 0 ? (
-                  <HudCard className="p-5" label={`TIMES NO LOBBY · ${inscritos.length}/8`}>
-                    <LobbyTeams inscritos={inscritos} />
-                  </HudCard>
-                  ) : (
                   <HudCard className="p-5" label="TIMES PARTICIPANTES">
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mt-2">
                       {tournament.teams.map((team, i) => {
@@ -1141,7 +1144,6 @@ export function CampeonatoContent({ id, initialTournament, initialTeamsMap, init
                       })}
                     </div>
                   </HudCard>
-                  )}
                   </>
                   )}
                 </motion.div>
