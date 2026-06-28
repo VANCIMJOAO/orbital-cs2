@@ -5,7 +5,7 @@ import { G5API_URL, ADMIN_CHECK_TIMEOUT } from "./lib/constants";
 // Pra desligar: MAINTENANCE = false e dar deploy.
 // Allowlist por IP via env MAINTENANCE_ALLOW_IPS (separado por vírgula).
 // Bypass alternativo: acessar ?unlock=<MAINTENANCE_BYPASS_SECRET> seta um cookie.
-const MAINTENANCE = false;
+const MAINTENANCE = true;
 
 function clientIp(req: NextRequest): string {
   const xff = req.headers.get("x-forwarded-for") || "";
