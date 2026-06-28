@@ -127,7 +127,7 @@ export function HomeContent({
               const state = tour.status === "active" ? "live" : tour.status === "finished" ? "done" : "soon";
               return (
                 <motion.div key={tour.id} {...fade(i * 0.05)}>
-                  <Link href={`/campeonato/${tour.id}`} className={`ovr-ev ${state}`}>
+                  <Link href={state === "soon" ? "/inscricao" : `/campeonato/${tour.id}`} className={`ovr-ev ${state}`}>
                     <div className="ovr-ev-glow" aria-hidden />
                     <div className="ovr-ev-badge">
                       {state === "live" && <span className="ovr-livedot sm" />}

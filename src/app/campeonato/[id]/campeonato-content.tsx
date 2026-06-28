@@ -42,14 +42,17 @@ const TABS: { id: TabId; label: string }[] = [
   { id: "highlights", label: "HIGHLIGHTS" },
 ];
 
+interface InscritoLite { team_name: string; team_tag: string; logo_url: string | null; status: string }
+
 interface CampeonatoContentProps {
   id: string;
   initialTournament: Tournament | null;
   initialTeamsMap: TeamsMap;
   initialMapScores: MapScoresMap;
+  inscritos?: InscritoLite[];
 }
 
-export function CampeonatoContent({ id, initialTournament, initialTeamsMap, initialMapScores }: CampeonatoContentProps) {
+export function CampeonatoContent({ id, initialTournament, initialTeamsMap, initialMapScores, inscritos = [] }: CampeonatoContentProps) {
   const { isAdmin } = useAuth();
   const router = useRouter();
   const [tournament, setTournament] = useState<Tournament | null>(initialTournament);
@@ -500,7 +503,7 @@ export function CampeonatoContent({ id, initialTournament, initialTeamsMap, init
                   {tournament.name}
                 </h1>
                 <p className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text-dim mt-0.5">
-                  {tournament.format === "double_elimination" ? "Eliminacao Dupla" : tournament.format || "Eliminacao Dupla"} — {tournament.teams.length} times — {finishedCount}/{tournament.matches.length} partidas
+                  {tournament.format === "double_elimination" ? "Eliminacao Dupla" : tournament.format || "Eliminacao Dupla"} — {tournament.teams.length || inscritos.length} times — {finishedCount}/{tournament.matches.length} partidas
                 </p>
               </div>
             </div>
@@ -530,7 +533,7 @@ export function CampeonatoContent({ id, initialTournament, initialTeamsMap, init
               )}
               <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white/[0.03] border border-orbital-border">
                 <Users size={12} className="text-orbital-purple" />
-                <span className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim">{tournament.teams.length} Times</span>
+                <span className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim">{tournament.teams.length || inscritos.length} Times</span>
               </div>
               <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white/[0.03] border border-orbital-border">
                 <Layers size={12} className="text-orbital-purple" />
@@ -834,6 +837,19 @@ export function CampeonatoContent({ id, initialTournament, initialTeamsMap, init
                   {/* Bracket or Swiss Standings */}
                   {tournament.format === "swiss" ? (
                     <SwissStandingsView tournament={tournament} teamsMap={teamsMap} mapScoresMap={mapScoresMap} />
+                  ) : tournament.matches.length === 0 ? (
+                    <HudCard className="p-5" label="BRACKET">
+                      <div className="text-center py-8">
+                        <p className="font-[family-name:var(--font-jetbrains)] text-sm text-orbital-text-dim">
+                          Bracket ainda não montado.{tournament.status === "pending" ? " Inscrições abertas." : ""}
+                        </p>
+                        {tournament.status === "pending" && (
+                          <Link href="/inscricao" className="inline-block mt-4 px-5 py-2 bg-orbital-purple/15 border border-orbital-purple/40 hover:border-orbital-purple transition-all font-[family-name:var(--font-russo)] text-[0.6rem] tracking-wider text-orbital-purple">
+                            INSCREVER TIME
+                          </Link>
+                        )}
+                      </div>
+                    </HudCard>
                   ) : (
                     <HudCard className="p-5 overflow-hidden" label="BRACKET">
                       <p className="lg:hidden font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim mb-2">← Arraste pra navegar →</p>
@@ -878,7 +894,8 @@ export function CampeonatoContent({ id, initialTournament, initialTeamsMap, init
                   )}
 
                   {/* Teams Grid */}
-                  <HudCard className="p-5" label="TIMES PARTICIPANTES">
+                  <HudCard className="p-5" label={tournament.teams.length > 0 ? "TIMES PARTICIPANTES" : "TIMES INSCRITOS"}>
+                    {tournament.teams.length > 0 ? (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mt-2">
                       {tournament.teams.map((team, i) => {
                         const teamData = teamsMap[team.id];
@@ -910,6 +927,29 @@ export function CampeonatoContent({ id, initialTournament, initialTeamsMap, init
                         );
                       })}
                     </div>
+                    ) : inscritos.length > 0 ? (
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mt-2">
+                        {inscritos.map((insc, i) => (
+                          <div key={i} className="flex items-center gap-3 p-3 bg-white/[0.02] border border-orbital-border">
+                            <div className="w-8 h-8 flex items-center justify-center shrink-0">
+                              {insc.logo_url ? (
+                                <Image src={insc.logo_url} alt={insc.team_name} width={28} height={28} className="object-contain" unoptimized />
+                              ) : (
+                                <Shield size={18} className="text-orbital-text-dim/60" />
+                              )}
+                            </div>
+                            <div className="min-w-0">
+                              <div className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text truncate">{insc.team_name}</div>
+                              <div className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim">
+                                {insc.status === "aprovado" || insc.status === "pago" ? "Confirmado" : "Pendente"}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-center py-6 font-[family-name:var(--font-jetbrains)] text-sm text-orbital-text-dim">Nenhum time inscrito ainda.</p>
+                    )}
                   </HudCard>
                 </motion.div>
               )}

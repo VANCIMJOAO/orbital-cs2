@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { getTeams, getMapStats, parseMapStats, Team, MapStats } from "@/lib/api";
-import { getTournamentsFromDB } from "@/lib/tournaments-db";
+import { getTournamentsFromDB, dbPool } from "@/lib/tournaments-db";
 import { Tournament } from "@/lib/tournament";
 import { TeamsMap, MapScoresMap } from "@/components/bracket";
 import { CampeonatoContent } from "./campeonato-content";
@@ -29,6 +29,17 @@ export default async function CampeonatoPage({ params }: { params: Promise<{ id:
   let initialTournament: Tournament | null = null;
   let initialTeamsMap: TeamsMap = {};
   let initialMapScores: MapScoresMap = {};
+  let inscritos: { team_name: string; team_tag: string; logo_url: string | null; status: string }[] = [];
+
+  // Inscritos do campeonato (pra mostrar os times participantes enquanto o bracket
+  // não foi montado — pending sem teams)
+  try {
+    const [rows] = await dbPool.query(
+      "SELECT team_name, team_tag, logo_url, status FROM inscricoes WHERE tournament_id = ? AND status != 'rejeitado' ORDER BY created_at ASC",
+      [id]
+    );
+    inscritos = rows as typeof inscritos;
+  } catch { /* tabela pode não existir */ }
 
   try {
     const [tournaments, teamsRes] = await Promise.all([
@@ -83,6 +94,7 @@ export default async function CampeonatoPage({ params }: { params: Promise<{ id:
       initialTournament={initialTournament}
       initialTeamsMap={initialTeamsMap}
       initialMapScores={initialMapScores}
+      inscritos={inscritos}
     />
   );
 }
