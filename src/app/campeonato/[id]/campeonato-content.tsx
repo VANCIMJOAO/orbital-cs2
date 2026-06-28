@@ -42,7 +42,11 @@ const TABS: { id: TabId; label: string }[] = [
   { id: "highlights", label: "HIGHLIGHTS" },
 ];
 
-interface InscritoLite { team_name: string; team_tag: string; logo_url: string | null; status: string }
+interface InscritoLite {
+  team_name: string; team_tag: string; logo_url: string | null; status: string;
+  captain_name?: string; captain_steam_id?: string;
+  players?: { name: string; steam_id: string }[];
+}
 
 interface CampeonatoContentProps {
   id: string;
@@ -50,6 +54,115 @@ interface CampeonatoContentProps {
   initialTeamsMap: TeamsMap;
   initialMapScores: MapScoresMap;
   inscritos?: InscritoLite[];
+}
+
+// ─── Lobby (estado pendente: inscrições abertas, sem bracket) ───
+const LOBBY_CSS = `
+.cmp-slotgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+@media(max-width:900px){.cmp-slotgrid{grid-template-columns:repeat(2,1fr)}}
+.cmp-slot{aspect-ratio:1/.78;border:1px solid var(--orbital-border,#1f1f27);background:#0d0d12;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;position:relative}
+.cmp-slot.filled{border-color:rgba(124,92,255,.4);background:linear-gradient(180deg,rgba(124,92,255,.08),#0d0d12)}
+.cmp-num{position:absolute;top:9px;left:12px;font-family:var(--font-jetbrains),monospace;font-size:10px;color:#7e7b88;z-index:3}
+.cmp-logo{width:54px;height:54px;border:1px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-family:var(--font-russo),sans-serif;font-size:19px;color:#a892ff;overflow:hidden;position:relative}
+.cmp-slot.filled .cmp-logo{border-color:#7c5cff}
+.cmp-logo img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:6px}
+.cmp-nm{font-family:var(--font-russo),sans-serif;font-size:14px;text-transform:uppercase;letter-spacing:.02em;text-align:center;padding:0 8px}
+.cmp-st{font-family:var(--font-jetbrains),monospace;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;display:flex;align-items:center;gap:6px}
+.cmp-st.ok{color:#4ade80}.cmp-st.pend{color:#f5c542}
+.cmp-st i{width:6px;height:6px;border-radius:50%;background:currentColor}
+.cmp-slot.empty .cmp-logo{color:#33313b;border-style:dashed}
+.cmp-slot.empty .cmp-nm{color:#48454f;font-size:11px;font-family:var(--font-jetbrains),monospace;letter-spacing:.14em}
+/* flip */
+.cmp-slot.flip{perspective:1200px;cursor:pointer}
+.cmp-flip-inner{position:relative;width:100%;height:100%;transition:transform .6s cubic-bezier(.4,0,.2,1);transform-style:preserve-3d}
+.cmp-slot.flip:hover .cmp-flip-inner{transform:rotateY(180deg)}
+.cmp-face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;display:flex;flex-direction:column}
+.cmp-face.front{align-items:center;justify-content:center;gap:12px}
+.cmp-face.back{transform:rotateY(180deg);padding:14px;justify-content:flex-start;background:linear-gradient(180deg,rgba(124,92,255,.1),#0d0d12)}
+.cmp-hint{position:absolute;bottom:10px;right:12px;font-family:var(--font-jetbrains),monospace;font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:#7e7b88;opacity:.5}
+.cmp-bkh{display:flex;align-items:center;gap:8px;padding-bottom:9px;margin-bottom:9px;border-bottom:1px solid rgba(255,255,255,.08)}
+.cmp-bkh .lg{width:22px;height:22px;border:1px solid #7c5cff;display:flex;align-items:center;justify-content:center;font-family:var(--font-russo),sans-serif;font-size:9px;color:#a892ff;flex:0 0 auto;overflow:hidden;position:relative}
+.cmp-bkh .lg img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.cmp-bkh .nm{font-family:var(--font-russo),sans-serif;font-size:12px;text-transform:uppercase;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cmp-bkh .cnt{margin-left:auto;font-family:var(--font-jetbrains),monospace;font-size:9.5px;color:#7e7b88;flex:0 0 auto}
+.cmp-roster{list-style:none;display:flex;flex-direction:column;gap:4px;margin:0;padding:0}
+.cmp-roster li{display:flex;align-items:center;gap:9px;padding:4px 7px;background:rgba(255,255,255,.02);border-left:2px solid transparent}
+.cmp-roster li.cap-row{border-left-color:#f5c542;background:rgba(245,197,66,.06)}
+.cmp-roster .av{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#7c5cff,#4a37a6);display:flex;align-items:center;justify-content:center;font-family:var(--font-russo),sans-serif;font-size:10px;color:#fff;flex:0 0 auto;text-transform:uppercase;overflow:hidden;position:relative}
+.cmp-roster li.cap-row .av{background:linear-gradient(135deg,#f5c542,#c79a1f);color:#1a1400}
+.cmp-roster .av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.cmp-roster .pn{flex:1;font-family:var(--font-jetbrains),monospace;font-size:12px;color:#efedf4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cmp-roster .cap{font-family:var(--font-jetbrains),monospace;font-size:8px;letter-spacing:.05em;color:#f5c542;flex:0 0 auto}
+`;
+
+function rosterOf(insc: InscritoLite): { name: string; steam_id: string; cap: boolean }[] {
+  const seen = new Set<string>();
+  const out: { name: string; steam_id: string; cap: boolean }[] = [];
+  const push = (name: string, steam_id: string, cap: boolean) => {
+    if (!steam_id || seen.has(steam_id)) return;
+    seen.add(steam_id); out.push({ name: name || steam_id, steam_id, cap });
+  };
+  if (insc.captain_steam_id) push(insc.captain_name || "Capitão", insc.captain_steam_id, true);
+  for (const p of insc.players || []) push(p.name, p.steam_id, false);
+  return out;
+}
+const initialOf = (s?: string) => (s || "?").trim().charAt(0).toUpperCase() || "?";
+
+function FlipSlot({ num, insc }: { num: number; insc: InscritoLite }) {
+  const confirmed = insc.status === "aprovado" || insc.status === "pago";
+  const roster = rosterOf(insc);
+  return (
+    <div className="cmp-slot filled flip">
+      <span className="cmp-num">{String(num).padStart(2, "0")}</span>
+      <div className="cmp-flip-inner">
+        <div className="cmp-face front">
+          <div className="cmp-logo">
+            {insc.logo_url ? <img src={insc.logo_url} alt="" /> : initialOf(insc.team_tag || insc.team_name)}
+          </div>
+          <div className="cmp-nm">{insc.team_name}</div>
+          <div className={`cmp-st ${confirmed ? "ok" : "pend"}`}><i></i>{confirmed ? "Confirmado" : "Pendente"}</div>
+          <span className="cmp-hint">↻ ver line</span>
+        </div>
+        <div className="cmp-face back">
+          <div className="cmp-bkh">
+            <span className="lg">{insc.logo_url ? <img src={insc.logo_url} alt="" /> : initialOf(insc.team_tag || insc.team_name)}</span>
+            <span className="nm">{insc.team_name}</span>
+            <span className="cnt">{roster.length}</span>
+          </div>
+          <ul className="cmp-roster">
+            {roster.map((p) => (
+              <li key={p.steam_id} className={p.cap ? "cap-row" : ""}>
+                <span className="av"><img src={`/api/steam/avatar-image/${p.steam_id}`} alt="" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />{initialOf(p.name)}</span>
+                <span className="pn">{p.name}</span>
+                {p.cap && <span className="cap">★ CAP</span>}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function LobbyTeams({ inscritos }: { inscritos: InscritoLite[] }) {
+  const SLOTS = 8;
+  const slots = Array.from({ length: SLOTS }, (_, i) => inscritos[i] || null);
+  return (
+    <>
+      <style>{LOBBY_CSS}</style>
+      <div className="cmp-slotgrid">
+        {slots.map((insc, i) => insc ? (
+          <FlipSlot key={i} num={i + 1} insc={insc} />
+        ) : (
+          <div key={i} className="cmp-slot empty">
+            <span className="cmp-num">{String(i + 1).padStart(2, "0")}</span>
+            <div className="cmp-logo">+</div>
+            <div className="cmp-nm">Vaga aberta</div>
+          </div>
+        ))}
+      </div>
+    </>
+  );
 }
 
 export function CampeonatoContent({ id, initialTournament, initialTeamsMap, initialMapScores, inscritos = [] }: CampeonatoContentProps) {
@@ -838,16 +951,23 @@ export function CampeonatoContent({ id, initialTournament, initialTeamsMap, init
                   {tournament.format === "swiss" ? (
                     <SwissStandingsView tournament={tournament} teamsMap={teamsMap} mapScoresMap={mapScoresMap} />
                   ) : tournament.matches.length === 0 ? (
-                    <HudCard className="p-5" label="BRACKET">
-                      <div className="text-center py-8">
-                        <p className="font-[family-name:var(--font-jetbrains)] text-sm text-orbital-text-dim">
-                          Bracket ainda não montado.{tournament.status === "pending" ? " Inscrições abertas." : ""}
-                        </p>
-                        {tournament.status === "pending" && (
-                          <Link href="/inscricao" className="inline-block mt-4 px-5 py-2 bg-orbital-purple/15 border border-orbital-purple/40 hover:border-orbital-purple transition-all font-[family-name:var(--font-russo)] text-[0.6rem] tracking-wider text-orbital-purple">
-                            INSCREVER TIME
-                          </Link>
-                        )}
+                    <HudCard className="p-5" label="LOBBY DO CAMPEONATO">
+                      <div className="text-center py-6">
+                        <div className="font-[family-name:var(--font-russo)] text-2xl tracking-wider text-orbital-text">INSCRIÇÕES ABERTAS</div>
+                        <p className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text-dim mt-2">O bracket é montado quando o lobby fechar (8 times).</p>
+                        <div className="max-w-sm mx-auto mt-5">
+                          <div className="flex justify-between font-[family-name:var(--font-jetbrains)] text-[0.6rem] tracking-wider uppercase text-orbital-text-dim mb-2">
+                            <span>Vagas preenchidas</span><span>{inscritos.length} / 8</span>
+                          </div>
+                          <div className="flex gap-[3px] h-2">
+                            {Array.from({ length: 8 }).map((_, i) => (
+                              <span key={i} className={`flex-1 ${i < inscritos.length ? "bg-gradient-to-r from-orbital-purple to-orbital-purple-bright" : "bg-white/[0.06]"}`} />
+                            ))}
+                          </div>
+                        </div>
+                        <Link href="/inscricao" className="inline-block mt-6 px-6 py-2.5 bg-orbital-purple text-orbital-bg hover:bg-orbital-purple-bright transition-all font-[family-name:var(--font-russo)] text-[0.6rem] tracking-wider">
+                          INSCREVER TIME →
+                        </Link>
                       </div>
                     </HudCard>
                   ) : (
@@ -894,8 +1014,12 @@ export function CampeonatoContent({ id, initialTournament, initialTeamsMap, init
                   )}
 
                   {/* Teams Grid */}
-                  <HudCard className="p-5" label={tournament.teams.length > 0 ? "TIMES PARTICIPANTES" : "TIMES INSCRITOS"}>
-                    {tournament.teams.length > 0 ? (
+                  {tournament.matches.length === 0 ? (
+                  <HudCard className="p-5" label={`TIMES NO LOBBY · ${inscritos.length}/8`}>
+                    <LobbyTeams inscritos={inscritos} />
+                  </HudCard>
+                  ) : (
+                  <HudCard className="p-5" label="TIMES PARTICIPANTES">
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mt-2">
                       {tournament.teams.map((team, i) => {
                         const teamData = teamsMap[team.id];
@@ -927,30 +1051,8 @@ export function CampeonatoContent({ id, initialTournament, initialTeamsMap, init
                         );
                       })}
                     </div>
-                    ) : inscritos.length > 0 ? (
-                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mt-2">
-                        {inscritos.map((insc, i) => (
-                          <div key={i} className="flex items-center gap-3 p-3 bg-white/[0.02] border border-orbital-border">
-                            <div className="w-8 h-8 flex items-center justify-center shrink-0">
-                              {insc.logo_url ? (
-                                <Image src={insc.logo_url} alt={insc.team_name} width={28} height={28} className="object-contain" unoptimized />
-                              ) : (
-                                <Shield size={18} className="text-orbital-text-dim/60" />
-                              )}
-                            </div>
-                            <div className="min-w-0">
-                              <div className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text truncate">{insc.team_name}</div>
-                              <div className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim">
-                                {insc.status === "aprovado" || insc.status === "pago" ? "Confirmado" : "Pendente"}
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-center py-6 font-[family-name:var(--font-jetbrains)] text-sm text-orbital-text-dim">Nenhum time inscrito ainda.</p>
-                    )}
                   </HudCard>
+                  )}
                 </motion.div>
               )}
 

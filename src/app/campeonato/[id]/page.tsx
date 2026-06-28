@@ -29,16 +29,29 @@ export default async function CampeonatoPage({ params }: { params: Promise<{ id:
   let initialTournament: Tournament | null = null;
   let initialTeamsMap: TeamsMap = {};
   let initialMapScores: MapScoresMap = {};
-  let inscritos: { team_name: string; team_tag: string; logo_url: string | null; status: string }[] = [];
+  type Inscrito = {
+    team_name: string; team_tag: string; logo_url: string | null; status: string;
+    captain_name: string; captain_steam_id: string;
+    players: { name: string; steam_id: string }[];
+  };
+  let inscritos: Inscrito[] = [];
 
-  // Inscritos do campeonato (pra mostrar os times participantes enquanto o bracket
-  // não foi montado — pending sem teams)
+  // Inscritos do campeonato (pra mostrar os times participantes + a line no flip
+  // enquanto o bracket não foi montado — pending sem teams)
   try {
     const [rows] = await dbPool.query(
-      "SELECT team_name, team_tag, logo_url, status FROM inscricoes WHERE tournament_id = ? AND status != 'rejeitado' ORDER BY created_at ASC",
+      "SELECT team_name, team_tag, logo_url, status, captain_name, captain_steam_id, players FROM inscricoes WHERE tournament_id = ? AND status != 'rejeitado' ORDER BY created_at ASC",
       [id]
     );
-    inscritos = rows as typeof inscritos;
+    inscritos = (rows as Record<string, unknown>[]).map(r => ({
+      team_name: String(r.team_name),
+      team_tag: String(r.team_tag ?? ""),
+      logo_url: (r.logo_url as string | null) ?? null,
+      status: String(r.status),
+      captain_name: String(r.captain_name ?? ""),
+      captain_steam_id: String(r.captain_steam_id ?? ""),
+      players: typeof r.players === "string" ? JSON.parse(r.players) : ((r.players as { name: string; steam_id: string }[]) ?? []),
+    }));
   } catch { /* tabela pode não existir */ }
 
   try {
