@@ -93,6 +93,18 @@ const LOBBY_CSS = `
 .cmp-roster .av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .cmp-roster .pn{flex:1;font-family:var(--font-jetbrains),monospace;font-size:12px;color:#efedf4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cmp-roster .cap{font-family:var(--font-jetbrains),monospace;font-size:8px;letter-spacing:.05em;color:#f5c542;flex:0 0 auto}
+/* map pool cards */
+.cmp-mapgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media(max-width:900px){.cmp-mapgrid{grid-template-columns:repeat(2,1fr)}}
+.cmp-mp{aspect-ratio:16/10;position:relative;border:1px solid rgba(255,255,255,.08);overflow:hidden;display:flex;align-items:flex-end}
+.cmp-mp img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.5;filter:grayscale(.35) contrast(1.05);transition:.3s}
+.cmp-mp:hover img{opacity:.78;transform:scale(1.04)}
+.cmp-mp::after{content:'';position:absolute;inset:0;background:linear-gradient(0deg,rgba(10,10,12,.95),transparent 62%)}
+.cmp-mp span{position:relative;z-index:1;font-family:var(--font-russo),sans-serif;font-size:12px;letter-spacing:.05em;text-transform:uppercase;padding:9px 11px;color:#fff}
+/* evento compacto */
+.cmp-kv{display:flex;flex-direction:column;gap:15px}
+.cmp-kv .k{font-family:var(--font-jetbrains),monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#7e7b88}
+.cmp-kv .v{font-family:var(--font-russo),sans-serif;font-size:15px;margin-top:5px;color:#efedf4}
 `;
 
 function rosterOf(insc: InscritoLite): { name: string; steam_id: string; cap: boolean }[] {
@@ -162,6 +174,67 @@ function LobbyTeams({ inscritos }: { inscritos: InscritoLite[] }) {
         ))}
       </div>
     </>
+  );
+}
+
+// Overview full-width do estado pendente (lobby) — layout "Mix"
+function MixLobby({ tournament, inscritos }: { tournament: Tournament; inscritos: InscritoLite[] }) {
+  const filled = inscritos.length;
+  const fmtD = (d?: string | null) => d ? new Date(d + "T00:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" }) : "—";
+  return (
+    <div className="space-y-4">
+      <style>{LOBBY_CSS}</style>
+
+      {/* Lobby + Evento */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="lg:col-span-2">
+          <HudCard className="p-5 h-full" label="LOBBY DO CAMPEONATO">
+            <div className="text-center py-6">
+              <div className="font-[family-name:var(--font-russo)] text-2xl sm:text-3xl tracking-wider text-orbital-text">INSCRIÇÕES ABERTAS</div>
+              <p className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text-dim mt-2">O bracket é montado quando o lobby fechar (8 times).</p>
+              <div className="max-w-md mx-auto mt-5">
+                <div className="flex justify-between font-[family-name:var(--font-jetbrains)] text-[0.6rem] tracking-wider uppercase text-orbital-text-dim mb-2">
+                  <span>Vagas preenchidas</span><span>{filled} / 8</span>
+                </div>
+                <div className="flex gap-[3px] h-2.5">
+                  {Array.from({ length: 8 }).map((_, i) => (
+                    <span key={i} className={`flex-1 ${i < filled ? "bg-gradient-to-r from-orbital-purple to-orbital-purple-bright" : "bg-white/[0.06]"}`} />
+                  ))}
+                </div>
+              </div>
+              <Link href="/inscricao" className="inline-block mt-6 px-7 py-3 bg-orbital-purple text-orbital-bg hover:bg-orbital-purple-bright transition-all font-[family-name:var(--font-russo)] text-[0.62rem] tracking-wider">
+                INSCREVER TIME →
+              </Link>
+            </div>
+          </HudCard>
+        </div>
+        <HudCard className="p-5" label="EVENTO">
+          <div className="cmp-kv mt-1">
+            <div><div className="k">Datas</div><div className="v">{fmtD(tournament.start_date)}{tournament.end_date ? ` — ${fmtD(tournament.end_date)}` : ""}</div></div>
+            <div><div className="k">Formato</div><div className="v">Eliminação Dupla</div></div>
+            {tournament.location && <div><div className="k">Local</div><div className="v">{tournament.location}</div></div>}
+            <div><div className="k">Progresso</div><div className="v">0 / 0 partidas</div></div>
+          </div>
+        </HudCard>
+      </div>
+
+      {/* Times no lobby (flip) */}
+      <HudCard className="p-5" label={`TIMES NO LOBBY · ${filled}/8`}>
+        <LobbyTeams inscritos={inscritos} />
+      </HudCard>
+
+      {/* Map pool — cards */}
+      <HudCard className="p-5" label={`MAP POOL · ${tournament.map_pool.length} MAPAS`}>
+        <div className="cmp-mapgrid mt-1">
+          {tournament.map_pool.map(map => (
+            <div key={map} className="cmp-mp">
+              {MAP_IMAGES[map] && <img src={MAP_IMAGES[map]} alt={map} />}
+              <span>{map.replace("de_", "")}</span>
+            </div>
+          ))}
+        </div>
+      </HudCard>
+    </div>
   );
 }
 
@@ -713,6 +786,10 @@ export function CampeonatoContent({ id, initialTournament, initialTeamsMap, init
                   transition={{ duration: 0.2 }}
                   className="space-y-6"
                 >
+                  {tournament.matches.length === 0 ? (
+                    <MixLobby tournament={tournament} inscritos={inscritos} />
+                  ) : (
+                  <>
                   {/* Champion Banner */}
                   {champion && (
                     <motion.div
@@ -1052,6 +1129,8 @@ export function CampeonatoContent({ id, initialTournament, initialTeamsMap, init
                       })}
                     </div>
                   </HudCard>
+                  )}
+                  </>
                   )}
                 </motion.div>
               )}
@@ -1475,8 +1554,8 @@ export function CampeonatoContent({ id, initialTournament, initialTeamsMap, init
             </AnimatePresence>
           </div>
 
-          {/* ─── Sidebar (Right) ─── */}
-          <div className="w-full lg:w-72 xl:w-80 shrink-0 space-y-4">
+          {/* ─── Sidebar (Right) — escondida no lobby (pendente full-width) ─── */}
+          <div className={`w-full lg:w-72 xl:w-80 shrink-0 space-y-4 ${tournament.matches.length === 0 ? "hidden" : ""}`}>
             {/* Event Info */}
             <HudCard className="p-4" label="EVENTO">
               <div className="space-y-3 mt-1">
