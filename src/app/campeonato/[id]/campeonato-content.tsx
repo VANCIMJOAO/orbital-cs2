@@ -60,7 +60,7 @@ interface CampeonatoContentProps {
 const LOBBY_CSS = `
 .cmp-slotgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
 @media(max-width:900px){.cmp-slotgrid{grid-template-columns:repeat(2,1fr)}}
-.cmp-slot{aspect-ratio:1/.82;min-height:256px;border:1px solid var(--orbital-border,#1f1f27);background:#0d0d12;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;position:relative}
+.cmp-slot{height:232px;border:1px solid var(--orbital-border,#1f1f27);background:#0d0d12;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;position:relative}
 .cmp-slot.filled{border-color:rgba(124,92,255,.4);background:linear-gradient(180deg,rgba(124,92,255,.08),#0d0d12)}
 .cmp-num{position:absolute;top:9px;left:12px;font-family:var(--font-jetbrains),monospace;font-size:10px;color:#7e7b88;z-index:3}
 .cmp-logo{width:54px;height:54px;border:1px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-family:var(--font-russo),sans-serif;font-size:19px;color:#a892ff;overflow:hidden;position:relative}
@@ -78,7 +78,9 @@ const LOBBY_CSS = `
 .cmp-slot.flip:hover .cmp-flip-inner{transform:rotateY(180deg)}
 .cmp-face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;display:flex;flex-direction:column}
 .cmp-face.front{align-items:center;justify-content:center;gap:12px}
-.cmp-face.back{transform:rotateY(180deg);padding:12px;justify-content:flex-start;background:linear-gradient(180deg,rgba(124,92,255,.1),#0d0d12);overflow:hidden}
+.cmp-face.back{transform:rotateY(180deg);padding:12px;justify-content:flex-start;background:linear-gradient(180deg,rgba(124,92,255,.1),#0d0d12);overflow:hidden auto}
+.cmp-face.back::-webkit-scrollbar{width:4px}
+.cmp-face.back::-webkit-scrollbar-thumb{background:rgba(124,92,255,.4)}
 .cmp-face a{text-decoration:none;color:inherit;cursor:pointer}
 .cmp-hint{position:absolute;bottom:10px;right:12px;font-family:var(--font-jetbrains),monospace;font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:#7e7b88;opacity:.5}
 .cmp-bkh{display:flex;align-items:center;gap:8px;padding-bottom:8px;margin-bottom:8px;border-bottom:1px solid rgba(255,255,255,.08);color:inherit}
@@ -672,7 +674,7 @@ export function CampeonatoContent({ id, initialTournament, initialTeamsMap, init
         </div>
         <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-orbital-purple/40 to-transparent" />
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 pt-8 pb-6">
+        <div className="relative w-full px-4 sm:px-6 lg:px-10 xl:px-16 pt-8 pb-6">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             {/* Back + Status Row */}
             <div className="flex items-center gap-3 mb-4">
@@ -762,7 +764,7 @@ export function CampeonatoContent({ id, initialTournament, initialTeamsMap, init
 
       {/* ════════════════ TAB NAVIGATION ════════════════ */}
       <div className="sticky top-0 z-30 bg-[#0A0A0A]/95 backdrop-blur-sm border-b border-orbital-border">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="w-full px-4 sm:px-6 lg:px-10 xl:px-16">
           <div className="flex gap-0 overflow-x-auto scrollbar-none" role="tablist" aria-label="Seções do campeonato">
             {TABS.map(tab => (
               <button
@@ -791,7 +793,7 @@ export function CampeonatoContent({ id, initialTournament, initialTeamsMap, init
       </div>
 
       {/* ════════════════ MAIN CONTENT ════════════════ */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 mt-6">
+      <div className="w-full px-4 sm:px-6 lg:px-10 xl:px-16 mt-6">
         <div className="flex flex-col lg:flex-row gap-6">
           {/* ─── Left / Main Column ─── */}
           <div className="flex-1 min-w-0">
