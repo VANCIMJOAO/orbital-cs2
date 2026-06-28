@@ -44,7 +44,7 @@ const TABS: { id: TabId; label: string }[] = [
 
 interface InscritoLite {
   team_name: string; team_tag: string; logo_url: string | null; status: string;
-  captain_name?: string; captain_steam_id?: string;
+  team_id?: number | null; captain_name?: string; captain_steam_id?: string;
   players?: { name: string; steam_id: string }[];
 }
 
@@ -60,7 +60,7 @@ interface CampeonatoContentProps {
 const LOBBY_CSS = `
 .cmp-slotgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
 @media(max-width:900px){.cmp-slotgrid{grid-template-columns:repeat(2,1fr)}}
-.cmp-slot{aspect-ratio:1/.78;border:1px solid var(--orbital-border,#1f1f27);background:#0d0d12;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;position:relative}
+.cmp-slot{aspect-ratio:1/.82;min-height:256px;border:1px solid var(--orbital-border,#1f1f27);background:#0d0d12;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;position:relative}
 .cmp-slot.filled{border-color:rgba(124,92,255,.4);background:linear-gradient(180deg,rgba(124,92,255,.08),#0d0d12)}
 .cmp-num{position:absolute;top:9px;left:12px;font-family:var(--font-jetbrains),monospace;font-size:10px;color:#7e7b88;z-index:3}
 .cmp-logo{width:54px;height:54px;border:1px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-family:var(--font-russo),sans-serif;font-size:19px;color:#a892ff;overflow:hidden;position:relative}
@@ -78,18 +78,22 @@ const LOBBY_CSS = `
 .cmp-slot.flip:hover .cmp-flip-inner{transform:rotateY(180deg)}
 .cmp-face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;display:flex;flex-direction:column}
 .cmp-face.front{align-items:center;justify-content:center;gap:12px}
-.cmp-face.back{transform:rotateY(180deg);padding:14px;justify-content:flex-start;background:linear-gradient(180deg,rgba(124,92,255,.1),#0d0d12)}
+.cmp-face.back{transform:rotateY(180deg);padding:12px;justify-content:flex-start;background:linear-gradient(180deg,rgba(124,92,255,.1),#0d0d12);overflow:hidden}
+.cmp-face a{text-decoration:none;color:inherit;cursor:pointer}
 .cmp-hint{position:absolute;bottom:10px;right:12px;font-family:var(--font-jetbrains),monospace;font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:#7e7b88;opacity:.5}
-.cmp-bkh{display:flex;align-items:center;gap:8px;padding-bottom:9px;margin-bottom:9px;border-bottom:1px solid rgba(255,255,255,.08)}
+.cmp-bkh{display:flex;align-items:center;gap:8px;padding-bottom:8px;margin-bottom:8px;border-bottom:1px solid rgba(255,255,255,.08);color:inherit}
+a.cmp-bkh:hover .nm{color:#a892ff}
 .cmp-bkh .lg{width:22px;height:22px;border:1px solid #7c5cff;display:flex;align-items:center;justify-content:center;font-family:var(--font-russo),sans-serif;font-size:9px;color:#a892ff;flex:0 0 auto;overflow:hidden;position:relative}
 .cmp-bkh .lg img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
 .cmp-bkh .nm{font-family:var(--font-russo),sans-serif;font-size:12px;text-transform:uppercase;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cmp-bkh .cnt{margin-left:auto;font-family:var(--font-jetbrains),monospace;font-size:9.5px;color:#7e7b88;flex:0 0 auto}
-.cmp-roster{list-style:none;display:flex;flex-direction:column;gap:4px;margin:0;padding:0}
-.cmp-roster li{display:flex;align-items:center;gap:9px;padding:4px 7px;background:rgba(255,255,255,.02);border-left:2px solid transparent}
-.cmp-roster li.cap-row{border-left-color:#f5c542;background:rgba(245,197,66,.06)}
-.cmp-roster .av{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#7c5cff,#4a37a6);display:flex;align-items:center;justify-content:center;font-family:var(--font-russo),sans-serif;font-size:10px;color:#fff;flex:0 0 auto;text-transform:uppercase;overflow:hidden;position:relative}
-.cmp-roster li.cap-row .av{background:linear-gradient(135deg,#f5c542,#c79a1f);color:#1a1400}
+.cmp-roster{list-style:none;display:flex;flex-direction:column;gap:3px;margin:0;padding:0}
+.cmp-roster a{display:flex;align-items:center;gap:9px;padding:4px 7px;background:rgba(255,255,255,.02);border-left:2px solid transparent;color:inherit;transition:background .15s}
+.cmp-roster a:hover{background:rgba(124,92,255,.12)}
+.cmp-roster a.cap-row{border-left-color:#f5c542;background:rgba(245,197,66,.06)}
+.cmp-roster a.cap-row:hover{background:rgba(245,197,66,.12)}
+.cmp-roster .av{width:23px;height:23px;border-radius:50%;background:linear-gradient(135deg,#7c5cff,#4a37a6);display:flex;align-items:center;justify-content:center;font-family:var(--font-russo),sans-serif;font-size:10px;color:#fff;flex:0 0 auto;text-transform:uppercase;overflow:hidden;position:relative}
+.cmp-roster a.cap-row .av{background:linear-gradient(135deg,#f5c542,#c79a1f);color:#1a1400}
 .cmp-roster .av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .cmp-roster .pn{flex:1;font-family:var(--font-jetbrains),monospace;font-size:12px;color:#efedf4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cmp-roster .cap{font-family:var(--font-jetbrains),monospace;font-size:8px;letter-spacing:.05em;color:#f5c542;flex:0 0 auto}
@@ -136,20 +140,28 @@ function FlipSlot({ num, insc }: { num: number; insc: InscritoLite }) {
           <span className="cmp-hint">↻ ver line</span>
         </div>
         <div className="cmp-face back">
-          <div className="cmp-bkh">
-            <span className="lg">{insc.logo_url ? <img src={insc.logo_url} alt="" /> : initialOf(insc.team_tag || insc.team_name)}</span>
-            <span className="nm">{insc.team_name}</span>
-            <span className="cnt">{roster.length}</span>
-          </div>
-          <ul className="cmp-roster">
+          {insc.team_id ? (
+            <Link href={`/times/${insc.team_id}`} className="cmp-bkh">
+              <span className="lg">{insc.logo_url ? <img src={insc.logo_url} alt="" /> : initialOf(insc.team_tag || insc.team_name)}</span>
+              <span className="nm">{insc.team_name}</span>
+              <span className="cnt">{roster.length}</span>
+            </Link>
+          ) : (
+            <div className="cmp-bkh">
+              <span className="lg">{insc.logo_url ? <img src={insc.logo_url} alt="" /> : initialOf(insc.team_tag || insc.team_name)}</span>
+              <span className="nm">{insc.team_name}</span>
+              <span className="cnt">{roster.length}</span>
+            </div>
+          )}
+          <div className="cmp-roster">
             {roster.map((p) => (
-              <li key={p.steam_id} className={p.cap ? "cap-row" : ""}>
+              <Link key={p.steam_id} href={`/perfil/${p.steam_id}`} className={p.cap ? "cap-row" : ""}>
                 <span className="av"><img src={`/api/steam/avatar-image/${p.steam_id}`} alt="" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />{initialOf(p.name)}</span>
                 <span className="pn">{p.name}</span>
                 {p.cap && <span className="cap">★ CAP</span>}
-              </li>
+              </Link>
             ))}
-          </ul>
+          </div>
         </div>
       </div>
     </div>

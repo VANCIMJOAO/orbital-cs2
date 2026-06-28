@@ -31,7 +31,7 @@ export default async function CampeonatoPage({ params }: { params: Promise<{ id:
   let initialMapScores: MapScoresMap = {};
   type Inscrito = {
     team_name: string; team_tag: string; logo_url: string | null; status: string;
-    captain_name: string; captain_steam_id: string;
+    team_id: number | null; captain_name: string; captain_steam_id: string;
     players: { name: string; steam_id: string }[];
   };
   let inscritos: Inscrito[] = [];
@@ -40,7 +40,7 @@ export default async function CampeonatoPage({ params }: { params: Promise<{ id:
   // enquanto o bracket não foi montado — pending sem teams)
   try {
     const [rows] = await dbPool.query(
-      "SELECT team_name, team_tag, logo_url, status, captain_name, captain_steam_id, players FROM inscricoes WHERE tournament_id = ? AND status != 'rejeitado' ORDER BY created_at ASC",
+      "SELECT team_name, team_tag, logo_url, status, team_id, captain_name, captain_steam_id, players FROM inscricoes WHERE tournament_id = ? AND status != 'rejeitado' ORDER BY created_at ASC",
       [id]
     );
     inscritos = (rows as Record<string, unknown>[]).map(r => ({
@@ -48,6 +48,7 @@ export default async function CampeonatoPage({ params }: { params: Promise<{ id:
       team_tag: String(r.team_tag ?? ""),
       logo_url: (r.logo_url as string | null) ?? null,
       status: String(r.status),
+      team_id: (r.team_id as number | null) ?? null,
       captain_name: String(r.captain_name ?? ""),
       captain_steam_id: String(r.captain_steam_id ?? ""),
       players: typeof r.players === "string" ? JSON.parse(r.players) : ((r.players as { name: string; steam_id: string }[]) ?? []),
