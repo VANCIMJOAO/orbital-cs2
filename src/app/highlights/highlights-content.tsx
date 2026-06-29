@@ -1,13 +1,33 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { motion } from "framer-motion";
-import { Sparkles, Loader2, Swords } from "lucide-react";
 import Link from "next/link";
-import { HudCard } from "@/components/hud-card";
-import { PageHeader } from "@/components/page-header";
 import { VideoPlayer } from "@/components/video-player";
 import type { HighlightClip } from "@/lib/api";
+import { OWP_CSS } from "@/lib/owp-styles";
+
+const HL_CSS = `
+.owp .hlfilters{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:26px}
+.owp .srch{display:flex;align-items:center;gap:8px;background:var(--bg2);border:1px solid var(--line);padding:9px 13px;min-width:220px}
+.owp .srch input{background:transparent;border:0;outline:none;color:var(--tx);font-family:var(--mono);font-size:12px;width:100%}
+.owp .srch input::placeholder{color:var(--faint)}
+.owp .hlgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.owp .hl{position:relative;background:var(--panel);border:1px solid var(--line-or);overflow:hidden;clip-path:polygon(0 0,100% 0,100% calc(100% - 16px),calc(100% - 16px) 100%,0 100%);transition:.15s}
+.owp .hl:hover{border-color:var(--or)}
+.owp .hl .vtag{position:absolute;top:10px;left:10px;z-index:6;pointer-events:none;font-family:var(--cond);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#1a0d06;background:var(--or);padding:3px 9px;clip-path:polygon(6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%,0 6px)}
+.owp .hl .vrank{position:absolute;top:11px;right:11px;z-index:6;pointer-events:none;font-family:var(--mono);font-size:10px;color:var(--tx);text-shadow:0 1px 4px rgba(0,0,0,.85)}
+.owp .hl .vinfo{padding:11px 13px;border-top:1px solid var(--line)}
+.owp .hl .vpl{display:flex;align-items:center;gap:9px;min-width:0}
+.owp .hl .vpl a{font-family:var(--cond);font-size:15px;text-transform:uppercase;letter-spacing:.02em;color:#fff;transition:.15s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.owp .hl .vpl a:hover{color:var(--or2)}
+.owp .hl .vpl .kt{margin-left:auto;flex:0 0 auto;font-family:var(--mono);font-size:9px;font-weight:700;color:var(--or2);background:rgba(255,90,31,.14);border:1px solid var(--line-or);padding:2px 7px}
+.owp .hl .vmt{display:flex;align-items:center;gap:6px;margin-top:7px;font-family:var(--mono);font-size:10px;color:var(--faint);text-transform:uppercase;letter-spacing:.04em;transition:.15s}
+.owp .hl .vmt:hover{color:var(--or2)}
+.owp .center{text-align:center;margin-top:30px}
+.owp .countline{text-align:center;margin-top:14px;font-family:var(--mono);font-size:10px;color:var(--faint);letter-spacing:.06em;text-transform:uppercase}
+@media(max-width:1000px){.owp .hlgrid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.owp .hlgrid{grid-template-columns:1fr}}
+`;
 
 export function HighlightsContent() {
   const [clips, setClips] = useState<HighlightClip[]>([]);
@@ -24,11 +44,7 @@ export function HighlightsContent() {
       const res = await fetch(`/api/highlights/all?limit=${PAGE_SIZE}&offset=${offset}`);
       const data = await res.json();
       const newClips = data.clips || [];
-      if (append) {
-        setClips(prev => [...prev, ...newClips]);
-      } else {
-        setClips(newClips);
-      }
+      if (append) setClips(prev => [...prev, ...newClips]); else setClips(newClips);
       setHasMore(newClips.length >= PAGE_SIZE);
     } catch {
       if (!append) setClips([]);
@@ -38,171 +54,87 @@ export function HighlightsContent() {
     }
   }, []);
 
-  useEffect(() => {
-    fetchClips();
-  }, [fetchClips]);
+  useEffect(() => { (async () => { await fetchClips(); })(); }, [fetchClips]);
 
-  const loadMore = () => {
-    if (!loadingMore && hasMore) {
-      fetchClips(clips.length, true);
-    }
-  };
+  const loadMore = () => { if (!loadingMore && hasMore) fetchClips(clips.length, true); };
+
+  const chips: { v: typeof filterKills; label: string }[] = [
+    { v: "all", label: "Todos" }, { v: "3k", label: "3K" }, { v: "4k", label: "4K" }, { v: "ace", label: "Ace (5K)" },
+  ];
+
+  const filtered = clips.filter(clip => {
+    if (search && !clip.player_name?.toLowerCase().includes(search.toLowerCase())) return false;
+    if (filterKills === "3k" && (clip.kills_count || 0) < 3) return false;
+    if (filterKills === "4k" && (clip.kills_count || 0) < 4) return false;
+    if (filterKills === "ace" && (clip.kills_count || 0) < 5) return false;
+    return true;
+  });
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-20 pt-10">
-      <PageHeader
-        kicker="Recortados automaticamente"
-        title="Os melhores"
-        accent="Highlights"
-        sub="Clutchs, aces e retakes de todas as partidas, em vídeo."
-      />
+    <div className="owp">
+      <style>{OWP_CSS + HL_CSS}</style>
 
-      {/* Filters */}
-      {!loading && clips.length > 0 && (
-        <div className="flex flex-wrap items-center gap-3 mb-6">
-          <input
-            type="text"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="Buscar jogador..."
-            className="bg-[#111] border border-orbital-border px-3 py-1.5 text-orbital-text font-[family-name:var(--font-jetbrains)] text-xs placeholder:text-orbital-text-dim/50 focus:outline-none focus:border-orbital-purple/50 w-40"
-          />
-          {(["all", "3k", "4k", "ace"] as const).map(f => (
-            <button
-              key={f}
-              onClick={() => setFilterKills(f)}
-              className={`px-3 py-1.5 font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider border transition-colors ${
-                filterKills === f
-                  ? "bg-orbital-purple/10 border-orbital-purple/50 text-orbital-purple"
-                  : "bg-[#0A0A0A] border-orbital-border text-orbital-text-dim hover:text-orbital-text"
-              }`}
-            >
-              {f === "all" ? "TODOS" : f === "ace" ? "ACE (5K)" : f.toUpperCase()}
-            </button>
-          ))}
-        </div>
-      )}
+      <header className="pagehead">
+        <h1>Os Melhores Highlights</h1>
+        <p>CLUTCHS, ACES E RETAKES DE TODAS AS PARTIDAS, RECORTADOS AUTOMATICAMENTE · EM VÍDEO</p>
+      </header>
 
-      {/* Loading */}
-      {loading && (
-        <div className="flex items-center justify-center py-20">
-          <Loader2 size={24} className="text-orbital-purple animate-spin" />
-        </div>
-      )}
-
-      {/* Empty state */}
-      {!loading && clips.length === 0 && (
-        <HudCard className="text-center py-12">
-          <Sparkles size={24} className="text-orbital-border mx-auto mb-3" />
-          <p className="font-[family-name:var(--font-jetbrains)] text-[0.7rem] text-orbital-text-dim">
-            Nenhum highlight disponível ainda
-          </p>
-        </HudCard>
-      )}
-
-      {/* Clips grid */}
-      {!loading && clips.length > 0 && (() => {
-        const filtered = clips.filter(clip => {
-          if (search && !clip.player_name?.toLowerCase().includes(search.toLowerCase())) return false;
-          if (filterKills === "3k" && (clip.kills_count || 0) < 3) return false;
-          if (filterKills === "4k" && (clip.kills_count || 0) < 4) return false;
-          if (filterKills === "ace" && (clip.kills_count || 0) < 5) return false;
-          return true;
-        });
-        if (filtered.length === 0) return (
-          <HudCard className="text-center py-8">
-            <p className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text-dim">Nenhum highlight encontrado com esses filtros</p>
-          </HudCard>
-        );
-        return (
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
-        >
-          {filtered.map((clip, i) => (
-            <motion.div
-              key={clip.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i < PAGE_SIZE ? 0.05 * i : 0 }}
-              className="bg-orbital-card border border-orbital-border overflow-hidden group hover:border-orbital-purple/30 transition-colors"
-            >
-              {/* Video with auto-generated thumbnail (ignore server thumb — it's the same generic intro for all clips) */}
-              <VideoPlayer
-                src={`/api/highlights-proxy/${clip.video_file}`}
-                clipId={clip.id}
-              />
-
-              {/* Info bar */}
-              <div className="p-2.5">
-                {/* Player + kills */}
-                <div className="flex items-center gap-2 mb-1.5">
-                  <span className="font-[family-name:var(--font-russo)] text-[0.65rem] text-orbital-purple shrink-0">
-                    #{clip.rank}
-                  </span>
-                  {clip.steam_id ? (
-                    <Link
-                      href={`/perfil/${clip.steam_id}`}
-                      className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text hover:text-orbital-purple transition-colors truncate"
-                    >
-                      {clip.player_name || "Player"}
-                    </Link>
-                  ) : (
-                    <span className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text truncate">
-                      {clip.player_name || "Player"}
-                    </span>
-                  )}
-                  {clip.kills_count >= 2 && (
-                    <span className="font-[family-name:var(--font-russo)] text-[0.65rem] text-orbital-purple bg-orbital-purple/10 px-1.5 py-0.5 shrink-0">
-                      {clip.kills_count >= 5 ? "ACE" : `${clip.kills_count}K`}
-                    </span>
-                  )}
-                  {clip.round_number && (
-                    <span className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim shrink-0 ml-auto">
-                      R{clip.round_number}
-                    </span>
-                  )}
-                </div>
-
-                {/* Match link */}
-                <Link
-                  href={`/partidas/${clip.match_id}`}
-                  className="flex items-center gap-1.5 group/match"
-                >
-                  <Swords size={9} className="text-orbital-text-dim group-hover/match:text-orbital-purple transition-colors shrink-0" />
-                  <span className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim group-hover/match:text-orbital-purple transition-colors truncate">
-                    {clip.team1_string || "Time 1"} vs {clip.team2_string || "Time 2"}
-                  </span>
-                </Link>
+      <div className="wrap">
+        <section className="sec" style={{ paddingTop: 24 }}>
+          {!loading && clips.length > 0 && (
+            <div className="hlfilters">
+              <span className="srch">
+                <span style={{ color: "var(--faint)" }}>⌕</span>
+                <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar jogador..." />
+              </span>
+              <div className="chips">
+                {chips.map(c => (
+                  <span key={c.v} className={`chip ${filterKills === c.v ? "on" : ""}`} onClick={() => setFilterKills(c.v)}>{c.label}</span>
+                ))}
               </div>
-            </motion.div>
-          ))}
-        </motion.div>
-        );
-      })()}
+            </div>
+          )}
 
-      {/* Load more */}
-      {!loading && hasMore && clips.length > 0 && (
-        <div className="mt-8 text-center">
-          <button
-            onClick={loadMore}
-            disabled={loadingMore}
-            className="inline-flex items-center gap-2 px-6 py-2.5 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 hover:bg-orbital-purple/20 transition-all font-[family-name:var(--font-russo)] text-[0.6rem] tracking-wider text-orbital-purple disabled:opacity-50"
-          >
-            {loadingMore ? <Loader2 size={14} className="animate-spin" /> : null}
-            {loadingMore ? "CARREGANDO..." : "CARREGAR MAIS"}
-          </button>
-        </div>
-      )}
+          {loading ? (
+            <div className="loading"><div className="spin" />Carregando highlights…</div>
+          ) : clips.length === 0 ? (
+            <div className="empty">Nenhum highlight disponível ainda.</div>
+          ) : filtered.length === 0 ? (
+            <div className="empty">Nenhum highlight encontrado com esses filtros.</div>
+          ) : (
+            <>
+              <div className="hlgrid">
+                {filtered.map(clip => {
+                  const tag = clip.kills_count >= 5 ? "ACE" : clip.kills_count >= 2 ? `${clip.kills_count}K` : null;
+                  return (
+                    <div className="hl" key={clip.id}>
+                      {tag && <span className="vtag">{tag}</span>}
+                      <span className="vrank">#{clip.rank}</span>
+                      <VideoPlayer src={`/api/highlights-proxy/${clip.video_file}`} clipId={clip.id} />
+                      <div className="vinfo">
+                        <div className="vpl">
+                          {clip.steam_id
+                            ? <Link href={`/perfil/${clip.steam_id}`}>{clip.player_name || "Player"}</Link>
+                            : <span style={{ fontFamily: "var(--font-anton)", fontSize: 15, textTransform: "uppercase", color: "#fff" }}>{clip.player_name || "Player"}</span>}
+                          {clip.round_number ? <span className="kt">R{clip.round_number}</span> : null}
+                        </div>
+                        <Link href={`/partidas/${clip.match_id}`} className="vmt">⚔ {clip.team1_string || "Time 1"} vs {clip.team2_string || "Time 2"}</Link>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
 
-      {/* Total count */}
-      {!loading && clips.length > 0 && (
-        <div className="mt-4 text-center">
-          <span className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim">
-            {clips.length} highlight{clips.length !== 1 ? "s" : ""} carregado{clips.length !== 1 ? "s" : ""}
-          </span>
-        </div>
-      )}
+              {hasMore && (
+                <div className="center">
+                  <button className="btn" onClick={loadMore} disabled={loadingMore}>{loadingMore ? "Carregando…" : "Carregar mais ↓"}</button>
+                </div>
+              )}
+              <div className="countline">{clips.length} highlight{clips.length !== 1 ? "s" : ""} carregado{clips.length !== 1 ? "s" : ""}</div>
+            </>
+          )}
+        </section>
+      </div>
     </div>
   );
 }
-
