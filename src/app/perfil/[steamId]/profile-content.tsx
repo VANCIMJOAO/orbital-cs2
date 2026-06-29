@@ -3,7 +3,6 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { ArrowLeft } from "lucide-react";
 import { PlayerCardExport } from "@/components/player-card-export";
 import { VideoPlayer } from "@/components/video-player";
 import { MAP_IMAGES } from "@/lib/maps";
@@ -430,11 +429,6 @@ export function ProfileContent({ steamId }: { steamId: string }) {
     <div className="owp">
       <style>{OWP_CSS}</style>
 
-      {/* back */}
-      <div className="owp-back wrap">
-        <Link href="/leaderboard"><ArrowLeft size={14} /> Voltar ao Ranking</Link>
-      </div>
-
       {/* ===== BANNER ===== */}
       <header className="owp-banner">
         <span className="owp-ghost">{displayName}</span>
@@ -722,9 +716,6 @@ const OWP_CSS = `
 .owp .wrap{padding:0 clamp(20px,3.2vw,72px)}
 .owp a{color:inherit;text-decoration:none}
 
-.owp-back{padding-top:18px;padding-bottom:6px}
-.owp-back a{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--dim);transition:.15s}
-.owp-back a:hover{color:var(--or2)}
 
 .owp .owp-info{display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;margin-left:5px;border:1px solid var(--faint);border-radius:50%;font-family:var(--mono);font-size:8px;font-weight:700;color:var(--dim);vertical-align:middle;cursor:help;line-height:1;text-transform:none}
 .owp .owp-info:hover{border-color:var(--or);color:var(--or)}
@@ -740,7 +731,7 @@ const OWP_CSS = `
 .owp-lbl .more{margin-left:auto;font-family:var(--cond);font-weight:400;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--or2);cursor:pointer;transition:.15s}
 .owp-lbl .more:hover{color:#fff}
 
-.owp-banner{position:relative;overflow:hidden;border-bottom:2px solid var(--or);margin-top:6px}
+.owp-banner{position:relative;overflow:hidden;border-bottom:2px solid var(--or);margin-top:24px}
 .owp-banner::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,var(--bg) 32%,rgba(27,15,35,.55) 72%,rgba(27,15,35,.85));z-index:0}
 .owp-banner .wrap{position:relative;z-index:2;display:flex;align-items:flex-end;gap:30px;padding:40px clamp(20px,3.2vw,72px) 30px;flex-wrap:wrap}
 .owp-ghost{position:absolute;right:2vw;bottom:-2.4vw;z-index:1;font-family:var(--disp);font-size:clamp(6rem,15vw,15rem);line-height:.7;color:transparent;-webkit-text-stroke:2px rgba(255,90,31,.15);text-transform:uppercase;pointer-events:none;letter-spacing:-.02em;user-select:none;white-space:nowrap;max-width:60vw;overflow:hidden}

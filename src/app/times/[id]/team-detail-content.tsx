@@ -2,7 +2,6 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import { Team, Match, PlayerStats, MapStats, getStatusType } from "@/lib/api";
 import { MAP_IMAGES } from "@/lib/maps";
 
@@ -163,10 +162,6 @@ export function TeamDetailContent({ team, matches, playerStats, mapStats, teamsM
   return (
     <div className="owp">
       <style>{OWP_CSS}</style>
-
-      <div className="owp-back wrap">
-        <Link href="/times"><ArrowLeft size={14} /> Voltar aos Times</Link>
-      </div>
 
       {/* ===== BANNER ===== */}
       <header className="owp-banner">
@@ -483,10 +478,6 @@ const OWP_CSS = `
 .owp .wrap{padding:0 clamp(20px,3.2vw,72px)}
 .owp a{color:inherit;text-decoration:none}
 
-.owp-back{padding-top:18px;padding-bottom:6px}
-.owp-back a{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--dim);transition:.15s}
-.owp-back a:hover{color:var(--or2)}
-
 .owp .hh{cursor:help;border-bottom:1px dotted var(--faint)}
 .owp-tip{position:fixed;z-index:9999;max-width:240px;background:var(--panel2);border:1px solid var(--or);color:var(--tx);font-family:var(--body);font-weight:500;font-size:11.5px;line-height:1.42;text-align:left;padding:11px 13px;clip-path:polygon(0 0,100% 0,100% calc(100% - 7px),calc(100% - 7px) 100%,0 100%);box-shadow:0 14px 38px -10px rgba(0,0,0,.8);pointer-events:none}
 .owp-tip-arrow{position:absolute;left:50%;top:100%;transform:translateX(-50%);border:6px solid transparent;border-top-color:var(--or)}
@@ -496,7 +487,7 @@ const OWP_CSS = `
 .owp-lbl::before{content:'';width:0;height:0;border-style:solid;border-width:7px 0 7px 11px;border-color:transparent transparent transparent var(--or)}
 .owp-lbl::after{content:'';flex:1;height:2px;background:linear-gradient(90deg,var(--line-or),transparent)}
 
-.owp-banner{position:relative;overflow:hidden;border-bottom:2px solid var(--or);margin-top:6px}
+.owp-banner{position:relative;overflow:hidden;border-bottom:2px solid var(--or);margin-top:24px}
 .owp-banner::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,var(--bg) 32%,rgba(27,15,35,.55) 72%,rgba(27,15,35,.85));z-index:0}
 .owp-banner .wrap{position:relative;z-index:2;display:flex;align-items:flex-end;gap:30px;padding:40px clamp(20px,3.2vw,72px) 30px;flex-wrap:wrap}
 .owp-ghost{position:absolute;right:2vw;bottom:-2.4vw;z-index:1;font-family:var(--disp);font-size:clamp(6rem,15vw,15rem);line-height:.7;color:transparent;-webkit-text-stroke:2px rgba(255,90,31,.15);text-transform:uppercase;pointer-events:none;letter-spacing:-.02em;user-select:none;white-space:nowrap;max-width:62vw;overflow:hidden}
