@@ -731,7 +731,7 @@ const OWP_CSS = `
 .owp-lbl .more{margin-left:auto;font-family:var(--cond);font-weight:400;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--or2);cursor:pointer;transition:.15s}
 .owp-lbl .more:hover{color:#fff}
 
-.owp-banner{position:relative;overflow:hidden;border-bottom:2px solid var(--or);margin-top:24px}
+.owp-banner{position:relative;overflow:hidden;border-bottom:2px solid var(--or);margin-top:0}
 .owp-banner::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,var(--bg) 32%,rgba(27,15,35,.55) 72%,rgba(27,15,35,.85));z-index:0}
 .owp-banner .wrap{position:relative;z-index:2;display:flex;align-items:flex-end;gap:30px;padding:40px clamp(20px,3.2vw,72px) 30px;flex-wrap:wrap}
 .owp-ghost{position:absolute;right:2vw;bottom:-2.4vw;z-index:1;font-family:var(--disp);font-size:clamp(6rem,15vw,15rem);line-height:.7;color:transparent;-webkit-text-stroke:2px rgba(255,90,31,.15);text-transform:uppercase;pointer-events:none;letter-spacing:-.02em;user-select:none;white-space:nowrap;max-width:60vw;overflow:hidden}

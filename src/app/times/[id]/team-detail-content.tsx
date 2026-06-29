@@ -177,6 +177,7 @@ export function TeamDetailContent({ team, matches, playerStats, mapStats, teamsM
           </div>
           <div className="owp-pinfo">
             <div className="owp-row1">
+              {team.flag && <span className="owp-tag soft">{team.flag}</span>}
               {team.tag && <span className="owp-tag">[{team.tag}]</span>}
               <span className="owp-tag soft">{players.length} {players.length === 1 ? "jogador" : "jogadores"}</span>
               {streak.type && streak.count >= 2 && (
@@ -185,7 +186,7 @@ export function TeamDetailContent({ team, matches, playerStats, mapStats, teamsM
                 </span>
               )}
             </div>
-            <h1>{team.flag ? `${team.flag} ` : ""}{team.name}</h1>
+            <h1>{team.name}</h1>
             {finishedMatches.length > 0 && (
               <div className="owp-meta">
                 <span><b className="ok">{wins}V</b> · <b className="lo">{losses}D</b></span>
@@ -487,7 +488,7 @@ const OWP_CSS = `
 .owp-lbl::before{content:'';width:0;height:0;border-style:solid;border-width:7px 0 7px 11px;border-color:transparent transparent transparent var(--or)}
 .owp-lbl::after{content:'';flex:1;height:2px;background:linear-gradient(90deg,var(--line-or),transparent)}
 
-.owp-banner{position:relative;overflow:hidden;border-bottom:2px solid var(--or);margin-top:24px}
+.owp-banner{position:relative;overflow:hidden;border-bottom:2px solid var(--or);margin-top:0}
 .owp-banner::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,var(--bg) 32%,rgba(27,15,35,.55) 72%,rgba(27,15,35,.85));z-index:0}
 .owp-banner .wrap{position:relative;z-index:2;display:flex;align-items:flex-end;gap:30px;padding:40px clamp(20px,3.2vw,72px) 30px;flex-wrap:wrap}
 .owp-ghost{position:absolute;right:2vw;bottom:-2.4vw;z-index:1;font-family:var(--disp);font-size:clamp(6rem,15vw,15rem);line-height:.7;color:transparent;-webkit-text-stroke:2px rgba(255,90,31,.15);text-transform:uppercase;pointer-events:none;letter-spacing:-.02em;user-select:none;white-space:nowrap;max-width:62vw;overflow:hidden}
