@@ -457,7 +457,7 @@ export function ProfileContent({ steamId }: { steamId: string }) {
               )}
               {isCreator && <span className="owp-tag creator">★ CRIADOR</span>}
               {userRole.admin && !isCreator && <span className="owp-tag admin">ADMIN</span>}
-              {stats.mvp > 0 && <span className="owp-tag mvp">★ {stats.mvp} {stats.mvp === 1 ? "MVP" : "MVPs"}</span>}
+              {stats.mvp > 0 && <span className="owp-tag mvp" style={{ cursor: "help" }} {...hintProps("Estrelas de MVP de round — o CS dá uma estrela ao destaque de cada round (não é 'melhor da partida').")}>★ {stats.mvp} {stats.mvp === 1 ? "Estrela MVP" : "Estrelas MVP"}</span>}
             </div>
             <h1>{displayName}</h1>
             <div className="owp-meta">
@@ -500,7 +500,7 @@ export function ProfileContent({ steamId }: { steamId: string }) {
         <Cell k="HS %" v={`${hsp}`} small="%" hint="Porcentagem dos abates que foram tiros na cabeça (headshot)." hp={hintProps} />
         <Cell k="KAST" v={stats.kast ? stats.kast.toFixed(1) : "—"} small={stats.kast ? "%" : ""} hint="% de rounds em que o jogador teve Kill, Assist, Survived ou foi Trocado (Trade)." hp={hintProps} />
         <Cell k="Maps" v={stats.total_maps.toString()} hint="Total de mapas disputados nos campeonatos da ORBITAL ROXA." hp={hintProps} />
-        <Cell k="MVPs" v={stats.mvp.toString()} acc hint="Prêmios de Melhor da Partida (maior rating no mapa)." hp={hintProps} />
+        <Cell k="Estrelas MVP" v={stats.mvp.toString()} acc hint="Estrelas de MVP de round — o CS dá uma estrela ao destaque de cada round (não é 'melhor da partida'). Por isso o total costuma ser maior que o nº de mapas." hp={hintProps} />
       </div>
 
       <div className="wrap">
