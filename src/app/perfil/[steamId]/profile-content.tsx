@@ -1,14 +1,13 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { ArrowLeft, Target, Skull, Crosshair, Zap, Award, TrendingUp, Flame, Map, BarChart3, Swords } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { HudCard, StatBox } from "@/components/hud-card";
-import { PlayerCardExport } from "@/components/player-card-export";
-import { Match, getStatusText, getStatusType } from "@/lib/api";
-import { VideoPlayer } from "@/components/video-player";
 import { useEffect, useState } from "react";
+import { ArrowLeft } from "lucide-react";
+import { PlayerCardExport } from "@/components/player-card-export";
+import { VideoPlayer } from "@/components/video-player";
+import { MAP_IMAGES } from "@/lib/maps";
+import { Match, getStatusType } from "@/lib/api";
 
 interface ProfileStats {
   steam_id: string;
@@ -47,6 +46,28 @@ interface MatchDataPoint {
   deaths: number;
 }
 
+// Stats agregadas por partida (match_id) — usadas na aba Partidas
+interface MatchAgg {
+  kills: number;
+  deaths: number;
+  assists: number;
+  adr: number;
+  rating: number;
+}
+
+type TabKey = "overview" | "partidas" | "highlights" | "mapas";
+
+const DEFAULT_MAP_IMG = MAP_IMAGES.de_mirage;
+function mapImg(name?: string): string {
+  if (!name) return DEFAULT_MAP_IMG;
+  const key = name.startsWith("de_") ? name : `de_${name}`;
+  return MAP_IMAGES[key] || DEFAULT_MAP_IMG;
+}
+function mapLabel(name?: string): string {
+  if (!name) return "—";
+  return name.replace("de_", "").toUpperCase();
+}
+
 // Rating formula matching G5API Utils.getRating
 function calcRating(kills: number, roundsplayed: number, deaths: number, k1: number, k2: number, k3: number, k4: number, k5: number): number {
   if (roundsplayed === 0) return 0;
@@ -63,33 +84,44 @@ function calcRating(kills: number, roundsplayed: number, deaths: number, k1: num
 export function ProfileContent({ steamId }: { steamId: string }) {
   const [stats, setStats] = useState<ProfileStats | null>(null);
   const [recentMatches, setRecentMatches] = useState<Match[]>([]);
-  const [mapCounts, setMapCounts] = useState<{ map: string; count: number }[]>([]);
+  const [matchAgg, setMatchAgg] = useState<Record<number, MatchAgg>>({});
   const [playerClips, setPlayerClips] = useState<{ id: number; match_id: number; map_number: number; rank: number; player_name: string; kills_count: number; score: number; description: string; round_number: number; video_file: string; thumbnail_file: string; duration_s: number; team1_string: string; team2_string: string }[]>([]);
-  const [mapPerformance, setMapPerformance] = useState<{ map: string; wins: number; total: number; avgRating: number; kills: number; deaths: number }[]>([]);
+  const [mapPerformance, setMapPerformance] = useState<{ map: string; wins: number; total: number; avgRating: number; kills: number; deaths: number; adr: number }[]>([]);
   const [matchHistory, setMatchHistory] = useState<MatchDataPoint[]>([]);
   const [avatar, setAvatar] = useState<string | null>(null);
   const [userName, setUserName] = useState<string | null>(null);
   const [playerTeam, setPlayerTeam] = useState<{ id: number; name: string; logo: string | null } | null>(null);
   const [userRole, setUserRole] = useState<{ admin: boolean; superAdmin: boolean }>({ admin: false, superAdmin: false });
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+  const [tab, setTab] = useState<TabKey>("overview");
+  const [hint, setHint] = useState<{ text: string; x: number; y: number } | null>(null);
+
+  function showHint(e: React.MouseEvent, text: string) {
+    const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const cx = Math.min(Math.max(r.left + r.width / 2, 130), window.innerWidth - 130);
+    setHint({ text, x: cx, y: r.top - 11 });
+  }
+  const hideHint = () => setHint(null);
+  function hintProps(text: string) {
+    return {
+      onMouseEnter: (e: React.MouseEvent) => showHint(e, text),
+      onMouseLeave: hideHint,
+    };
+  }
+  function goTab(t: TabKey) {
+    setTab(t);
+    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+  }
 
   useEffect(() => {
-    // Fetch Steam avatar + personaname (lowest priority name)
     fetch(`/api/steam/avatar/${steamId}`)
       .then(r => r.ok ? r.json() : null)
       .then(d => { if (d?.avatar) setAvatar(d.avatar); if (d?.name) setUserName(prev => prev || d.name); })
       .catch(() => {});
-    // Fetch user role + name
     fetch(`/api/users/${steamId}`)
       .then(r => r.ok ? r.json() : null)
-      .then(d => {
-        if (d?.user) {
-          setUserRole({ admin: !!d.user.admin, superAdmin: !!d.user.super_admin });
-        }
-      })
+      .then(d => { if (d?.user) setUserRole({ admin: !!d.user.admin, superAdmin: !!d.user.super_admin }); })
       .catch(() => {});
-    // Fetch registered nick from team auth_name (highest priority)
     fetch(`/api/teams`)
       .then(r => r.ok ? r.json() : null)
       .then(d => {
@@ -99,7 +131,7 @@ export function ProfileContent({ steamId }: { steamId: string }) {
           const entry = t.auth_name[steamId];
           if (entry) {
             const nick = typeof entry === "string" ? entry : entry.name;
-            if (nick) { setUserName(nick); }
+            if (nick) setUserName(nick);
             setPlayerTeam({ id: t.id, name: t.name, logo: t.logo || null });
             return;
           }
@@ -110,7 +142,6 @@ export function ProfileContent({ steamId }: { steamId: string }) {
 
   useEffect(() => {
     async function fetchData() {
-      // Fetch playerstats ONCE and reuse across all sections
       let playerStatsArr: Record<string, unknown>[] = [];
       try {
         const res = await fetch(`/api/playerstats/${steamId}`);
@@ -122,67 +153,41 @@ export function ProfileContent({ steamId }: { steamId: string }) {
         playerStatsArr = [];
       }
 
+      const emptyStats: ProfileStats = {
+        steam_id: steamId, name: steamId, wins: 0, total_maps: 0, total_rounds: 0,
+        kills: 0, deaths: 0, assists: 0, headshot_kills: 0, flash_assists: 0, damage: 0,
+        rating: 0, kdr: 0, hsp: 0, average_rating: 0, kast: 0, contribution_score: 0,
+        mvp: 0, enemies_flashed: 0, util_damage: 0, firstkill_t: 0, firstkill_ct: 0, firstdeath_t: 0, firstdeath_ct: 0,
+      };
+
       try {
         const matches = playerStatsArr;
-
         if (matches.length === 0) {
-          // No stats yet — show empty profile instead of error
-          setStats({
-            steam_id: steamId,
-            name: steamId,
-            wins: 0, total_maps: 0, total_rounds: 0,
-            kills: 0, deaths: 0, assists: 0,
-            headshot_kills: 0, flash_assists: 0, damage: 0,
-            rating: 0, kdr: 0, hsp: 0, average_rating: 0,
-            kast: 0, contribution_score: 0, mvp: 0, enemies_flashed: 0, util_damage: 0,
-            firstkill_t: 0, firstkill_ct: 0, firstdeath_t: 0, firstdeath_ct: 0,
-          });
+          setStats(emptyStats);
           setLoading(false);
           return;
         }
 
-        // Agregar stats de todas as partidas
-        const aggregated: ProfileStats = {
-          steam_id: steamId,
-          name: (matches[0].name as string) || steamId,
-          wins: 0,
-          total_maps: matches.length,
-          total_rounds: 0,
-          kills: 0,
-          deaths: 0,
-          assists: 0,
-          headshot_kills: 0,
-          flash_assists: 0,
-          damage: 0,
-          rating: 0,
-          kdr: 0,
-          hsp: 0,
-          average_rating: 0,
-          kast: 0,
-          contribution_score: 0,
-          mvp: 0,
-          enemies_flashed: 0,
-          util_damage: 0,
-          firstkill_t: 0,
-          firstkill_ct: 0,
-          firstdeath_t: 0,
-          firstdeath_ct: 0,
-        };
+        const aggregated: ProfileStats = { ...emptyStats, name: (matches[0].name as string) || steamId, total_maps: matches.length };
 
         let totalK1 = 0, totalK2 = 0, totalK3 = 0, totalK4 = 0, totalK5 = 0;
         const history: MatchDataPoint[] = [];
+        const aggByMatch: Record<number, MatchAgg & { _rounds: number; _maps: number }> = {};
+
         for (const m of matches) {
           const mKills = (m.kills as number) || 0;
           const mDeaths = (m.deaths as number) || 0;
+          const mAssists = (m.assists as number) || 0;
           const mHsk = (m.headshot_kills as number) || 0;
           const mDmg = (m.damage as number) || 0;
           const mRounds = (m.roundsplayed as number) || 0;
           const mk1 = (m.k1 as number) || 0, mk2 = (m.k2 as number) || 0;
           const mk3 = (m.k3 as number) || 0, mk4 = (m.k4 as number) || 0, mk5 = (m.k5 as number) || 0;
+          const matchId = (m.match_id as number) || 0;
 
           aggregated.kills += mKills;
           aggregated.deaths += mDeaths;
-          aggregated.assists += (m.assists as number) || 0;
+          aggregated.assists += mAssists;
           aggregated.headshot_kills += mHsk;
           aggregated.flash_assists += (m.flashbang_assists as number) || (m.flash_assists as number) || 0;
           aggregated.enemies_flashed += (m.enemies_flashed as number) || 0;
@@ -198,50 +203,56 @@ export function ProfileContent({ steamId }: { steamId: string }) {
           aggregated.kast += (m.kast as number) || 0;
           totalK1 += mk1; totalK2 += mk2; totalK3 += mk3; totalK4 += mk4; totalK5 += mk5;
 
+          const mapRating = calcRating(mKills, mRounds, mDeaths, mk1, mk2, mk3, mk4, mk5);
           history.push({
-            matchId: (m.match_id as number) || 0,
-            rating: calcRating(mKills, mRounds, mDeaths, mk1, mk2, mk3, mk4, mk5),
+            matchId,
+            rating: mapRating,
             kd: mDeaths > 0 ? +(mKills / mDeaths).toFixed(2) : mKills,
             adr: mRounds > 0 ? Math.round(mDmg / mRounds) : 0,
             hsp: mKills > 0 ? Math.round((mHsk / mKills) * 100) : 0,
             kills: mKills,
             deaths: mDeaths,
           });
+
+          // aggrega por partida (BO1/BO3)
+          if (matchId) {
+            const a = aggByMatch[matchId] || { kills: 0, deaths: 0, assists: 0, adr: 0, rating: 0, _rounds: 0, _maps: 0 };
+            a.kills += mKills; a.deaths += mDeaths; a.assists += mAssists;
+            a._rounds += mRounds; a._maps += 1;
+            a.rating += mapRating; // soma; vira média abaixo
+            a.adr += mDmg;         // soma dano; vira adr abaixo
+            aggByMatch[matchId] = a;
+          }
         }
 
-        // Sort by match_id ascending (chronological)
         history.sort((a, b) => a.matchId - b.matchId);
         setMatchHistory(history);
+
+        const aggFinal: Record<number, MatchAgg> = {};
+        for (const [mid, a] of Object.entries(aggByMatch)) {
+          aggFinal[+mid] = {
+            kills: a.kills, deaths: a.deaths, assists: a.assists,
+            adr: a._rounds > 0 ? Math.round(a.adr / a._rounds) : 0,
+            rating: a._maps > 0 ? +(a.rating / a._maps).toFixed(2) : 0,
+          };
+        }
+        setMatchAgg(aggFinal);
 
         aggregated.average_rating = calcRating(aggregated.kills, aggregated.total_rounds, aggregated.deaths, totalK1, totalK2, totalK3, totalK4, totalK5);
         aggregated.kdr = aggregated.deaths > 0 ? aggregated.kills / aggregated.deaths : aggregated.kills;
         aggregated.hsp = aggregated.kills > 0 ? (aggregated.headshot_kills / aggregated.kills) * 100 : 0;
         aggregated.kast = matches.length > 0 ? aggregated.kast / matches.length : 0;
-
         setStats(aggregated);
       } catch {
-        // No stats — show empty profile
-        setStats({
-          steam_id: steamId,
-          name: steamId,
-          wins: 0, total_maps: 0, total_rounds: 0,
-          kills: 0, deaths: 0, assists: 0,
-          headshot_kills: 0, flash_assists: 0, damage: 0,
-          rating: 0, kdr: 0, hsp: 0, average_rating: 0,
-          kast: 0, contribution_score: 0, mvp: 0, enemies_flashed: 0, util_damage: 0,
-          firstkill_t: 0, firstkill_ct: 0, firstdeath_t: 0, firstdeath_ct: 0,
-        });
+        setStats(emptyStats);
       }
 
-      // Buscar map performance usando os match_ids das playerstats (reusing cached data)
+      // Performance por mapa
       try {
-        const psArr = playerStatsArr as { match_id: number; map_id: number; team_id: number; kills: number; deaths: number; roundsplayed: number; k1: number; k2: number; k3: number; k4: number; k5: number }[];
+        const psArr = playerStatsArr as { match_id: number; map_id: number; team_id: number; kills: number; deaths: number; roundsplayed: number; damage: number; k1: number; k2: number; k3: number; k4: number; k5: number }[];
         const psMatchIds = [...new Set(psArr.map(s => s.match_id))];
+        const mapPerf: Record<string, { wins: number; total: number; totalRating: number; kills: number; deaths: number; dmg: number; rounds: number }> = {};
 
-        const mapCount: Record<string, number> = {};
-        const mapPerf: Record<string, { wins: number; total: number; totalRating: number; kills: number; deaths: number }> = {};
-
-        // Fetch mapstats in single batch request (instead of N individual requests)
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let mapStatsResults: any[][] = [];
         if (psMatchIds.length > 0) {
@@ -250,114 +261,85 @@ export function ProfileContent({ steamId }: { steamId: string }) {
             if (batchRes.ok) {
               const batchData = await batchRes.json();
               const batchMap = batchData.mapStats || {};
-              mapStatsResults = psMatchIds.map(mid => {
-                const stats = batchMap[mid] || [];
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                return stats.map((ms: any) => ({ ...ms, _matchId: mid }));
-              });
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              mapStatsResults = psMatchIds.map(mid => (batchMap[mid] || []).map((ms: any) => ({ ...ms, _matchId: mid })));
             }
-          } catch { /* fallback: empty results */ }
+          } catch { /* fallback */ }
         }
 
         for (const mapStatsList of mapStatsResults) {
           for (const ms of mapStatsList) {
             if (!ms.map_name) continue;
-            mapCount[ms.map_name] = (mapCount[ms.map_name] || 0) + 1;
-
-            if (!mapPerf[ms.map_name]) {
-              mapPerf[ms.map_name] = { wins: 0, total: 0, totalRating: 0, kills: 0, deaths: 0 };
-            }
+            if (!mapPerf[ms.map_name]) mapPerf[ms.map_name] = { wins: 0, total: 0, totalRating: 0, kills: 0, deaths: 0, dmg: 0, rounds: 0 };
             mapPerf[ms.map_name].total++;
-
-            // Find the player's stats entry for this map
             const playerEntry = psArr.find(p => p.match_id === ms._matchId && p.map_id === ms.id);
             if (playerEntry) {
-              if (ms.winner === playerEntry.team_id) {
-                mapPerf[ms.map_name].wins++;
-              }
-              const pRating = calcRating(playerEntry.kills || 0, playerEntry.roundsplayed || 0, playerEntry.deaths || 0, playerEntry.k1 || 0, playerEntry.k2 || 0, playerEntry.k3 || 0, playerEntry.k4 || 0, playerEntry.k5 || 0);
-              mapPerf[ms.map_name].totalRating += pRating;
+              if (ms.winner === playerEntry.team_id) mapPerf[ms.map_name].wins++;
+              mapPerf[ms.map_name].totalRating += calcRating(playerEntry.kills || 0, playerEntry.roundsplayed || 0, playerEntry.deaths || 0, playerEntry.k1 || 0, playerEntry.k2 || 0, playerEntry.k3 || 0, playerEntry.k4 || 0, playerEntry.k5 || 0);
               mapPerf[ms.map_name].kills += playerEntry.kills || 0;
               mapPerf[ms.map_name].deaths += playerEntry.deaths || 0;
+              mapPerf[ms.map_name].dmg += playerEntry.damage || 0;
+              mapPerf[ms.map_name].rounds += playerEntry.roundsplayed || 0;
             }
           }
         }
 
-        setMapCounts(
-          Object.entries(mapCount)
-            .map(([map, count]) => ({ map, count }))
-            .sort((a, b) => b.count - a.count)
-        );
-
         setMapPerformance(
           Object.entries(mapPerf)
             .map(([map, d]) => ({
-              map,
-              wins: d.wins,
-              total: d.total,
+              map, wins: d.wins, total: d.total,
               avgRating: d.total > 0 ? d.totalRating / d.total : 0,
-              kills: d.kills,
-              deaths: d.deaths,
+              kills: d.kills, deaths: d.deaths,
+              adr: d.rounds > 0 ? Math.round(d.dmg / d.rounds) : 0,
             }))
             .sort((a, b) => b.total - a.total)
         );
       } catch { /* não crítico */ }
 
-      // Buscar partidas recentes onde o jogador participou (reusing cached data)
+      // Partidas (até 15) — detalhes + placar + mapa
       try {
         const statsArr = playerStatsArr as { match_id: number; team_id: number }[];
-        // Map match_id → player's team_id
         const playerTeamMap: Record<number, number> = {};
-        for (const s of statsArr) {
-          if (!(s.match_id in playerTeamMap)) playerTeamMap[s.match_id] = s.team_id;
-        }
-        const recentMatchIds = [...new Set(statsArr.map(s => s.match_id))].sort((a, b) => b - a).slice(0, 5);
+        for (const s of statsArr) if (!(s.match_id in playerTeamMap)) playerTeamMap[s.match_id] = s.team_id;
+        const recentMatchIds = [...new Set(statsArr.map(s => s.match_id))].sort((a, b) => b - a).slice(0, 15);
 
-        // Batch fetch: matches + mapstats for recent matches
         const batchMapRes = await fetch(`/api/mapstats-batch?ids=${recentMatchIds.join(",")}`).then(r => r.ok ? r.json() : { mapStats: {} }).catch(() => ({ mapStats: {} }));
         const batchMapData = batchMapRes.mapStats || {};
 
         const matchPromises = recentMatchIds.map(async (id) => {
           try {
             const matchRes = await fetch(`/api/matches/${id}`);
-            if (matchRes.ok) {
-              const d = await matchRes.json();
-              const m = d.match as Match;
-              const pTeamId = playerTeamMap[id];
-              type MatchExt = Match & { round_score?: string; map_name?: string; player_team_id?: number };
-              const ext = m as MatchExt;
-              ext.player_team_id = pTeamId;
-              const maps = batchMapData[id] || [];
-              if (maps.length > 0) {
-                let t1Rounds = 0, t2Rounds = 0;
-                const mapNames: string[] = [];
-                for (const ms of maps) {
-                  t1Rounds += ms.team1_score || 0;
-                  t2Rounds += ms.team2_score || 0;
-                  if (ms.map_name) mapNames.push(ms.map_name.replace("de_", ""));
-                }
-                ext.round_score = `${t1Rounds} - ${t2Rounds}`;
-                ext.map_name = mapNames.join(", ");
+            if (!matchRes.ok) return null;
+            const d = await matchRes.json();
+            const m = d.match as Match;
+            type MatchExt = Match & { round_score?: string; map_name?: string; map_list?: string[]; player_team_id?: number };
+            const ext = m as MatchExt;
+            ext.player_team_id = playerTeamMap[id];
+            const maps = batchMapData[id] || [];
+            if (maps.length > 0) {
+              let t1Rounds = 0, t2Rounds = 0;
+              const mapNames: string[] = [];
+              for (const ms of maps) {
+                t1Rounds += ms.team1_score || 0;
+                t2Rounds += ms.team2_score || 0;
+                if (ms.map_name) mapNames.push(ms.map_name.replace("de_", ""));
               }
-              return m;
+              ext.round_score = `${t1Rounds} - ${t2Rounds}`;
+              ext.map_name = mapNames.join(", ");
+              ext.map_list = mapNames;
             }
-          } catch { /* skip */ }
-          return null;
+            return m;
+          } catch { return null; }
         });
         const resolved = await Promise.all(matchPromises);
         setRecentMatches(resolved.filter((m): m is Match => m !== null));
       } catch { /* não crítico */ }
 
-      // Buscar highlights do jogador
       try {
         const res = await fetch(`/api/highlights/player/${steamId}`);
-        if (res.ok) {
-          const data = await res.json();
-          setPlayerClips(data.clips || []);
-        }
+        if (res.ok) { const data = await res.json(); setPlayerClips(data.clips || []); }
       } catch { /* não crítico */ }
 
-      // Buscar dados agregados do leaderboard para wins
       try {
         const res = await fetch(`/api/leaderboard/players`);
         if (res.ok) {
@@ -365,14 +347,10 @@ export function ProfileContent({ steamId }: { steamId: string }) {
           const entry = (data.leaderboard || []).find((e: { steamId: string }) => e.steamId === steamId);
           if (entry) {
             setStats(prev => prev ? { ...prev, wins: entry.wins || 0 } : prev);
-            if (entry.name) {
-              setUserName(prev => prev || entry.name);
-            }
+            if (entry.name) setUserName(prev => prev || entry.name);
           }
         }
-      } catch {
-        // não crítico
-      }
+      } catch { /* não crítico */ }
 
       setLoading(false);
     }
@@ -381,502 +359,528 @@ export function ProfileContent({ steamId }: { steamId: string }) {
 
   if (loading) {
     return (
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 pb-20">
-        <div className="py-4">
-          <Link href="/leaderboard" className="inline-flex items-center gap-2 text-orbital-text-dim hover:text-orbital-purple transition-colors font-[family-name:var(--font-jetbrains)] text-xs">
-            <ArrowLeft size={14} />
-            Voltar
-          </Link>
-        </div>
-        <div className="flex flex-col items-center justify-center py-20 gap-4">
-          <div className="w-20 h-20 rounded-full bg-orbital-border animate-pulse" />
-          <div className="h-4 w-40 bg-orbital-border animate-pulse" />
-          <div className="h-3 w-24 bg-orbital-border animate-pulse" />
+      <div className="owp">
+        <style>{OWP_CSS}</style>
+        <div className="owp-loading">
+          <div className="owp-spin" />
+          <span>Carregando perfil…</span>
         </div>
       </div>
     );
   }
 
-  if (error || !stats) {
+  if (!stats) {
     return (
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 pb-20">
-        <div className="py-4">
-          <Link href="/leaderboard" className="inline-flex items-center gap-2 text-orbital-text-dim hover:text-orbital-purple transition-colors font-[family-name:var(--font-jetbrains)] text-xs">
-            <ArrowLeft size={14} />
-            Voltar
-          </Link>
+      <div className="owp">
+        <style>{OWP_CSS}</style>
+        <div className="owp-loading">
+          <span>Jogador não encontrado</span>
+          <span className="owp-dim">Steam ID: {steamId}</span>
         </div>
-        <HudCard className="text-center py-12">
-          <Skull size={32} className="text-orbital-border mx-auto mb-4" />
-          <p className="font-[family-name:var(--font-russo)] text-sm text-orbital-text-dim">
-            Jogador não encontrado
-          </p>
-          <p className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text-dim mt-2">
-            Steam ID: {steamId}
-          </p>
-        </HudCard>
       </div>
     );
   }
 
   const displayName = userName || (stats.name !== steamId ? stats.name : steamId);
   const adr = stats.total_rounds > 0 ? Math.round(stats.damage / stats.total_rounds) : 0;
-  const hsp = stats.kills > 0 ? Math.round((stats.headshot_kills / stats.kills) * 100) : (stats.hsp || 0);
+  const hsp = stats.kills > 0 ? Math.round((stats.headshot_kills / stats.kills) * 100) : Math.round(stats.hsp || 0);
   const kdr = stats.kdr || (stats.deaths > 0 ? (stats.kills / stats.deaths) : stats.kills);
   const avgRating = stats.average_rating || stats.rating || 0;
-  const ratingColor = avgRating >= 1.2 ? "text-orbital-success" : avgRating >= 0.8 ? "text-orbital-text" : "text-orbital-danger";
+  const entryKills = stats.firstkill_t + stats.firstkill_ct;
+  const hasStats = stats.total_maps > 0;
+
+  // combate (com larguras relativas decorativas)
+  const gm = Math.max(stats.kills, stats.deaths, stats.assists, stats.headshot_kills, entryKills, 1);
+  const combat = [
+    { k: "⊕ KILLS", v: stats.kills, w: (stats.kills / gm) * 100 },
+    { k: "✕ DEATHS", v: stats.deaths, w: (stats.deaths / gm) * 100 },
+    { k: "✦ ASSISTS", v: stats.assists, w: (stats.assists / gm) * 100 },
+    { k: "◎ HEADSHOTS", v: stats.headshot_kills, w: (stats.headshot_kills / gm) * 100, hint: "Abates com tiro na cabeça." },
+    { k: "⚡ ENTRY KILLS", v: entryKills, w: (entryKills / gm) * 100, hint: "Primeiro abate do round (abertura). Mede agressividade e impacto inicial." },
+    { k: "◎ DANO TOTAL", v: stats.damage, w: Math.min(100, (adr / 120) * 100), hint: "Dano total causado em todas as partidas." },
+  ];
+
+  // forma (últimos 7 ratings)
+  const form = matchHistory.slice(-7).map(d => d.rating);
+  const formMax = form.length ? Math.max(...form) : 1;
+  const formMin = form.length ? Math.min(...form) : 0;
+  const formAvg = form.length ? form.reduce((s, v) => s + v, 0) / form.length : 0;
+  const formH = (v: number) => {
+    const lo = Math.min(formMin * 0.9, 0.0);
+    const hi = formMax * 1.05 || 1;
+    return Math.max(8, Math.min(100, ((v - lo) / (hi - lo)) * 100));
+  };
+
+  const steamProfileUrl = `https://steamcommunity.com/profiles/${steamId}`;
+  const isCreator = steamId === "76561198023055702";
+
+  // helper: extrai adversário e resultado de uma partida
+  function matchView(match: Match) {
+    const ext = match as Match & { round_score?: string; map_name?: string; map_list?: string[]; player_team_id?: number };
+    const onTeam1 = ext.player_team_id === match.team1_id;
+    const oppName = onTeam1 ? (match.team2_string || `Time ${match.team2_id}`) : (match.team1_string || `Time ${match.team1_id}`);
+    const isLive = getStatusType(match) === "live";
+    const won = match.winner != null && ext.player_team_id != null && match.winner === ext.player_team_id;
+    const lost = match.winner != null && ext.player_team_id != null && match.winner !== ext.player_team_id;
+    const agg = matchAgg[match.id];
+    return { ext, oppName, isLive, won, lost, agg, firstMap: ext.map_list?.[0] };
+  }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 pb-20">
-      {/* Back */}
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-4">
-        <Link href="/leaderboard" className="inline-flex items-center gap-2 text-orbital-text-dim hover:text-orbital-purple transition-colors font-[family-name:var(--font-jetbrains)] text-xs">
-          <ArrowLeft size={14} />
-          Voltar ao Ranking
-        </Link>
-      </motion.div>
+    <div className="owp">
+      <style>{OWP_CSS}</style>
 
-      {/* Profile Header */}
-      <HudCard glow className="mb-6" label="PERFIL">
-        <div className="flex flex-col sm:flex-row items-center gap-6 py-2">
-          {/* Avatar */}
-          <div className="relative">
-            <div className="w-24 h-24 rounded-full border-2 border-orbital-purple/50 overflow-hidden" style={{ boxShadow: "0 0 25px rgba(168,85,247,0.3)" }}>
-              {avatar ? (
-                <img src={avatar} alt={displayName} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full bg-orbital-border flex items-center justify-center">
-                  <span className="font-[family-name:var(--font-russo)] text-2xl text-orbital-text-dim">
-                    {displayName?.charAt(0)?.toUpperCase() || "?"}
-                  </span>
-                </div>
-              )}
-            </div>
-            {/* Rating badge */}
-            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-orbital-card border border-orbital-border px-3 py-0.5">
-              <span className={`font-[family-name:var(--font-jetbrains)] text-sm font-bold ${ratingColor}`}>
-                {avgRating.toFixed(2)}
-              </span>
+      {/* back */}
+      <div className="owp-back wrap">
+        <Link href="/leaderboard"><ArrowLeft size={14} /> Voltar ao Ranking</Link>
+      </div>
+
+      {/* ===== BANNER ===== */}
+      <header className="owp-banner">
+        <span className="owp-ghost">{displayName}</span>
+        <div className="wrap">
+          <div className="owp-av">
+            <div className="ph">
+              {avatar
+                // eslint-disable-next-line @next/next/no-img-element
+                ? <img src={avatar} alt={displayName} />
+                : <div className="owp-av-fallback">{displayName?.charAt(0)?.toUpperCase() || "?"}</div>}
             </div>
           </div>
-
-          {/* Info */}
-          <div className="text-center sm:text-left flex-1">
-            <div className="flex items-center gap-2 justify-center sm:justify-start flex-wrap">
-              <h1 className="font-[family-name:var(--font-russo)] text-xl sm:text-2xl font-bold text-orbital-text tracking-wider">
-                {displayName}
-              </h1>
-              {steamId === "76561198023055702" && (
-                <span className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.1em] px-2 py-0.5 bg-red-500/20 border border-red-500/50 text-red-400">
-                  CRIADOR
-                </span>
-              )}
-              {userRole.admin && (
-                <span className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.1em] px-2 py-0.5 bg-yellow-500/20 border border-yellow-500/50 text-yellow-400">
-                  ADMIN
-                </span>
-              )}
-            </div>
-            {playerTeam && (
-              <Link href={`/times/${playerTeam.id}`} className="inline-flex items-center gap-2 mt-1.5 group/team">
-                {playerTeam.logo && (
-                  <Image src={playerTeam.logo} alt={playerTeam.name} width={18} height={18} className="object-contain" unoptimized />
-                )}
-                <span className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text-dim group-hover/team:text-orbital-purple transition-colors">
+          <div className="owp-pinfo">
+            <div className="owp-row1">
+              {playerTeam && (
+                <Link href={`/times/${playerTeam.id}`} className="owp-tag">
+                  {playerTeam.logo && <Image src={playerTeam.logo} alt={playerTeam.name} width={17} height={17} className="object-contain" unoptimized />}
                   {playerTeam.name}
-                </span>
-              </Link>
-            )}
-            <div className="flex items-center gap-2 mt-2 flex-wrap justify-center sm:justify-start">
-              <Link
-                href={`/comparar?p1=${steamId}`}
-                className="inline-flex items-center gap-1.5 px-3 py-1 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 hover:bg-orbital-purple/20 transition-all font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-purple"
-              >
-                <Swords size={11} />
-                COMPARAR
-              </Link>
+                </Link>
+              )}
+              {isCreator && <span className="owp-tag creator">★ CRIADOR</span>}
+              {userRole.admin && !isCreator && <span className="owp-tag admin">ADMIN</span>}
+              {stats.mvp > 0 && <span className="owp-tag mvp">★ {stats.mvp} {stats.mvp === 1 ? "MVP" : "MVPs"}</span>}
+            </div>
+            <h1>{displayName}</h1>
+            <div className="owp-meta">
+              <span>STEAM <b>{steamId}</b></span>
+              <span><b>{stats.total_maps}</b> MAPAS</span>
+              <span><b>{stats.wins}</b> VITÓRIAS</span>
+            </div>
+          </div>
+          <div className="owp-bnr-rt">
+            <div className="owp-actions">
+              <Link className="owp-btn" href={`/comparar?p1=${steamId}`}>Comparar</Link>
+              <a className="owp-btn prim" href={steamProfileUrl} target="_blank" rel="noopener noreferrer">Steam ↗</a>
+            </div>
+            <div className="owp-export">
               <PlayerCardExport
                 steamId={steamId}
                 displayName={displayName}
-                stats={{
-                  kills: stats.kills,
-                  deaths: stats.deaths,
-                  assists: stats.assists,
-                  wins: stats.wins,
-                  total_maps: stats.total_maps,
-                  mvp: stats.mvp,
-                  kdr: +kdr.toFixed(2),
-                  hsp: Math.round(hsp),
-                  avgRating,
-                  adr,
-                }}
+                stats={{ kills: stats.kills, deaths: stats.deaths, assists: stats.assists, wins: stats.wins, total_maps: stats.total_maps, mvp: stats.mvp, kdr: +kdr.toFixed(2), hsp: Math.round(hsp), avgRating, adr }}
               />
             </div>
-            <div className="flex items-center gap-4 mt-3 justify-center sm:justify-start">
-              <div className="flex items-center gap-1.5">
-                <Award size={14} className="text-orbital-success" />
-                <span className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text">
-                  {stats.wins || 0} vitórias
-                </span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <TrendingUp size={14} className="text-orbital-purple" />
-                <span className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text">
-                  {stats.total_maps || 0} mapas
-                </span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Flame size={14} className="text-orbital-warning" />
-                <span className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text">
-                  {stats.mvp || 0} MVPs
-                </span>
-              </div>
+            <div className="owp-ratebox">
+              <div className="k">Rating 1.0<span className="owp-info" {...hintProps("Índice de desempenho geral (modelo HLTV 1.0): combina kills, mortes, multi-kills e impacto. 1.00 é a média.")}>i</span></div>
+              <div className={`v ${avgRating >= 1.1 ? "hi" : avgRating < 0.9 ? "lo" : ""}`}>{avgRating.toFixed(2)}</div>
             </div>
           </div>
         </div>
-      </HudCard>
+      </header>
 
+      {/* ===== TABS ===== */}
+      <nav className="owp-tabs"><div className="wrap">
+        {([["overview", "Overview"], ["partidas", "Partidas"], ["highlights", "Highlights"], ["mapas", "Por Mapa"]] as [TabKey, string][]).map(([k, label]) => (
+          <a key={k} className={tab === k ? "on" : ""} onClick={() => goTab(k)}>{label}</a>
+        ))}
+      </div></nav>
 
-      {/* Main Stats Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-        <HudCard delay={0.1}>
-          <StatBox label="KILLS" value={stats.kills} />
-        </HudCard>
-        <HudCard delay={0.15}>
-          <StatBox label="DEATHS" value={stats.deaths} />
-        </HudCard>
-        <HudCard delay={0.2}>
-          <StatBox label="ASSISTS" value={stats.assists} />
-        </HudCard>
-        <HudCard delay={0.25}>
-          <StatBox label="K/D" value={kdr.toFixed(2)} />
-        </HudCard>
+      {/* ===== STAT STRIP ===== */}
+      <div className="owp-strip">
+        <Cell k="K / D" v={kdr.toFixed(2)} hint="Razão entre abates e mortes. Acima de 1.0 = mais kills que deaths." hp={hintProps} />
+        <Cell k="ADR" v={adr.toString()} hint="Average Damage per Round — dano médio causado por round jogado." hp={hintProps} />
+        <Cell k="HS %" v={`${hsp}`} small="%" hint="Porcentagem dos abates que foram tiros na cabeça (headshot)." hp={hintProps} />
+        <Cell k="KAST" v={stats.kast ? stats.kast.toFixed(1) : "—"} small={stats.kast ? "%" : ""} hint="% de rounds em que o jogador teve Kill, Assist, Survived ou foi Trocado (Trade)." hp={hintProps} />
+        <Cell k="Maps" v={stats.total_maps.toString()} hint="Total de mapas disputados nos campeonatos da ORBITAL ROXA." hp={hintProps} />
+        <Cell k="MVPs" v={stats.mvp.toString()} acc hint="Prêmios de Melhor da Partida (maior rating no mapa)." hp={hintProps} />
       </div>
 
-      {/* Detailed Stats — GERAL + COMBATE side by side */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-        <HudCard delay={0.3} label="GERAL">
-          <div className="space-y-3 pt-2">
-            <StatRow icon={<Target size={14} className="text-orbital-text-dim" />} label="Rounds" value={(stats.total_rounds || 0).toString()} />
-            <StatRow icon={<Crosshair size={14} className="text-orbital-success" />} label="Headshots" value={(stats.headshot_kills || 0).toString()} />
-            <StatRow icon={<Zap size={14} className="text-orbital-warning" />} label="Dano Total" value={(stats.damage || 0).toString()} />
-            <StatRow icon={<Award size={14} className="text-orbital-purple" />} label="Contribuição" value={(stats.contribution_score || 0).toString()} />
-            <StatRow icon={<TrendingUp size={14} className="text-orbital-success" />} label="Rating" value={avgRating.toFixed(2)} highlight={ratingColor} />
-          </div>
-        </HudCard>
+      <div className="wrap">
+        {!hasStats && (
+          <div className="owp-empty">Esse jogador ainda não tem estatísticas registradas em campeonatos da ORBITAL ROXA.</div>
+        )}
 
-        <HudCard delay={0.35} label="COMBATE">
-          <div className="space-y-3 pt-2">
-            <StatRow icon={<Crosshair size={14} className="text-orbital-purple" />} label="HS%" value={`${hsp}%`} />
-            <StatRow icon={<Target size={14} className="text-orbital-success" />} label="ADR" value={adr.toString()} />
-            <StatRow icon={<Zap size={14} className="text-orbital-warning" />} label="Inimigos Cegados" value={(stats.enemies_flashed || 0).toString()} />
-            <StatRow icon={<Award size={14} className="text-orbital-purple" />} label="Dano Utilitário" value={(stats.util_damage || 0).toString()} />
-            <StatRow icon={<Flame size={14} className="text-orbital-warning" />} label="MVPs" value={(stats.mvp || 0).toString()} />
-          </div>
-        </HudCard>
-      </div>
-
-      {/* Evolution Charts */}
-      {matchHistory.length >= 2 && (
-        <HudCard delay={0.45} label="EVOLUÇÃO" className="mt-6">
-          <div className="space-y-6 py-2">
-            <EvolutionChart
-              data={matchHistory.map(d => d.rating)}
-              label="Rating"
-              color="#A855F7"
-              refLine={1.0}
-              format={v => v.toFixed(2)}
-            />
-            <EvolutionChart
-              data={matchHistory.map(d => d.kd)}
-              label="K/D"
-              color="#22C55E"
-              refLine={1.0}
-              format={v => v.toFixed(2)}
-            />
-            <EvolutionChart
-              data={matchHistory.map(d => d.adr)}
-              label="ADR"
-              color="#F59E0B"
-              format={v => Math.round(v).toString()}
-            />
-            <EvolutionChart
-              data={matchHistory.map(d => d.hsp)}
-              label="HS%"
-              color="#EF4444"
-              format={v => `${Math.round(v)}%`}
-            />
-          </div>
-        </HudCard>
-      )}
-
-      {/* Recent Matches */}
-      {recentMatches.length > 0 && (
-        <HudCard delay={0.5} label="ÚLTIMAS PARTIDAS" className="mt-6">
-          <div className="space-y-2 py-2">
-            {recentMatches.map((match) => {
-              const ext = match as Match & { round_score?: string; map_name?: string; player_team_id?: number };
-              const playerWon = match.winner != null && ext.player_team_id != null && match.winner === ext.player_team_id;
-              const playerLost = match.winner != null && ext.player_team_id != null && match.winner !== ext.player_team_id;
-              const isLive = getStatusType(match) === "live";
-              const resultLabel = isLive ? "AO VIVO" : playerWon ? "VITÓRIA" : playerLost ? "DERROTA" : getStatusText(match);
-              const resultColor = isLive ? "text-orbital-live" : playerWon ? "text-orbital-success" : playerLost ? "text-orbital-danger" : "text-orbital-text-dim";
-              const borderColor = isLive ? "border-orbital-live/30" : playerWon ? "border-orbital-success/20" : playerLost ? "border-orbital-danger/20" : "border-orbital-border/30";
-              const bgColor = isLive ? "bg-orbital-live/5" : playerWon ? "bg-orbital-success/5" : playerLost ? "bg-orbital-danger/5" : "bg-transparent";
-
-              return (
-                <div
-                  key={match.id}
-                  onClick={() => window.location.href = `/partidas/${match.id}`}
-                  className={`flex items-center gap-3 px-3 py-2.5 border ${borderColor} ${bgColor} cursor-pointer hover:bg-orbital-purple/5 transition-all group`}
-                >
-                  {/* Result indicator */}
-                  <div className={`w-1 h-8 shrink-0 ${isLive ? "bg-orbital-live" : playerWon ? "bg-orbital-success" : playerLost ? "bg-orbital-danger" : "bg-orbital-border"}`} />
-
-                  {/* Match content */}
-                  <div className="flex-1 min-w-0 flex items-center">
-                    {/* Team 1 */}
-                    <span className={`font-[family-name:var(--font-jetbrains)] text-xs flex-1 text-right truncate ${ext.player_team_id === match.team1_id ? "text-orbital-text font-bold" : "text-orbital-text-dim"}`}>
-                      {match.team1_string || `Time ${match.team1_id}`}
-                    </span>
-
-                    {/* Score */}
-                    <span className="font-[family-name:var(--font-jetbrains)] text-sm font-bold text-orbital-text mx-4 whitespace-nowrap w-16 text-center">
-                      {ext.round_score || `${match.team1_score} - ${match.team2_score}`}
-                    </span>
-
-                    {/* Team 2 */}
-                    <span className={`font-[family-name:var(--font-jetbrains)] text-xs flex-1 text-left truncate ${ext.player_team_id === match.team2_id ? "text-orbital-text font-bold" : "text-orbital-text-dim"}`}>
-                      {match.team2_string || `Time ${match.team2_id}`}
-                    </span>
+        {/* ============ OVERVIEW ============ */}
+        {tab === "overview" && hasStats && (
+          <div className="owp-panel">
+            <section className="owp-sec">
+              <div className="owp-grid">
+                <div>
+                  <div className="owp-lbl"><b>Combate</b></div>
+                  <div className="owp-combat">
+                    {combat.map((c) => (
+                      <div className="owp-cc" key={c.k}>
+                        <div className="k">{c.k}{c.hint && <span className="owp-info" {...hintProps(c.hint)}>i</span>}</div>
+                        <div className="v">{c.v.toLocaleString("pt-BR")}</div>
+                        <div className="bar"><i style={{ width: `${Math.max(0, Math.min(100, c.w))}%` }} /></div>
+                      </div>
+                    ))}
                   </div>
-
-                  {/* Map */}
-                  <span className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim w-20 text-center shrink-0">
-                    {ext.map_name || "—"}
-                  </span>
-
-                  {/* Result label */}
-                  <span className={`font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.1em] w-16 text-center shrink-0 ${resultColor}`}>
-                    {resultLabel}
-                  </span>
                 </div>
-              );
-            })}
-          </div>
-        </HudCard>
-      )}
-
-      {/* Player Highlights */}
-      {playerClips.length > 0 && (
-        <HudCard delay={0.52} label="MELHORES MOMENTOS" className="mt-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 py-2">
-            {playerClips.map(clip => (
-              <div key={clip.id} className="bg-[#0A0A0A] border border-orbital-border overflow-hidden group">
-                <VideoPlayer
-                  src={`/api/highlights-proxy/${clip.video_file}`}
-                  clipId={clip.id}
-                />
-                <div className="p-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span className="font-[family-name:var(--font-russo)] text-[0.65rem] text-orbital-purple shrink-0">
-                        #{clip.rank}
-                      </span>
-                      {clip.kills_count >= 2 && (
-                        <span className="font-[family-name:var(--font-russo)] text-[0.65rem] text-orbital-purple bg-orbital-purple/10 px-1.5 py-0.5 shrink-0">
-                          {clip.kills_count >= 5 ? "ACE" : `${clip.kills_count}K`}
-                        </span>
-                      )}
-                      {clip.score > 0 && (
-                        <span className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim">
-                          {clip.score}pts
-                        </span>
-                      )}
+                <div>
+                  <div className="owp-lbl"><b>Forma · últimos {form.length}</b></div>
+                  {form.length >= 2 ? (
+                    <div className="owp-formc">
+                      <div className="owp-spark">
+                        {form.map((v, i) => (
+                          <div className="b" style={{ height: `${formH(v)}%` }} key={i}><span>{v.toFixed(2)}</span></div>
+                        ))}
+                      </div>
+                      <div className="owp-ft">
+                        <span>MÉDIA <b style={{ color: "var(--or2)" }}>{formAvg.toFixed(2)}</b></span>
+                        <span>PICO <b style={{ color: "var(--ok)" }}>{formMax.toFixed(2)}</b></span>
+                      </div>
                     </div>
-                    {clip.round_number && (
-                      <span className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim shrink-0">
-                        R{clip.round_number}
-                      </span>
-                    )}
-                  </div>
-                  {(clip.team1_string || clip.team2_string) && (
-                    <Link
-                      href={`/partidas/${clip.match_id}`}
-                      className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim hover:text-orbital-purple transition-colors block mt-1 truncate"
-                    >
-                      {clip.team1_string} vs {clip.team2_string}
-                    </Link>
+                  ) : (
+                    <div className="owp-formc"><div className="owp-none">Poucos mapas pra montar a forma.</div></div>
                   )}
                 </div>
               </div>
-            ))}
-          </div>
-        </HudCard>
-      )}
+            </section>
 
-      {/* Per-Map Performance */}
-      {mapPerformance.length > 0 && (
-        <HudCard delay={0.55} label="PERFORMANCE POR MAPA" className="mt-6">
-          <div className="space-y-3 py-2">
-            {mapPerformance.map(({ map, wins, total, avgRating, kills, deaths }) => {
-              const winRate = total > 0 ? Math.round((wins / total) * 100) : 0;
-              const kd = deaths > 0 ? (kills / deaths).toFixed(2) : kills.toFixed(2);
-              return (
-                <div key={map} className="bg-[#0A0A0A] border border-orbital-border p-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <Map size={12} className="text-orbital-purple" />
-                      <span className="font-[family-name:var(--font-russo)] text-[0.6rem] tracking-wider text-orbital-text">
-                        {map.replace("de_", "").toUpperCase()}
-                      </span>
-                      <span className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim">
-                        {total} {total === 1 ? "partida" : "partidas"}
-                      </span>
+            <section className="owp-sec">
+              <div className="owp-grid">
+                <div>
+                  <div className="owp-lbl hasmore"><b>Últimas Partidas</b>{recentMatches.length > 5 && <span className="more" onClick={() => goTab("partidas")}>Ver todas →</span>}</div>
+                  {recentMatches.length > 0 ? (
+                    <div className="owp-res">
+                      {recentMatches.slice(0, 5).map((match) => {
+                        const v = matchView(match);
+                        return (
+                          <div className="owp-rrow" key={match.id} onClick={() => window.location.href = `/partidas/${match.id}`}>
+                            <span className={`w ${v.isLive ? "live" : v.won ? "v" : v.lost ? "d" : ""}`} />
+                            <div className="opp">
+                              <span className="t">vs {v.oppName}</span>
+                              <span className="ev">{v.ext.map_name ? mapLabel("de_" + v.ext.map_name.split(",")[0].trim()) : (playerTeam ? playerTeam.name : "Partida")}</span>
+                            </div>
+                            <span className="sc">{v.ext.round_score || `${match.team1_score} - ${match.team2_score}`}</span>
+                            <span className={`rt ${v.agg && v.agg.rating >= 1.1 ? "hi" : v.agg && v.agg.rating < 0.9 ? "lo" : ""}`}>{v.agg ? v.agg.rating.toFixed(2) : "—"}</span>
+                          </div>
+                        );
+                      })}
                     </div>
-                    <span className={`font-[family-name:var(--font-jetbrains)] text-xs font-bold ${
-                      avgRating >= 1.2 ? "text-orbital-success" : avgRating >= 0.8 ? "text-orbital-text" : "text-orbital-danger"
-                    }`}>
-                      {avgRating.toFixed(2)}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    {/* Win rate bar */}
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim">
-                          Win Rate
-                        </span>
-                        <span className={`font-[family-name:var(--font-jetbrains)] text-[0.65rem] font-bold ${
-                          winRate >= 60 ? "text-orbital-success" : winRate >= 40 ? "text-orbital-text" : "text-orbital-danger"
-                        }`}>
-                          {winRate}% ({wins}W / {total - wins}L)
-                        </span>
-                      </div>
-                      <div className="w-full h-1.5 bg-orbital-border">
-                        <div
-                          className={`h-full transition-all ${winRate >= 60 ? "bg-orbital-success" : winRate >= 40 ? "bg-orbital-purple" : "bg-orbital-danger"}`}
-                          style={{ width: `${winRate}%` }}
-                        />
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3 shrink-0">
-                      <span className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim">
-                        K/D: <span className="text-orbital-text font-bold">{kd}</span>
-                      </span>
-                      <span className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim">
-                        <BarChart3 size={10} className="inline text-orbital-purple mr-0.5" />
-                        {kills}K / {deaths}D
-                      </span>
-                    </div>
-                  </div>
+                  ) : <div className="owp-res"><div className="owp-none">Nenhuma partida registrada.</div></div>}
                 </div>
-              );
-            })}
+                <div>
+                  <div className="owp-lbl hasmore"><b>Por Mapa</b>{mapPerformance.length > 4 && <span className="more" onClick={() => goTab("mapas")}>Ver todos →</span>}</div>
+                  {mapPerformance.length > 0 ? (
+                    <div className="owp-maps">
+                      {mapPerformance.slice(0, 5).map((mp) => (
+                        <div className="owp-mrow" key={mp.map}>
+                          <div className="mn"><span className="th" style={{ backgroundImage: `url('${mapImg(mp.map)}')` }} />{mapLabel(mp.map)}</div>
+                          <div className="mbar"><i style={{ width: `${Math.max(6, Math.min(100, (mp.avgRating / 1.6) * 100))}%` }} /></div>
+                          <div className="mrt">{mp.avgRating.toFixed(2)}<small>{mp.total} {mp.total === 1 ? "map" : "maps"}</small></div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : <div className="owp-maps"><div className="owp-none">Sem dados de mapa.</div></div>}
+                </div>
+              </div>
+            </section>
+
+            {playerClips.length > 0 && (
+              <section className="owp-sec">
+                <div className="owp-lbl hasmore"><b>Melhores Momentos</b>{playerClips.length > 3 && <span className="more" onClick={() => goTab("highlights")}>Ver todos →</span>}</div>
+                <div className="owp-hls">
+                  {playerClips.slice(0, 3).map((clip) => <ClipCard key={clip.id} clip={clip} />)}
+                </div>
+              </section>
+            )}
           </div>
-        </HudCard>
+        )}
+
+        {/* ============ PARTIDAS ============ */}
+        {tab === "partidas" && (
+          <div className="owp-panel">
+            <section className="owp-sec">
+              <div className="owp-lbl"><b>Histórico de Partidas</b></div>
+              {recentMatches.length > 0 ? (
+                <div className="owp-mtbl">
+                  <div className="mh"><span /><span>Adversário</span><span>Mapa</span><span>Placar</span><span className="h-kda">K — D — A</span><span className="h-adr">ADR</span><span style={{ textAlign: "right" }}>RAT</span></div>
+                  {recentMatches.map((match) => {
+                    const v = matchView(match);
+                    return (
+                      <div className="mr" key={match.id} onClick={() => window.location.href = `/partidas/${match.id}`}>
+                        <span className={`w ${v.isLive ? "live" : v.won ? "v" : v.lost ? "d" : ""}`} />
+                        <div className="opp"><span className="t">vs {v.oppName}</span><span className="ev">{playerTeam ? `como ${playerTeam.name}` : (v.isLive ? "ao vivo" : v.won ? "vitória" : v.lost ? "derrota" : "—")}</span></div>
+                        <div className="mp"><span className="th" style={{ backgroundImage: `url('${mapImg(v.firstMap)}')` }} />{v.ext.map_name ? mapLabel("de_" + v.ext.map_name.split(",")[0].trim()) : "—"}</div>
+                        <span className={`sc ${v.won ? "win" : v.lost ? "loss" : ""}`}>{v.ext.round_score || `${match.team1_score} - ${match.team2_score}`}</span>
+                        <span className="kda">{v.agg ? <><b>{v.agg.kills}</b>—{v.agg.deaths}—<b>{v.agg.assists}</b></> : "—"}</span>
+                        <span className="adr">{v.agg ? v.agg.adr : "—"}</span>
+                        <span className={`rt ${v.agg && v.agg.rating >= 1.1 ? "hi" : v.agg && v.agg.rating < 0.9 ? "lo" : ""}`}>{v.agg ? v.agg.rating.toFixed(2) : "—"}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : <div className="owp-none owp-none-box">Nenhuma partida registrada ainda.</div>}
+            </section>
+          </div>
+        )}
+
+        {/* ============ HIGHLIGHTS ============ */}
+        {tab === "highlights" && (
+          <div className="owp-panel">
+            <section className="owp-sec">
+              <div className="owp-lbl"><b>Melhores Momentos</b></div>
+              {playerClips.length > 0 ? (
+                <div className="owp-hls">
+                  {playerClips.map((clip) => <ClipCard key={clip.id} clip={clip} />)}
+                </div>
+              ) : <div className="owp-none owp-none-box">Esse jogador ainda não tem highlights gerados.</div>}
+            </section>
+          </div>
+        )}
+
+        {/* ============ POR MAPA ============ */}
+        {tab === "mapas" && (
+          <div className="owp-panel">
+            <section className="owp-sec">
+              <div className="owp-lbl"><b>Desempenho por Mapa</b></div>
+              {mapPerformance.length > 0 ? (
+                <div className="owp-mapgrid">
+                  {mapPerformance.map((mp) => {
+                    const winRate = mp.total > 0 ? Math.round((mp.wins / mp.total) * 100) : 0;
+                    const kd = mp.deaths > 0 ? (mp.kills / mp.deaths).toFixed(2) : mp.kills.toFixed(2);
+                    return (
+                      <div className="owp-mapcard" key={mp.map}>
+                        <div className="top" style={{ backgroundImage: `url('${mapImg(mp.map)}')` }}>
+                          <span className="nm">{mapLabel(mp.map)}</span>
+                          <span className="wl">{mp.wins}-{mp.total - mp.wins} · {winRate}%</span>
+                        </div>
+                        <div className="body">
+                          <div className="st"><div className="sk">Rating</div><div className="sv rt">{mp.avgRating.toFixed(2)}</div></div>
+                          <div className="st"><div className="sk">K/D</div><div className="sv">{kd}</div></div>
+                          <div className="st"><div className="sk">ADR</div><div className="sv">{mp.adr || "—"}</div></div>
+                        </div>
+                        <div className="winbar"><i style={{ width: `${winRate}%` }} /></div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : <div className="owp-none owp-none-box">Sem dados de mapa pra esse jogador.</div>}
+            </section>
+          </div>
+        )}
+      </div>
+
+      {/* tooltip global */}
+      {hint && (
+        <div className="owp-tip on" style={{ left: hint.x, top: hint.y, transform: "translate(-50%,-100%)" }}>
+          {hint.text}
+          <span className="owp-tip-arrow" />
+        </div>
       )}
     </div>
   );
 }
 
-function StatRow({ icon, label, value, highlight }: { icon: React.ReactNode; label: string; value: string; highlight?: string }) {
+// ---------- subcomponentes ----------
+function Cell({ k, v, small, acc, hint, hp }: { k: string; v: string; small?: string; acc?: boolean; hint: string; hp: (t: string) => { onMouseEnter: (e: React.MouseEvent) => void; onMouseLeave: () => void } }) {
   return (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-2">
-        {icon}
-        <span className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text-dim">{label}</span>
-      </div>
-      <span className={`font-[family-name:var(--font-jetbrains)] text-sm font-bold ${highlight || "text-orbital-text"}`}>
-        {value}
-      </span>
+    <div className={`owp-scell ${acc ? "acc" : ""}`}>
+      <div className="k">{k}<span className="owp-info" {...hp(hint)}>i</span></div>
+      <div className="v">{v}{small && <small>{small}</small>}</div>
     </div>
   );
 }
 
-function EvolutionChart({ data, label, color, refLine, format }: {
-  data: number[];
-  label: string;
-  color: string;
-  refLine?: number;
-  format: (v: number) => string;
-}) {
-  if (data.length < 2) return null;
-
-  const W = 600, H = 80;
-  const padL = 0, padR = 0, padT = 4, padB = 4;
-  const chartW = W - padL - padR;
-  const chartH = H - padT - padB;
-
-  const min = Math.min(...data);
-  const max = Math.max(...data);
-  const range = max - min || 1;
-  // Add 10% padding to range
-  const yMin = min - range * 0.1;
-  const yMax = max + range * 0.1;
-  const yRange = yMax - yMin;
-
-  const toX = (i: number) => padL + (i / (data.length - 1)) * chartW;
-  const toY = (v: number) => padT + chartH - ((v - yMin) / yRange) * chartH;
-
-  const points = data.map((v, i) => `${toX(i)},${toY(v)}`).join(" ");
-  const areaPoints = `${toX(0)},${padT + chartH} ${points} ${toX(data.length - 1)},${padT + chartH}`;
-
-  const avg = data.reduce((s, v) => s + v, 0) / data.length;
-  const last = data[data.length - 1];
-  const prev = data[data.length - 2];
-  const trend = last - prev;
-
+function ClipCard({ clip }: { clip: { id: number; match_id: number; rank: number; kills_count: number; score: number; round_number: number; video_file: string; team1_string: string; team2_string: string } }) {
+  const tag = clip.kills_count >= 5 ? "ACE" : clip.kills_count >= 2 ? `${clip.kills_count}K` : null;
   return (
-    <div>
-      <div className="flex items-center justify-between mb-1.5">
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
-          <span className="font-[family-name:var(--font-russo)] text-[0.6rem] tracking-wider text-orbital-text">
-            {label}
-          </span>
-        </div>
-        <div className="flex items-center gap-3">
-          <span className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim">
-            Avg: <span className="text-orbital-text">{format(avg)}</span>
-          </span>
-          <span className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim">
-            Último: <span style={{ color }}>{format(last)}</span>
-          </span>
-          <span className={`font-[family-name:var(--font-jetbrains)] text-[0.65rem] font-bold ${
-            trend > 0 ? "text-orbital-success" : trend < 0 ? "text-orbital-danger" : "text-orbital-text-dim"
-          }`}>
-            {trend > 0 ? "+" : ""}{format(trend)}
-          </span>
-        </div>
-      </div>
-      <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height: 80 }}>
-        {/* Area fill */}
-        <polygon points={areaPoints} fill={color} opacity={0.08} />
-        {/* Reference line */}
-        {refLine !== undefined && refLine >= yMin && refLine <= yMax && (
-          <line
-            x1={padL} y1={toY(refLine)} x2={W - padR} y2={toY(refLine)}
-            stroke={color} strokeWidth={0.5} opacity={0.3} strokeDasharray="4 3"
-          />
-        )}
-        {/* Average line */}
-        <line
-          x1={padL} y1={toY(avg)} x2={W - padR} y2={toY(avg)}
-          stroke="#666" strokeWidth={0.5} opacity={0.3} strokeDasharray="2 2"
-        />
-        {/* Line */}
-        <polyline points={points} fill="none" stroke={color} strokeWidth={1.5} strokeLinejoin="round" />
-        {/* Dots */}
-        {data.map((v, i) => (
-          <circle key={i} cx={toX(i)} cy={toY(v)} r={2.5} fill={color} opacity={0.8}>
-            <title>#{i + 1}: {format(v)}</title>
-          </circle>
-        ))}
-        {/* Last dot highlight */}
-        <circle cx={toX(data.length - 1)} cy={toY(last)} r={4} fill={color} opacity={0.3} />
-      </svg>
+    <div className="owp-hl">
+      {tag && <span className="tag2">{tag}</span>}
+      <span className="views">#{clip.rank}</span>
+      <VideoPlayer src={`/api/highlights-proxy/${clip.video_file}`} clipId={clip.id} />
+      {(clip.team1_string || clip.team2_string) && (
+        <Link href={`/partidas/${clip.match_id}`} className="cap">{clip.team1_string} vs {clip.team2_string}{clip.round_number ? ` · R${clip.round_number}` : ""}</Link>
+      )}
     </div>
   );
 }
 
+// ---------- CSS (escopado em .owp) ----------
+const OWP_CSS = `
+.owp{--bg:#1B0F23;--bg2:#150A1D;--panel:#22132E;--panel2:#2A1838;
+  --line:rgba(255,255,255,.09);--line-or:rgba(255,90,31,.32);
+  --tx:#F3ECF7;--dim:#9C8AAE;--faint:#6B5A7C;
+  --or:#FF5A1F;--or2:#FF8A3D;--vio:#7C5CFF;--vio2:#A892FF;
+  --gold:#FFC24B;--ok:#54E08A;--live:#FF3B57;--stroke:#241038;
+  --disp:var(--font-russo),sans-serif;--cond:var(--font-anton),sans-serif;
+  --body:var(--font-chakra),sans-serif;--mono:var(--font-jetbrains),monospace;
+  background:var(--bg);color:var(--tx);font-family:var(--body);min-height:100vh;
+  background-image:radial-gradient(120% 70% at 85% -4%,rgba(255,90,31,.16),transparent 55%),radial-gradient(90% 60% at 0% 0%,rgba(124,92,255,.14),transparent 55%);
+  padding-bottom:72px;margin-top:-5rem;padding-top:5rem;}
+.owp *{box-sizing:border-box}
+.owp .wrap{padding:0 clamp(20px,3.2vw,72px)}
+.owp a{color:inherit;text-decoration:none}
+
+.owp-back{padding-top:18px;padding-bottom:6px}
+.owp-back a{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--dim);transition:.15s}
+.owp-back a:hover{color:var(--or2)}
+
+.owp .owp-info{display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;margin-left:5px;border:1px solid var(--faint);border-radius:50%;font-family:var(--mono);font-size:8px;font-weight:700;color:var(--dim);vertical-align:middle;cursor:help;line-height:1;text-transform:none}
+.owp .owp-info:hover{border-color:var(--or);color:var(--or)}
+
+.owp-tip{position:fixed;z-index:9999;max-width:240px;background:var(--panel2);border:1px solid var(--or);color:var(--tx);font-family:var(--body);font-weight:500;font-size:11.5px;line-height:1.42;text-align:left;padding:11px 13px;clip-path:polygon(0 0,100% 0,100% calc(100% - 7px),calc(100% - 7px) 100%,0 100%);box-shadow:0 14px 38px -10px rgba(0,0,0,.8);pointer-events:none}
+.owp-tip-arrow{position:absolute;left:50%;top:100%;transform:translateX(-50%);border:6px solid transparent;border-top-color:var(--or)}
+
+.owp-lbl{display:flex;align-items:center;gap:13px;margin-bottom:20px}
+.owp-lbl b{font-family:var(--disp);font-size:15px;letter-spacing:.04em;text-transform:uppercase;color:#fff;-webkit-text-stroke:2px var(--stroke);paint-order:stroke fill}
+.owp-lbl::before{content:'';width:0;height:0;border-style:solid;border-width:7px 0 7px 11px;border-color:transparent transparent transparent var(--or)}
+.owp-lbl::after{content:'';flex:1;height:2px;background:linear-gradient(90deg,var(--line-or),transparent)}
+.owp-lbl.hasmore::after{display:none}
+.owp-lbl .more{margin-left:auto;font-family:var(--cond);font-weight:400;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--or2);cursor:pointer;transition:.15s}
+.owp-lbl .more:hover{color:#fff}
+
+.owp-banner{position:relative;overflow:hidden;border-bottom:2px solid var(--or);margin-top:6px}
+.owp-banner::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,var(--bg) 32%,rgba(27,15,35,.55) 72%,rgba(27,15,35,.85));z-index:0}
+.owp-banner .wrap{position:relative;z-index:2;display:flex;align-items:flex-end;gap:30px;padding:40px clamp(20px,3.2vw,72px) 30px;flex-wrap:wrap}
+.owp-ghost{position:absolute;right:2vw;bottom:-2.4vw;z-index:1;font-family:var(--disp);font-size:clamp(6rem,15vw,15rem);line-height:.7;color:transparent;-webkit-text-stroke:2px rgba(255,90,31,.15);text-transform:uppercase;pointer-events:none;letter-spacing:-.02em;user-select:none;white-space:nowrap;max-width:60vw;overflow:hidden}
+.owp-av{width:118px;height:140px;flex:0 0 auto;position:relative;clip-path:polygon(0 0,100% 0,100% 86%,86% 100%,0 100%);background:linear-gradient(160deg,var(--or),var(--vio));padding:3px}
+.owp-av .ph{width:100%;height:100%;overflow:hidden;background:#0d0712;clip-path:polygon(0 0,100% 0,100% 85%,85% 100%,0 100%)}
+.owp-av .ph img{width:100%;height:100%;object-fit:cover}
+.owp-av-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:var(--disp);font-size:42px;color:var(--faint)}
+.owp-pinfo{padding-bottom:4px;min-width:0}
+.owp-row1{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.owp-tag{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#fff;background:rgba(124,92,255,.16);border:1px solid var(--vio);padding:5px 11px;clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px);transition:.15s}
+a.owp-tag:hover{background:rgba(124,92,255,.3)}
+.owp-tag.mvp{background:rgba(255,194,75,.14);border-color:var(--gold);color:var(--gold)}
+.owp-tag.creator{background:rgba(255,90,31,.16);border-color:var(--or);color:var(--or2)}
+.owp-tag.admin{background:rgba(255,194,75,.12);border-color:var(--gold);color:var(--gold)}
+.owp-pinfo h1{font-family:var(--disp);font-size:clamp(2.4rem,5.4vw,5rem);line-height:.82;text-transform:uppercase;color:#fff;-webkit-text-stroke:3px var(--stroke);paint-order:stroke fill;letter-spacing:-.005em;word-break:break-word}
+.owp-meta{display:flex;gap:20px;margin-top:15px;font-family:var(--mono);font-size:11px;color:var(--dim);flex-wrap:wrap}
+.owp-meta b{color:var(--tx)}
+.owp-bnr-rt{margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:14px}
+.owp-actions{display:flex;gap:9px}
+.owp-btn{font-family:var(--cond);font-weight:400;font-size:14px;letter-spacing:.06em;text-transform:uppercase;padding:11px 20px;border:1px solid var(--line-or);color:var(--or2);transition:.15s;white-space:nowrap;clip-path:polygon(9px 0,100% 0,100% calc(100% - 9px),calc(100% - 9px) 100%,0 100%,0 9px);background:rgba(255,90,31,.05);cursor:pointer}
+.owp-btn:hover{background:rgba(255,90,31,.16);border-color:var(--or);color:#fff}
+.owp-btn.prim{background:var(--or);color:#1a0d06;border-color:var(--or)}
+.owp-btn.prim:hover{background:var(--or2)}
+.owp-export :is(button,a){font-family:var(--cond)!important}
+.owp-ratebox{text-align:right}
+.owp-ratebox .k{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim)}
+.owp-ratebox .v{font-family:var(--disp);font-size:clamp(2.6rem,5vw,4rem);line-height:.86;color:var(--or);text-shadow:0 0 28px rgba(255,90,31,.4)}
+.owp-ratebox .v.hi{color:var(--ok)}.owp-ratebox .v.lo{color:#FF7A8C}
+
+.owp-tabs{border-bottom:1px solid var(--line);background:var(--bg2)}
+.owp-tabs .wrap{display:flex;gap:30px}
+.owp-tabs a{padding:16px 2px;font-family:var(--cond);font-weight:400;font-size:15px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);position:relative;transition:.15s;cursor:pointer}
+.owp-tabs a:hover{color:var(--tx)}
+.owp-tabs a.on{color:#fff}
+.owp-tabs a.on::after{content:'';position:absolute;left:0;right:0;bottom:-1px;height:3px;background:var(--or)}
+
+.owp-strip{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;padding:24px clamp(20px,3.2vw,72px);background:var(--bg2);border-bottom:1px solid var(--line)}
+.owp-scell{position:relative;background:var(--panel);padding:18px 20px;border-left:3px solid var(--or);clip-path:polygon(0 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%)}
+.owp-scell .k{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+.owp-scell .v{font-family:var(--cond);font-weight:400;font-size:clamp(26px,2.4vw,38px);margin-top:6px;line-height:1;color:var(--tx)}
+.owp-scell .v small{font-family:var(--mono);font-size:12px;color:var(--dim)}
+.owp-scell.acc{border-left-color:var(--gold)}.owp-scell.acc .v{color:var(--gold)}
+
+.owp-sec{padding:36px 0}
+.owp-grid{display:grid;grid-template-columns:1.5fr 1fr;gap:22px}
+.owp-empty,.owp-none-box{font-family:var(--mono);font-size:12.5px;color:var(--dim);background:var(--panel);border:1px solid var(--line);padding:22px;margin-top:30px;line-height:1.5}
+.owp-none{font-family:var(--mono);font-size:11px;color:var(--faint);text-transform:uppercase;letter-spacing:.06em;padding:18px}
+
+.owp-combat{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.owp-cc{position:relative;background:var(--panel);padding:18px 20px;border-top:2px solid var(--line-or);clip-path:polygon(0 0,100% 0,100% calc(100% - 13px),calc(100% - 13px) 100%,0 100%)}
+.owp-cc .k{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);display:flex;align-items:center}
+.owp-cc .v{font-family:var(--cond);font-weight:400;font-size:32px;margin-top:8px;line-height:1;color:var(--tx)}
+.owp-cc .bar{height:5px;background:#160c1f;margin-top:12px;overflow:hidden;transform:skewX(-20deg)}
+.owp-cc .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--or),var(--or2))}
+
+.owp-formc{background:var(--panel);padding:22px;border:1px solid var(--line);clip-path:polygon(0 0,100% 0,100% calc(100% - 16px),calc(100% - 16px) 100%,0 100%)}
+.owp-spark{display:flex;align-items:flex-end;gap:8px;height:96px;margin-top:14px}
+.owp-spark .b{flex:1;background:linear-gradient(180deg,var(--or2),var(--or));position:relative;min-height:8px;clip-path:polygon(0 0,100% 6px,100% 100%,0 100%)}
+.owp-spark .b span{position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:9px;color:var(--dim)}
+.owp-ft{display:flex;justify-content:space-between;margin-top:16px;font-family:var(--mono);font-size:11px;color:var(--dim)}
+
+.owp-res{background:var(--panel);border:1px solid var(--line)}
+.owp-rrow{display:flex;align-items:center;gap:13px;padding:13px 18px;font-family:var(--mono);font-size:12.5px;transition:.15s;cursor:pointer}
+.owp-rrow:hover{background:var(--panel2)}.owp-rrow+.owp-rrow{border-top:1px solid var(--line)}
+.owp-rrow .w{width:4px;height:32px;flex:0 0 auto;transform:skewX(-12deg);background:var(--faint)}
+.owp-rrow .w.v{background:var(--ok)}.owp-rrow .w.d{background:var(--live)}.owp-rrow .w.live{background:var(--live)}
+.owp-rrow .opp{flex:1;display:flex;flex-direction:column;gap:3px;min-width:0}
+.owp-rrow .opp .t{font-family:var(--cond);font-weight:400;font-size:15px;letter-spacing:.02em;text-transform:uppercase;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.owp-rrow .opp .ev{font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+.owp-rrow .sc{font-family:var(--cond);font-weight:400;font-size:17px}
+.owp-rrow .rt{font-family:var(--cond);font-weight:400;font-size:16px;width:52px;text-align:right;color:var(--tx)}
+.owp-rrow .rt.hi{color:var(--ok)}.owp-rrow .rt.lo{color:#FF7A8C}
+
+.owp-maps{background:var(--panel);border:1px solid var(--line)}
+.owp-mrow{display:grid;grid-template-columns:130px 1fr 64px;align-items:center;gap:16px;padding:13px 18px}
+.owp-mrow+.owp-mrow{border-top:1px solid var(--line)}
+.owp-mrow .mn{display:flex;align-items:center;gap:10px;font-family:var(--cond);font-weight:400;font-size:14px;text-transform:uppercase;letter-spacing:.03em}
+.owp-mrow .mn .th{width:36px;height:23px;background-size:cover;background-position:center;opacity:.85;clip-path:polygon(0 0,100% 0,100% 75%,88% 100%,0 100%)}
+.owp-mrow .mbar{height:7px;background:#160c1f;overflow:hidden;transform:skewX(-20deg)}
+.owp-mrow .mbar i{display:block;height:100%;background:linear-gradient(90deg,var(--or),var(--or2))}
+.owp-mrow .mrt{font-family:var(--cond);font-weight:400;font-size:16px;text-align:right;color:var(--tx)}
+.owp-mrow .mrt small{display:block;font-family:var(--mono);font-size:9px;color:var(--dim)}
+
+.owp-mtbl{background:var(--panel);border:1px solid var(--line)}
+.owp-mtbl .mh,.owp-mtbl .mr{display:grid;grid-template-columns:4px 1.5fr 116px 78px 120px 56px 56px;align-items:center;gap:14px;padding:13px 18px}
+.owp-mtbl .mh{background:var(--bg2);border-bottom:1px solid var(--line);font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint)}
+.owp-mtbl .mr+.mr{border-top:1px solid var(--line)}
+.owp-mtbl .mr{font-family:var(--mono);font-size:12.5px;transition:.15s;cursor:pointer}
+.owp-mtbl .mr:hover{background:var(--panel2)}
+.owp-mtbl .w{width:4px;height:32px;transform:skewX(-12deg);background:var(--faint)}
+.owp-mtbl .w.v{background:var(--ok)}.owp-mtbl .w.d{background:var(--live)}.owp-mtbl .w.live{background:var(--live)}
+.owp-mtbl .opp{display:flex;flex-direction:column;gap:3px;min-width:0}
+.owp-mtbl .opp .t{font-family:var(--cond);font-weight:400;font-size:15px;letter-spacing:.02em;text-transform:uppercase;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.owp-mtbl .opp .ev{font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+.owp-mtbl .mp{display:flex;align-items:center;gap:8px;font-family:var(--cond);font-weight:400;font-size:13px;text-transform:uppercase;color:var(--dim)}
+.owp-mtbl .mp .th{width:30px;height:19px;background-size:cover;background-position:center;opacity:.8;clip-path:polygon(0 0,100% 0,100% 74%,86% 100%,0 100%)}
+.owp-mtbl .sc{font-family:var(--cond);font-weight:400;font-size:16px;color:var(--tx)}
+.owp-mtbl .sc.win{color:var(--ok)}.owp-mtbl .sc.loss{color:#FF7A8C}
+.owp-mtbl .kda{color:var(--dim)}.owp-mtbl .kda b{color:var(--tx)}
+.owp-mtbl .adr{text-align:right;color:var(--dim)}
+.owp-mtbl .rt{font-family:var(--cond);font-weight:400;font-size:16px;text-align:right;color:var(--tx)}
+.owp-mtbl .rt.hi{color:var(--ok)}.owp-mtbl .rt.lo{color:#FF7A8C}
+
+.owp-hls{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.owp-hl{position:relative;overflow:hidden;border:1px solid var(--line-or);clip-path:polygon(0 0,100% 0,100% calc(100% - 18px),calc(100% - 18px) 100%,0 100%)}
+.owp-hl .tag2{position:absolute;top:10px;left:10px;z-index:3;font-family:var(--cond);font-weight:400;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#1a0d06;background:var(--or);padding:3px 9px;clip-path:polygon(6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%,0 6px)}
+.owp-hl .views{position:absolute;top:11px;right:11px;z-index:3;font-family:var(--mono);font-size:10px;color:var(--tx);text-shadow:0 1px 4px rgba(0,0,0,.8)}
+.owp-hl .cap{position:absolute;left:0;right:0;bottom:0;padding:9px 12px 16px;background:linear-gradient(0deg,rgba(27,15,35,.96),transparent);font-family:var(--mono);font-size:10px;letter-spacing:.04em;text-transform:uppercase;color:var(--tx);z-index:3;display:block}
+.owp-hl .cap:hover{color:var(--or2)}
+
+.owp-mapgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.owp-mapcard{position:relative;background:var(--panel);border:1px solid var(--line);overflow:hidden;clip-path:polygon(0 0,100% 0,100% calc(100% - 16px),calc(100% - 16px) 100%,0 100%)}
+.owp-mapcard .top{position:relative;height:96px;background-size:cover;background-position:center}
+.owp-mapcard .top::after{content:'';position:absolute;inset:0;background:linear-gradient(0deg,var(--panel),rgba(27,15,35,.2) 60%,rgba(27,15,35,.5))}
+.owp-mapcard .nm{position:absolute;left:14px;bottom:10px;z-index:2;font-family:var(--disp);font-size:20px;text-transform:uppercase;color:#fff;-webkit-text-stroke:2px var(--stroke);paint-order:stroke fill}
+.owp-mapcard .wl{position:absolute;right:12px;top:11px;z-index:2;font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--tx);background:rgba(27,15,35,.7);border:1px solid var(--line-or);padding:3px 8px}
+.owp-mapcard .body{padding:16px 18px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.owp-mapcard .st .sk{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+.owp-mapcard .st .sv{font-family:var(--cond);font-weight:400;font-size:22px;margin-top:3px;line-height:1;color:var(--tx)}
+.owp-mapcard .st .sv.rt{color:var(--or)}
+.owp-mapcard .winbar{height:5px;background:#160c1f;margin:0 18px 16px;overflow:hidden;transform:skewX(-20deg)}
+.owp-mapcard .winbar i{display:block;height:100%;background:linear-gradient(90deg,var(--or),var(--or2))}
+
+.owp-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:120px 20px;font-family:var(--mono);font-size:12px;color:var(--dim);letter-spacing:.08em;text-transform:uppercase}
+.owp-loading .owp-dim{color:var(--faint);font-size:11px}
+.owp-spin{width:42px;height:42px;border:3px solid var(--panel2);border-top-color:var(--or);border-radius:50%;animation:owpspin .8s linear infinite}
+@keyframes owpspin{to{transform:rotate(360deg)}}
+
+@media(max-width:1000px){
+  .owp-grid{grid-template-columns:1fr}
+  .owp-strip{grid-template-columns:repeat(3,1fr)}
+  .owp-hls,.owp-mapgrid{grid-template-columns:repeat(2,1fr)}
+  .owp-combat{grid-template-columns:repeat(2,1fr)}
+  .owp-mtbl .mh,.owp-mtbl .mr{grid-template-columns:4px 1.4fr 70px 64px}
+  .owp-mtbl .mp,.owp-mtbl .kda,.owp-mtbl .adr,.owp-mtbl .h-kda,.owp-mtbl .h-adr{display:none}
+}
+@media(max-width:560px){
+  .owp-strip{grid-template-columns:repeat(2,1fr)}
+  .owp-hls,.owp-mapgrid,.owp-combat{grid-template-columns:1fr}
+  .owp-bnr-rt{margin-left:0;align-items:flex-start;width:100%}
+  .owp-ratebox{text-align:left}
+}
+`;
