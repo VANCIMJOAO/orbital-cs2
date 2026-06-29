@@ -1,347 +1,144 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import { motion } from "framer-motion";
-import { Trophy, MapPin, Calendar, Swords, Crown, ChevronRight, DollarSign } from "lucide-react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
-import { HudCard } from "@/components/hud-card";
-import { PageHeader } from "@/components/page-header";
-import { Tournament, getTeamName } from "@/lib/tournament";
+import { Tournament } from "@/lib/tournament";
 import { getTeams } from "@/lib/api";
+import { MAP_IMAGES } from "@/lib/maps";
+import { OWP_CSS } from "@/lib/owp-styles";
 
 type TeamsMap = Record<number, { name: string; logo: string | null }>;
+type Filter = "all" | "active" | "pending" | "finished";
+
+const MAP_BG = [MAP_IMAGES.de_mirage, MAP_IMAGES.de_inferno, MAP_IMAGES.de_nuke, MAP_IMAGES.de_ancient, MAP_IMAGES.de_anubis, MAP_IMAGES.de_dust2];
 
 export default function CampeonatosPage() {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
-  const [teamsMap, setTeamsMap] = useState<TeamsMap>({});
+  const [, setTeamsMap] = useState<TeamsMap>({});
   const [inscritosCount, setInscritosCount] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
-  const [filterStatus, setFilterStatus] = useState<"all" | "active" | "pending" | "finished">("all");
-  const [filterFormat, setFilterFormat] = useState<"all" | "double_elimination" | "swiss">("all");
+  const [filter, setFilter] = useState<Filter>("all");
 
-  const fetchData = useCallback(async () => {
-    try {
-      const [tourRes, teamsRes, countsRes] = await Promise.all([
-        fetch("/api/tournaments").then(r => r.json()),
-        getTeams(),
-        fetch("/api/inscricao?counts=1").then(r => r.json()).catch(() => ({ counts: {} })),
-      ]);
-      setTournaments(tourRes.tournaments || []);
-      const map: TeamsMap = {};
-      (teamsRes.teams || []).forEach((t: { id: number; name: string; logo: string | null }) => {
-        map[t.id] = { name: t.name, logo: t.logo };
-      });
-      setTeamsMap(map);
-      setInscritosCount(countsRes.counts || {});
-    } catch { /* */ }
-    setLoading(false);
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const [tourRes, teamsRes, countsRes] = await Promise.all([
+          fetch("/api/tournaments").then(r => r.json()),
+          getTeams(),
+          fetch("/api/inscricao?counts=1").then(r => r.json()).catch(() => ({ counts: {} })),
+        ]);
+        if (!active) return;
+        setTournaments(tourRes.tournaments || []);
+        const map: TeamsMap = {};
+        (teamsRes.teams || []).forEach((t: { id: number; name: string; logo: string | null }) => { map[t.id] = { name: t.name, logo: t.logo }; });
+        setTeamsMap(map);
+        setInscritosCount(countsRes.counts || {});
+      } catch { /* */ }
+      if (active) setLoading(false);
+    })();
+    return () => { active = false; };
   }, []);
-
-  useEffect(() => { fetchData(); }, [fetchData]);
 
   if (loading) {
     return (
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12 space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="h-6 w-48 bg-orbital-border/30 rounded animate-pulse" />
-          <div className="flex gap-2">
-            <div className="h-8 w-20 bg-orbital-border/30 rounded animate-pulse" />
-            <div className="h-8 w-20 bg-orbital-border/30 rounded animate-pulse" />
-          </div>
-        </div>
-        <div className="grid gap-4">
-          {[1, 2, 3].map(i => (
-            <div key={i} className="h-48 bg-orbital-card border border-orbital-border rounded animate-pulse" />
-          ))}
-        </div>
+      <div className="owp">
+        <style>{OWP_CSS}</style>
+        <div className="loading"><div className="spin" />Carregando campeonatos…</div>
       </div>
     );
   }
 
-  const filtered = tournaments.filter(t => {
-    if (filterStatus !== "all" && t.status !== filterStatus) return false;
-    if (filterFormat !== "all") {
-      const fmt = t.format || "double_elimination";
-      if (fmt !== filterFormat) return false;
-    }
-    return true;
-  });
-
-  const active = filtered.filter(t => t.status === "active");
-  const pending = filtered.filter(t => t.status === "pending");
-  const finished = filtered.filter(t => t.status === "finished");
+  const filtered = tournaments.filter(t => filter === "all" || t.status === filter);
+  const chips: { v: Filter; label: string }[] = [
+    { v: "all", label: "Todos" },
+    { v: "active", label: "Ao Vivo" },
+    { v: "pending", label: "Inscrições" },
+    { v: "finished", label: "Finalizados" },
+  ];
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-10 pb-20">
-      <PageHeader
-        kicker="Temporadas · Edições"
-        title="Todos os"
-        accent="Campeonatos"
-        sub={`${tournaments.length} ${tournaments.length === 1 ? "campeonato registrado" : "campeonatos registrados"}`}
-      >
-        {/* Filters */}
-        <div className="flex flex-wrap items-center gap-4">
-        {/* Status filter */}
-        <div className="flex items-center gap-1">
-          <span className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.15em] text-orbital-text-dim mr-2">STATUS</span>
-          {([
-            { value: "all", label: "Todos" },
-            { value: "active", label: "Ao Vivo" },
-            { value: "pending", label: "Em Breve" },
-            { value: "finished", label: "Finalizados" },
-          ] as const).map(opt => (
-            <button
-              key={opt.value}
-              onClick={() => setFilterStatus(opt.value)}
-              className={`px-3 py-1.5 font-[family-name:var(--font-jetbrains)] text-[0.6rem] border transition-all ${
-                filterStatus === opt.value
-                  ? "bg-orbital-purple/15 border-orbital-purple/50 text-orbital-purple"
-                  : "border-orbital-border text-orbital-text-dim hover:border-orbital-purple/30 hover:text-orbital-text"
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
+    <div className="owp">
+      <style>{OWP_CSS}</style>
 
-        {/* Format filter */}
-        <div className="flex items-center gap-1">
-          <span className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.15em] text-orbital-text-dim mr-2">FORMATO</span>
-          {([
-            { value: "all", label: "Todos" },
-            { value: "double_elimination", label: "Eliminação Dupla" },
-          ] as const).map(opt => (
-            <button
-              key={opt.value}
-              onClick={() => setFilterFormat(opt.value)}
-              className={`px-3 py-1.5 font-[family-name:var(--font-jetbrains)] text-[0.6rem] border transition-all ${
-                filterFormat === opt.value
-                  ? "bg-orbital-purple/15 border-orbital-purple/50 text-orbital-purple"
-                  : "border-orbital-border text-orbital-text-dim hover:border-orbital-purple/30 hover:text-orbital-text"
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-        </div>
-      </PageHeader>
+      <header className="pagehead">
+        <h1>Campeonatos</h1>
+        <p>TODA A HISTÓRIA COMPETITIVA DA ORBITAL ROXA · ELIMINAÇÃO DUPLA · PRESENCIAL</p>
+      </header>
 
-      {/* Active */}
-      {active.length > 0 && (
-        <Section title="AO VIVO" color="text-red-500" tournaments={active} teamsMap={teamsMap} inscritosCount={inscritosCount} delay={0.1} />
-      )}
+      <div className="wrap">
+        <section className="sec" style={{ paddingTop: 24 }}>
+          <div className="chips" style={{ marginBottom: 30 }}>
+            {chips.map(c => (
+              <span key={c.v} className={`chip ${filter === c.v ? "on" : ""}`} onClick={() => setFilter(c.v)}>{c.label}</span>
+            ))}
+          </div>
 
-      {/* Pending */}
-      {pending.length > 0 && (
-        <Section title="EM BREVE" color="text-yellow-500" tournaments={pending} teamsMap={teamsMap} inscritosCount={inscritosCount} delay={0.2} />
-      )}
-
-      {/* Finished */}
-      {finished.length > 0 && (
-        <Section title="FINALIZADOS" color="text-emerald-500" tournaments={finished} teamsMap={teamsMap} inscritosCount={inscritosCount} delay={0.3} />
-      )}
-
-      {filtered.length === 0 && (
-        <HudCard className="text-center py-16">
-          <Trophy size={32} className="text-orbital-border mx-auto mb-4" />
-          <p className="font-[family-name:var(--font-jetbrains)] text-sm text-orbital-text-dim">
-            {tournaments.length === 0 ? "Nenhum campeonato encontrado" : "Nenhum campeonato corresponde aos filtros"}
-          </p>
-          {tournaments.length > 0 && (
-            <button
-              onClick={() => { setFilterStatus("all"); setFilterFormat("all"); }}
-              className="mt-3 px-4 py-1.5 font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-purple border border-orbital-purple/30 hover:bg-orbital-purple/10 transition-all"
-            >
-              LIMPAR FILTROS
-            </button>
+          {filtered.length > 0 ? (
+            <div className="grid g3">
+              {filtered.map((t, i) => (
+                <TournamentCard key={t.id} t={t} inscritos={inscritosCount[t.id] ?? 0} bg={MAP_BG[i % MAP_BG.length]} />
+              ))}
+            </div>
+          ) : (
+            <div className="empty">
+              {tournaments.length === 0 ? "Nenhum campeonato registrado ainda." : "Nenhum campeonato corresponde ao filtro."}
+            </div>
           )}
-        </HudCard>
-      )}
+        </section>
+      </div>
     </div>
   );
 }
 
-function Section({ title, color, tournaments, teamsMap, inscritosCount, delay }: { title: string; color: string; tournaments: Tournament[]; teamsMap: TeamsMap; inscritosCount: Record<string, number>; delay: number }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 15 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay }}
-      className="mb-10"
-    >
-      <div className="flex items-center gap-3 mb-5">
-        <span className={`w-1.5 h-1.5 rounded-full ${color === "text-red-500" ? "bg-red-500 animate-pulse" : color === "text-yellow-500" ? "bg-yellow-500" : "bg-emerald-500"}`} />
-        <span className={`font-[family-name:var(--font-chakra)] text-[0.7rem] font-semibold tracking-[0.3em] uppercase ${color}`}>
-          {title}
-        </span>
-        <span className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim/70">{tournaments.length}</span>
-        <div className="h-px flex-1 bg-orbital-border" />
-      </div>
-      <div className="grid gap-4">
-        {tournaments.map((t, i) => (
-          <TournamentCard key={t.id} tournament={t} teamsMap={teamsMap} inscritosCount={inscritosCount} delay={delay + i * 0.05} />
-        ))}
-      </div>
-    </motion.div>
-  );
-}
-
-function TournamentCard({ tournament: t, teamsMap, inscritosCount, delay }: { tournament: Tournament; teamsMap: TeamsMap; inscritosCount: Record<string, number>; delay: number }) {
-  const teamsOuInscritos = t.teams.length || (inscritosCount[t.id] ?? 0);
-  const finished = t.matches.filter(m => m.status === "finished").length;
-  const total = t.matches.length;
-  const progress = total > 0 ? Math.round((finished / total) * 100) : 0;
-
+function TournamentCard({ t, inscritos, bg }: { t: Tournament; inscritos: number; bg: string }) {
+  const teamsCount = t.teams.length || inscritos;
   const gf = t.matches.find(m => m.bracket === "grand_final" || m.id === "GF");
   const winnerId = gf?.winner_id;
-  const winnerTeam = winnerId ? t.teams.find(tm => tm.id === winnerId) : null;
-  const winnerLogo = winnerId ? teamsMap[winnerId]?.logo : null;
+  const winner = winnerId ? t.teams.find(tm => tm.id === winnerId) : null;
 
-  const formatLabel = t.format === "double_elimination" ? "Eliminação Dupla" : t.format === "swiss" ? "Sistema Suíço" : t.format || "Eliminação Dupla";
+  const dateLabel = t.start_date
+    ? new Date(t.start_date + "T00:00:00").toLocaleDateString("pt-BR", { month: "short", year: "numeric" }).toUpperCase().replace(".", "")
+    : "A DEFINIR";
+
+  const pill = t.status === "finished"
+    ? <span className="tag gold">FINALIZADO</span>
+    : t.status === "active"
+      ? <span className="tag live">AO VIVO</span>
+      : <span className="tag or">INSCRIÇÕES</span>;
+
+  const champrow = t.status === "finished" && winner
+    ? <div className="champrow">🏆 CAMPEÃO <b>{winner.name}</b></div>
+    : t.status === "active"
+      ? <div className="champrow" style={{ color: "var(--or2)" }}>⚡ EM ANDAMENTO</div>
+      : <div className="champrow" style={{ color: "var(--or2)" }}>⚡ INSCRIÇÕES ABERTAS</div>;
+
+  const btn = t.status === "finished"
+    ? <span className="btn sm">Ver detalhes →</span>
+    : t.status === "active"
+      ? <span className="btn sm prim">Acompanhar →</span>
+      : <span className="btn sm prim">Ver campeonato →</span>;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay }}
-    >
-      <Link href={`/campeonato/${t.id}`} className="block group">
-        <div className="relative overflow-hidden border border-orbital-border hover:border-orbital-purple/30 transition-all duration-300">
-          {/* Background image */}
-          <div className="absolute inset-0">
-            <img src="https://i.imgur.com/0irj00x.jpeg" alt="" className="w-full h-full object-cover opacity-20 group-hover:opacity-25 transition-opacity" />
-            <div className="absolute inset-0 bg-gradient-to-r from-[#0A0A0A] via-[#0A0A0A]/90 to-[#0A0A0A]/70" />
-          </div>
-
-          {/* Acento editorial no topo (aparece no hover) */}
-          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-orbital-purple via-orbital-purple/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity z-10" />
-
-          {/* Live indicator */}
-          {t.status === "active" && (
-            <div className="absolute top-3 right-3 flex items-center gap-1.5 px-2 py-1 bg-red-500/20 border border-red-500/40">
-              <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.6)]" />
-              <span className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.2em] text-red-500">LIVE</span>
-            </div>
-          )}
-
-          <div className="relative p-6">
-            {/* Top row: Status + Format */}
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                {t.status === "finished" && (
-                  <span className="flex items-center gap-1.5 px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/30">
-                    <Trophy size={10} className="text-emerald-500" />
-                    <span className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.15em] text-emerald-500">FINALIZADO</span>
-                  </span>
-                )}
-                {t.status === "pending" && (
-                  <span className="px-2 py-0.5 bg-yellow-500/10 border border-yellow-500/30">
-                    <span className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.15em] text-yellow-500">EM BREVE</span>
-                  </span>
-                )}
-              </div>
-              <span className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim">
-                {formatLabel}
-              </span>
-            </div>
-
-            {/* Tournament name + info */}
-            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-5">
-              <div className="flex-1 min-w-0">
-                <h2 className="font-[family-name:var(--font-russo)] text-xl sm:text-2xl font-bold tracking-wider text-orbital-text group-hover:text-orbital-purple transition-colors mb-2">
-                  {t.name}
-                </h2>
-                <div className="flex items-center gap-4 flex-wrap">
-                  {t.start_date && (
-                    <span className="flex items-center gap-1.5 font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim">
-                      <Calendar size={11} className="text-orbital-purple/60" />
-                      {new Date(t.start_date + "T00:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" })}
-                    </span>
-                  )}
-                  {t.location && (
-                    <span className="flex items-center gap-1.5 font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim">
-                      <MapPin size={11} className="text-orbital-purple/60" />
-                      {t.location}
-                    </span>
-                  )}
-                  {t.prize_pool && (
-                    <span className="flex items-center gap-1.5 font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim">
-                      <DollarSign size={11} className="text-orbital-purple/60" />
-                      {t.prize_pool}
-                    </span>
-                  )}
-                  <span className="flex items-center gap-1.5 font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim">
-                    <Swords size={11} className="text-orbital-purple/60" />
-                    {finished}/{total} partidas
-                  </span>
-                </div>
-              </div>
-
-              {/* Champion badge */}
-              {winnerTeam && (
-                <div className="flex items-center gap-3 shrink-0 self-start px-4 py-3 bg-amber-500/5 border border-amber-500/30">
-                  {winnerLogo ? (
-                    <Image src={winnerLogo} alt={winnerTeam.name} width={36} height={36} className="object-contain" unoptimized />
-                  ) : (
-                    <span className="w-9 h-9 flex items-center justify-center font-[family-name:var(--font-russo)] text-sm text-amber-400">
-                      {(winnerTeam.name || "?").trim().charAt(0).toUpperCase()}
-                    </span>
-                  )}
-                  <div>
-                    <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.2em] text-amber-500/70">CAMPEÃO</div>
-                    <div className="font-[family-name:var(--font-russo)] text-sm font-bold tracking-wider text-amber-400">{winnerTeam.name}</div>
-                  </div>
-                  <Crown size={18} className="text-amber-500/40" />
-                </div>
-              )}
-            </div>
-
-            {/* Teams row */}
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="flex flex-wrap items-center gap-1">
-                {t.teams.slice(0, 8).map(team => {
-                  const logo = teamsMap[team.id]?.logo;
-                  return (
-                    <div
-                      key={team.id}
-                      className={`w-8 h-8 border flex items-center justify-center ${
-                        winnerId === team.id ? "border-amber-500/40 bg-amber-500/10" : "border-orbital-border/50 bg-white/[0.02]"
-                      }`}
-                      title={team.name}
-                    >
-                      {logo ? (
-                        <Image src={logo} alt={team.name} width={22} height={22} className="object-contain" unoptimized />
-                      ) : (
-                        <span className="font-[family-name:var(--font-russo)] text-[0.7rem] text-orbital-text-dim">
-                          {(team.name || "?").trim().charAt(0).toUpperCase()}
-                        </span>
-                      )}
-                    </div>
-                  );
-                })}
-                <span className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim ml-2">
-                  {teamsOuInscritos} times
-                </span>
-              </div>
-
-              {/* Progress + arrow */}
-              <div className="flex items-center gap-3">
-                <div className="flex flex-col items-end gap-1">
-                  <span className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-purple font-bold">
-                    {progress}%
-                  </span>
-                  <div className="w-24 h-1 bg-orbital-border">
-                    <div className="h-full bg-gradient-to-r from-orbital-purple to-orbital-purple-bright transition-all" style={{ width: `${progress}%` }} />
-                  </div>
-                </div>
-                <ChevronRight size={16} className="text-orbital-text-dim group-hover:text-orbital-purple transition-colors" />
-              </div>
-            </div>
-          </div>
+    <Link href={`/campeonato/${t.id}`} className="ecard">
+      <div className="top" style={{ backgroundImage: `url('${bg}')` }}>
+        <span className="pill">{pill}</span>
+        <span className="nm">{t.name}</span>
+      </div>
+      <div className="body">
+        {champrow}
+        <div className="stats">
+          {t.status === "pending"
+            ? <><span><b>8</b> VAGAS</span><span><b className="orange">{inscritos}</b> INSCRITOS</span></>
+            : <span><b>{teamsCount}</b> TIMES</span>}
+          <span>DUPLA</span>
+          <span>{t.location ? t.location.toUpperCase() : "PRESENCIAL"}</span>
         </div>
-      </Link>
-    </motion.div>
+        <div className="actrow">
+          <span className="muted" style={{ fontFamily: "var(--font-jetbrains)", fontSize: 10, letterSpacing: ".06em" }}>{dateLabel}</span>
+          {btn}
+        </div>
+      </div>
+    </Link>
   );
 }
