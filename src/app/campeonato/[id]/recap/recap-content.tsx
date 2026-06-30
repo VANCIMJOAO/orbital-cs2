@@ -1,12 +1,11 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { Trophy, Crosshair, Swords, Users, Star, BarChart3, Clock, Target, Zap, Play, ArrowLeft, ChevronRight, Shield } from "lucide-react";
+import React from "react";
 import Link from "next/link";
-import { HudCard, StatBox } from "@/components/hud-card";
 import { Tournament, getTeamName, BracketMatch } from "@/lib/tournament";
 import type { Match, MapStats, PlayerStats, LeaderboardEntry, HighlightClip } from "@/lib/api";
 import { calculateAwards } from "@/lib/awards";
+import { OWP_CSS } from "@/lib/owp-styles";
 
 interface MatchData {
   bracketMatch: BracketMatch;
@@ -23,93 +22,140 @@ interface RecapContentProps {
   teamsMap?: Record<number, { name: string; logo?: string }>;
 }
 
-function TeamLogo({ logo, size = 32, className = "" }: { logo: string | null | undefined; size?: number; className?: string }) {
-  if (!logo) return <Shield size={size * 0.6} className="text-orbital-text-dim" />;
-  return <img src={logo} alt="" width={size} height={size} className={`object-contain ${className}`} />;
-}
+const onImgErr = (e: React.SyntheticEvent<HTMLImageElement>) => { e.currentTarget.style.display = "none"; };
+const initial = (s?: string | null) => (s || "?").trim().charAt(0).toUpperCase() || "?";
+const mapLabel = (m?: string | null) => (m || "").replace("de_", "").toUpperCase();
 
-// ── Scroll reveal wrapper ──
-function RevealSection({ children, className = "", delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 40 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-80px" }}
-      transition={{ duration: 0.6, delay }}
-      className={className}
-    >
-      {children}
-    </motion.div>
-  );
-}
+const RECAP_CSS = `
+.owp .rhero{text-align:center;padding:40px 0 20px;position:relative;overflow:hidden}
+.owp .rhero .badge{display:inline-flex;align-items:center;gap:8px;padding:7px 15px;background:rgba(255,90,31,.1);border:1px solid var(--line-or);font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--or2)}
+.owp .rhero h1{font-family:var(--disp);font-size:clamp(2.2rem,5vw,4rem);text-transform:uppercase;color:#fff;-webkit-text-stroke:3px var(--stroke);paint-order:stroke fill;margin:22px 0 6px;line-height:.9}
+.owp .champ{max-width:560px;margin:26px auto 0;position:relative;overflow:hidden;background:linear-gradient(180deg,rgba(245,197,66,.08),var(--panel) 70%);border:1px solid rgba(245,197,66,.32);border-top:2px solid var(--gold);padding:26px;clip-path:polygon(0 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%)}
+.owp .champ .lbl2{display:flex;align-items:center;justify-content:center;gap:10px;font-family:var(--mono);font-size:9px;letter-spacing:.25em;text-transform:uppercase;color:var(--gold)}
+.owp .champ .who{display:flex;align-items:center;justify-content:center;gap:18px;margin-top:16px}
+.owp .champ .lg{width:74px;height:74px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;background:#0d0712;border:1px solid var(--gold);clip-path:polygon(0 0,100% 0,100% 82%,82% 100%,0 100%);font-family:var(--cond);font-size:36px;color:var(--gold);overflow:hidden;position:relative}
+.owp .champ .lg img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:10px}
+.owp .champ .nm{font-family:var(--disp);font-size:clamp(1.6rem,3.2vw,2.6rem);text-transform:uppercase;color:var(--gold);text-shadow:0 0 26px rgba(245,197,66,.45)}
+.owp .champ .ev{font-family:var(--mono);font-size:9.5px;color:rgba(245,197,66,.6);margin-top:5px;letter-spacing:.08em}
+.owp .rmvp{max-width:440px;margin:18px auto 0;background:linear-gradient(180deg,rgba(255,90,31,.08),var(--panel) 70%);border:1px solid var(--line-or);border-top:2px solid var(--or);padding:16px 22px;clip-path:polygon(0 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%)}
+.owp .rmvp .lbl2{display:flex;align-items:center;justify-content:center;gap:9px;font-family:var(--mono);font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--or2)}
+.owp .rmvp .nm{font-family:var(--disp);font-size:20px;text-transform:uppercase;color:var(--or2);margin-top:8px;transition:.15s}
+.owp .rmvp:hover .nm{color:#fff}
+.owp .rmvp .st{display:flex;align-items:center;justify-content:center;gap:14px;font-family:var(--mono);font-size:10px;color:var(--dim);margin-top:7px}
+.owp .rmvp .st b{color:var(--or2)}
 
-function SectionHeader({ icon: Icon, title }: { icon: React.ElementType; title: string }) {
-  return (
-    <div className="flex items-center gap-3 mb-6">
-      <Icon size={16} className="text-orbital-purple" />
-      <h2 className="font-[family-name:var(--font-russo)] text-xs tracking-[0.2em] text-orbital-purple">{title}</h2>
-      <div className="h-[1px] flex-1 bg-gradient-to-r from-orbital-purple/40 to-transparent" />
-    </div>
-  );
-}
+.owp .shead{display:flex;align-items:center;gap:13px;margin:48px 0 20px}
+.owp .shead .ic{color:var(--or);font-size:15px}
+.owp .shead b{font-family:var(--disp);font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:#fff;-webkit-text-stroke:2px var(--stroke);paint-order:stroke fill;font-weight:400}
+.owp .shead::after{content:'';flex:1;height:2px;background:linear-gradient(90deg,var(--line-or),transparent)}
+
+.owp .agrid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+.owp .acard{background:var(--panel);border:1px solid var(--line);border-top:2px solid var(--line-or);padding:18px 12px;text-align:center;transition:.15s;clip-path:polygon(0 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%)}
+.owp .acard:hover{border-color:var(--line-or);transform:translateY(-3px)}
+.owp .acard.mvp1{border-top-color:var(--gold);background:linear-gradient(180deg,rgba(245,197,66,.06),var(--panel) 60%)}
+.owp .acard .emo{font-size:28px;line-height:1}
+.owp .acard .att{font-family:var(--mono);font-size:8.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--or2);margin-top:9px}
+.owp .acard.mvp1 .att{color:var(--gold)}
+.owp .acard .apl{font-family:var(--cond);font-size:16px;text-transform:uppercase;color:#fff;margin-top:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.owp .acard .aval{font-family:var(--mono);font-size:10px;color:var(--tx);margin-top:5px}
+.owp .acard .adesc{font-family:var(--mono);font-size:8px;color:var(--faint);margin-top:4px;line-height:1.3}
+
+.owp .sgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+.owp .sbox{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--or);padding:16px 16px;clip-path:polygon(0 0,100% 0,100% calc(100% - 11px),calc(100% - 11px) 100%,0 100%)}
+.owp .sbox .k{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+.owp .sbox .v{font-family:var(--cond);font-size:26px;line-height:1;color:var(--tx);margin-top:7px}
+.owp .sbox .s{font-family:var(--mono);font-size:8.5px;color:var(--faint);margin-top:5px;min-height:11px}
+
+.owp .tl{position:relative;max-width:780px;margin:0 auto;padding:6px 0}
+.owp .tl::before{content:'';position:absolute;left:50%;top:0;bottom:0;width:2px;background:linear-gradient(180deg,var(--line-or),rgba(255,90,31,.15),var(--line-or));transform:translateX(-1px)}
+.owp .tli{position:relative;width:50%;padding:0 28px;margin-bottom:14px;box-sizing:border-box}
+.owp .tli.l{left:0;text-align:right}
+.owp .tli.r{left:50%}
+.owp .tli .dot{position:absolute;top:20px;width:13px;height:13px;background:var(--bg);border:2px solid var(--ok);z-index:2}
+.owp .tli.l .dot{right:-6px}.owp .tli.r .dot{left:-7px}
+.owp .tli.gf .dot{border-color:var(--gold);background:rgba(245,197,66,.2)}
+.owp .tlc{display:block;text-align:left;width:100%;max-width:330px;background:var(--panel);border:1px solid var(--line);border-left:2px solid var(--ok);padding:13px 15px;clip-path:polygon(0 0,100% 0,100% calc(100% - 9px),calc(100% - 9px) 100%,0 100%);transition:.15s}
+.owp .tli.l .tlc{margin-left:auto}
+.owp .tlc:hover{border-color:var(--line-or)}
+.owp .tli.gf .tlc{border-color:rgba(245,197,66,.4);border-left-color:var(--gold);background:linear-gradient(90deg,rgba(245,197,66,.05),var(--panel))}
+.owp .tlc .top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px}
+.owp .tlc .ph{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--or2)}
+.owp .tli.gf .tlc .ph{color:var(--gold)}
+.owp .tlc .dt{font-family:var(--mono);font-size:9px;color:var(--faint)}
+.owp .tlc .mt{display:flex;align-items:center;gap:10px}
+.owp .tlc .tn{flex:1;font-family:var(--cond);font-size:14px;text-transform:uppercase;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.owp .tlc .tn.tl{text-align:right}.owp .tlc .tn.win{color:var(--ok)}.owp .tli.gf .tlc .tn.win{color:var(--gold)}
+.owp .tlc .sc{font-family:var(--cond);font-size:17px;color:#fff;flex:0 0 auto}
+.owp .tlc .sc .x{color:var(--faint);margin:0 3px;font-size:12px}
+.owp .tlc .map{text-align:center;font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--or2);margin-top:8px}
+
+.owp .mdist{display:flex;flex-direction:column;gap:11px}
+.owp .mdrow{display:flex;align-items:center;gap:14px}
+.owp .mdrow .mn{width:110px;flex:0 0 auto;text-align:right;font-family:var(--cond);font-size:14px;text-transform:uppercase;color:var(--tx)}
+.owp .mdbar{flex:1;position:relative;height:28px;background:#160c1f;border:1px solid var(--line);overflow:hidden}
+.owp .mdbar i{position:absolute;inset:0 auto 0 0;height:100%;background:linear-gradient(90deg,rgba(255,90,31,.4),rgba(255,90,31,.15));border-right:1px solid var(--or)}
+.owp .mdbar .ct{position:absolute;inset:0;display:flex;align-items:center;padding:0 12px;font-family:var(--mono);font-size:11px;font-weight:700;color:#fff}
+
+.owp .bh{display:flex;gap:22px;align-items:center;background:var(--panel);border:1px solid var(--line-or);padding:22px;clip-path:polygon(0 0,100% 0,100% calc(100% - 16px),calc(100% - 16px) 100%,0 100%)}
+.owp .bh .binfo{flex:1;min-width:0}
+.owp .bh .sc{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gold)}
+.owp .bh .pl{font-family:var(--disp);font-size:20px;text-transform:uppercase;color:#fff;-webkit-text-stroke:1px var(--stroke);paint-order:stroke fill;margin-top:11px}
+.owp .bh .desc{font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:7px}
+.owp .bh .meta{display:flex;gap:14px;font-family:var(--mono);font-size:9px;color:var(--faint);margin-top:9px;text-transform:uppercase;letter-spacing:.06em;flex-wrap:wrap}
+.owp .bh .thumb{width:220px;aspect-ratio:16/9;flex:0 0 auto;position:relative;overflow:hidden;border:1px solid var(--line-or);clip-path:polygon(0 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%)}
+.owp .bh .thumb img{width:100%;height:100%;object-fit:cover;opacity:.8}
+.owp .bh .thumb::after{content:'▶';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:24px;text-shadow:0 0 16px var(--or)}
+
+.owp .rcta{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;padding:48px 0 8px}
+
+@media(max-width:1000px){.owp .agrid,.owp .sgrid{grid-template-columns:repeat(3,1fr)}.owp .bh{flex-direction:column}.owp .bh .thumb{width:100%}}
+@media(max-width:620px){.owp .agrid,.owp .sgrid{grid-template-columns:repeat(2,1fr)}
+  .owp .tl::before{left:18px}.owp .tli{width:100%;left:0;text-align:left;padding:0 0 0 44px}.owp .tli .dot{left:12px;right:auto}.owp .tli.l .dot{right:auto;left:12px}.owp .tli .tlc{margin:0;max-width:none}
+  .owp .tbl th:nth-child(5),.owp .tbl td:nth-child(5),.owp .tbl th:nth-child(6),.owp .tbl td:nth-child(6){display:none}
+  .owp .rhero h1{font-size:1.9rem}.owp .shead{margin-top:36px}}
+`;
 
 export function RecapContent({ tournament, leaderboard, matchesData, highlights, teamsMap = {} }: RecapContentProps) {
   const t = tournament;
   const gf = t.matches.find(m => m.id === "GF");
   const champion = gf?.winner_id ? t.teams.find(tm => tm.id === gf.winner_id) : null;
+  const championLogo = champion ? teamsMap[champion.id]?.logo : undefined;
 
-  // Aggregate stats
   const allPlayerStats = matchesData.flatMap(md => md.playerStats);
   const allMapStats = matchesData.flatMap(md => md.mapStats);
   const finishedMatches = matchesData.filter(md => md.match);
 
   const awards = calculateAwards(allPlayerStats);
 
-  const totalKills = allPlayerStats.reduce((sum, p) => sum + p.kills, 0);
-  const totalHeadshots = allPlayerStats.reduce((sum, p) => sum + p.headshot_kills, 0);
-  const totalRounds = allPlayerStats.reduce((sum, p) => sum + p.roundsplayed, 0) / 10 || 0; // divided by players per team roughly
-  const totalRoundsActual = allMapStats.reduce((sum, ms) => sum + ms.team1_score + ms.team2_score, 0);
+  const totalKills = allPlayerStats.reduce((s, p) => s + p.kills, 0);
+  const totalHeadshots = allPlayerStats.reduce((s, p) => s + p.headshot_kills, 0);
+  const totalRoundsActual = allMapStats.reduce((s, ms) => s + ms.team1_score + ms.team2_score, 0);
 
-  // Most competitive match (smallest score difference)
   let closestMatch: { match: Match; bracketMatch: BracketMatch; diff: number } | null = null;
   let biggestBlowout: { match: Match; bracketMatch: BracketMatch; diff: number } | null = null;
   for (const md of finishedMatches) {
     if (!md.match) continue;
     const diff = Math.abs(md.match.team1_score - md.match.team2_score);
-    if (!closestMatch || diff < closestMatch.diff) {
-      closestMatch = { match: md.match, bracketMatch: md.bracketMatch, diff };
-    }
-    if (!biggestBlowout || diff > biggestBlowout.diff) {
-      biggestBlowout = { match: md.match, bracketMatch: md.bracketMatch, diff };
-    }
+    if (!closestMatch || diff < closestMatch.diff) closestMatch = { match: md.match, bracketMatch: md.bracketMatch, diff };
+    if (!biggestBlowout || diff > biggestBlowout.diff) biggestBlowout = { match: md.match, bracketMatch: md.bracketMatch, diff };
   }
 
-  // Top 5 players — usar leaderboard (já rankeado por season do campeonato)
   const topPlayers = [...leaderboard]
     .sort((a, b) => (b.average_rating || 0) - (a.average_rating || 0))
     .slice(0, 5)
     .map(p => ({
-      name: p.name,
-      steamId: p.steamId,
-      totalKills: p.kills,
-      totalDeaths: p.deaths,
+      name: p.name, steamId: p.steamId, totalKills: p.kills,
       avgRating: p.average_rating || 0,
       kd: p.deaths > 0 ? p.kills / p.deaths : p.kills,
       hsp: p.hsp || 0,
     }));
 
-  // MVP from leaderboard
   const mvp = leaderboard.length > 0
     ? leaderboard.reduce((best, curr) => (curr.average_rating > best.average_rating ? curr : best), leaderboard[0])
     : null;
 
-  // Map distribution
   const mapCounts: Record<string, number> = {};
-  for (const ms of allMapStats) {
-    const name = ms.map_name || "unknown";
-    mapCounts[name] = (mapCounts[name] || 0) + 1;
-  }
-  // Also count from bracket veto data
+  for (const ms of allMapStats) { const name = ms.map_name || "unknown"; mapCounts[name] = (mapCounts[name] || 0) + 1; }
   for (const bm of t.matches) {
     if (bm.status === "finished" && bm.map && !allMapStats.some(ms => ms.match_id === bm.match_id)) {
       mapCounts[bm.map] = (mapCounts[bm.map] || 0) + 1;
@@ -118,519 +164,181 @@ export function RecapContent({ tournament, leaderboard, matchesData, highlights,
   const mapDistribution = Object.entries(mapCounts).sort((a, b) => b[1] - a[1]);
   const maxMapCount = mapDistribution.length > 0 ? mapDistribution[0][1] : 1;
 
-  // Timeline: sort bracket matches chronologically by match start_time or bracket order
   const timelineMatches = [...matchesData]
     .filter(md => md.match)
     .sort((a, b) => {
-      const aTime = a.match?.start_time ? new Date(a.match.start_time).getTime() : 0;
-      const bTime = b.match?.start_time ? new Date(b.match.start_time).getTime() : 0;
-      return aTime - bTime;
+      const at = a.match?.start_time ? new Date(a.match.start_time).getTime() : 0;
+      const bt = b.match?.start_time ? new Date(b.match.start_time).getTime() : 0;
+      return at - bt;
     });
 
-  // Best highlight
   const bestHighlight = highlights.length > 0
     ? highlights.reduce((best, curr) => (curr.score > best.score ? curr : best), highlights[0])
     : null;
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 pb-20">
-      {/* Back link */}
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="pt-6 mb-4">
-        <Link href={`/campeonato/${t.id}`} className="inline-flex items-center gap-2 text-orbital-text-dim hover:text-orbital-purple transition-colors font-[family-name:var(--font-jetbrains)] text-xs">
-          <ArrowLeft size={14} /> Voltar ao campeonato
-        </Link>
-      </motion.div>
+    <div className="owp">
+      <style>{OWP_CSS + RECAP_CSS}</style>
 
-      {/* ═══ HERO ═══ */}
-      <RevealSection className="mb-16">
-        <section className="relative py-12 sm:py-20 overflow-hidden rounded-lg">
-          <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute inset-0 bg-gradient-to-b from-orbital-purple/[0.03] via-transparent to-transparent" />
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[min(800px,200vw)] h-[400px] bg-orbital-purple/[0.04] blur-[150px] rounded-full" />
-          </div>
+      <div className="wrap">
+        {/* ===== HERO ===== */}
+        <section className="rhero">
+          <span className="badge">📊 Recap Completo</span>
+          <h1>{t.name}</h1>
 
-          <div className="relative text-center">
-            {/* Badge */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2 }}
-              className="flex items-center justify-center gap-2 mb-6"
-            >
-              <span className="flex items-center gap-2 px-4 py-2 bg-orbital-purple/10 border border-orbital-purple/30">
-                <BarChart3 size={14} className="text-orbital-purple" />
-                <span className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.25em] text-orbital-purple">RECAP COMPLETO</span>
-              </span>
-            </motion.div>
-
-            {/* Tournament name */}
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="font-[family-name:var(--font-russo)] text-3xl sm:text-5xl font-black tracking-wider mb-8"
-            >
-              <span className="text-orbital-purple glow-purple-text">{t.name}</span>
-            </motion.h1>
-
-            {/* Champion banner */}
-            {champion && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.5 }}
-                className="mt-4 relative bg-gradient-to-r from-yellow-500/[0.03] via-yellow-400/[0.08] to-yellow-500/[0.03] border border-yellow-500/20 overflow-hidden max-w-xl mx-auto"
-              >
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(234,179,8,0.05),transparent_70%)]" />
-                <div className="relative py-6 px-6 flex flex-col items-center gap-3">
-                  <div className="flex items-center gap-2">
-                    <div className="h-[1px] w-8 bg-gradient-to-r from-transparent to-yellow-400/50" />
-                    <Trophy size={18} className="text-yellow-400" />
-                    <span className="font-[family-name:var(--font-russo)] text-[0.6rem] tracking-[0.25em] text-yellow-400/80">
-                      CAMPEAO
-                    </span>
-                    <Trophy size={18} className="text-yellow-400" />
-                    <div className="h-[1px] w-8 bg-gradient-to-l from-transparent to-yellow-400/50" />
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 sm:w-20 sm:h-20 border border-yellow-500/30 flex items-center justify-center bg-[#0A0A0A]">
-                      <TeamLogo logo={champion ? teamsMap[champion.id]?.logo : undefined} size={48} className="w-12 h-12 sm:w-14 sm:h-14" />
-                    </div>
-                    <div>
-                      <h3
-                        className="font-[family-name:var(--font-russo)] text-xl sm:text-3xl font-black tracking-wider text-yellow-400"
-                        style={{ textShadow: "0 0 20px rgba(234,179,8,0.4)" }}
-                      >
-                        {champion.name}
-                      </h3>
-                      <p className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-yellow-400/60 mt-0.5">
-                        {t.name}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
-            {/* MVP */}
-            {mvp && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.6 }}
-                className="mt-4 relative bg-gradient-to-r from-red-500/[0.03] via-red-400/[0.08] to-red-500/[0.03] border border-red-500/20 overflow-hidden max-w-md mx-auto"
-              >
-                <div className="relative py-4 px-6 flex flex-col items-center gap-2">
-                  <div className="flex items-center gap-2">
-                    <div className="h-[1px] w-6 bg-gradient-to-r from-transparent to-red-400/50" />
-                    <Star size={14} className="text-red-400 fill-red-400" />
-                    <span className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.25em] text-red-400/80">
-                      MVP DO CAMPEONATO
-                    </span>
-                    <Star size={14} className="text-red-400 fill-red-400" />
-                    <div className="h-[1px] w-6 bg-gradient-to-l from-transparent to-red-400/50" />
-                  </div>
-                  <Link href={`/perfil/${mvp.steamId}`} className="group flex items-center gap-4">
-                    <div>
-                      <h3
-                        className="font-[family-name:var(--font-russo)] text-base sm:text-lg font-bold tracking-wider text-red-400 group-hover:text-orbital-text transition-colors"
-                        style={{ textShadow: "0 0 15px rgba(248,113,113,0.3)" }}
-                      >
-                        {mvp.name}
-                      </h3>
-                      <div className="flex items-center gap-3 font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim mt-0.5">
-                        <span>Rating <span className="text-red-400 font-bold">{(mvp.average_rating || 0).toFixed(2)}</span></span>
-                        <span>{mvp.kills}K / {mvp.deaths}D</span>
-                        <span>HS {Math.round(mvp.hsp || 0)}%</span>
-                      </div>
-                    </div>
-                  </Link>
-                </div>
-              </motion.div>
-            )}
-          </div>
-        </section>
-      </RevealSection>
-
-      {/* ═══ AWARDS ═══ */}
-      {awards.length > 0 && (
-        <RevealSection className="mb-16">
-          <SectionHeader icon={Star} title="DESTAQUES DO CAMPEONATO" />
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-            {awards.map((award, idx) => (
-              <motion.div
-                key={award.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.1 }}
-              >
-                <Link
-                  href={`/perfil/${award.steamId}`}
-                  className="block bg-[#0A0A0A] border border-orbital-border hover:border-orbital-purple/40 p-4 text-center transition-colors group h-full"
-                >
-                  <div className="text-3xl mb-2">{award.emoji}</div>
-                  <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.15em] text-orbital-purple mb-2">
-                    {award.title}
-                  </div>
-                  <div className="font-[family-name:var(--font-jetbrains)] text-sm text-orbital-text group-hover:text-orbital-purple transition-colors truncate">
-                    {award.playerName}
-                  </div>
-                  <div className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim mt-1">
-                    {award.value}
-                  </div>
-                  <div className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim/50 mt-0.5">
-                    {award.description}
-                  </div>
-                </Link>
-              </motion.div>
-            ))}
-          </div>
-        </RevealSection>
-      )}
-
-      {/* ═══ STATS GRID ═══ */}
-      <RevealSection className="mb-16">
-        <SectionHeader icon={Target} title="ESTATISTICAS GERAIS" />
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          <HudCard className="text-center" delay={0}>
-            <StatBox label="Partidas" value={finishedMatches.length} sub={`${t.matches.length} no bracket`} />
-          </HudCard>
-          <HudCard className="text-center" delay={0.05}>
-            <StatBox label="Total Kills" value={totalKills.toLocaleString()} />
-          </HudCard>
-          <HudCard className="text-center" delay={0.1}>
-            <StatBox label="Headshots" value={totalHeadshots.toLocaleString()} sub={totalKills > 0 ? `${Math.round((totalHeadshots / totalKills) * 100)}% HS` : ""} />
-          </HudCard>
-          <HudCard className="text-center" delay={0.15}>
-            <StatBox label="Total Rounds" value={totalRoundsActual.toLocaleString()} />
-          </HudCard>
-          <HudCard className="text-center" delay={0.2}>
-            <StatBox
-              label="Mais Acirrada"
-              value={closestMatch ? `${closestMatch.match.team1_score}-${closestMatch.match.team2_score}` : "-"}
-              sub={closestMatch ? closestMatch.bracketMatch.label : ""}
-            />
-          </HudCard>
-          <HudCard className="text-center" delay={0.25}>
-            <StatBox
-              label="Maior Goleada"
-              value={biggestBlowout ? `${biggestBlowout.match.team1_score}-${biggestBlowout.match.team2_score}` : "-"}
-              sub={biggestBlowout ? biggestBlowout.bracketMatch.label : ""}
-            />
-          </HudCard>
-        </div>
-      </RevealSection>
-
-      {/* ═══ TOP 5 PLAYERS ═══ */}
-      <RevealSection className="mb-16">
-        <SectionHeader icon={Users} title="TOP 5 JOGADORES" />
-        <HudCard label="RANKING">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-orbital-border">
-                  <th className="text-left py-3 px-3 font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.2em] text-orbital-purple">#</th>
-                  <th className="text-left py-3 px-3 font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.2em] text-orbital-purple">JOGADOR</th>
-                  <th className="text-center py-3 px-3 font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.2em] text-orbital-purple">RATING</th>
-                  <th className="text-center py-3 px-3 font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.2em] text-orbital-purple">K/D</th>
-                  <th className="text-center py-3 px-3 font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.2em] text-orbital-purple">HS%</th>
-                  <th className="text-center py-3 px-3 font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.2em] text-orbital-purple hidden sm:table-cell">KILLS</th>
-                </tr>
-              </thead>
-              <tbody>
-                {topPlayers.map((player, i) => (
-                  <motion.tr
-                    key={player.steamId}
-                    initial={{ opacity: 0, x: -20 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: i * 0.08 }}
-                    className="border-b border-orbital-border/50 hover:bg-orbital-purple/5 transition-colors"
-                  >
-                    <td className="py-3 px-3">
-                      <span className={`font-[family-name:var(--font-russo)] text-sm font-bold ${
-                        i === 0 ? "text-yellow-400" : i === 1 ? "text-gray-400" : i === 2 ? "text-amber-600" : "text-orbital-text-dim"
-                      }`}>
-                        {i + 1}
-                      </span>
-                    </td>
-                    <td className="py-3 px-3">
-                      <Link href={`/perfil/${player.steamId}`} className="hover:text-orbital-purple transition-colors">
-                        <span className="font-[family-name:var(--font-jetbrains)] text-sm text-orbital-text">
-                          {player.name}
-                        </span>
-                      </Link>
-                    </td>
-                    <td className="py-3 px-3 text-center">
-                      <span className={`font-[family-name:var(--font-jetbrains)] text-sm font-bold ${
-                        player.avgRating >= 1.2 ? "text-orbital-success" : player.avgRating >= 1.0 ? "text-orbital-text" : "text-orbital-danger"
-                      }`}>
-                        {player.avgRating.toFixed(2)}
-                      </span>
-                    </td>
-                    <td className="py-3 px-3 text-center">
-                      <span className="font-[family-name:var(--font-jetbrains)] text-sm text-orbital-text">
-                        {player.kd.toFixed(2)}
-                      </span>
-                    </td>
-                    <td className="py-3 px-3 text-center">
-                      <span className="font-[family-name:var(--font-jetbrains)] text-sm text-orbital-text">
-                        {player.hsp.toFixed(0)}%
-                      </span>
-                    </td>
-                    <td className="py-3 px-3 text-center hidden sm:table-cell">
-                      <span className="font-[family-name:var(--font-jetbrains)] text-sm text-orbital-text-dim">
-                        {player.totalKills}
-                      </span>
-                    </td>
-                  </motion.tr>
-                ))}
-                {topPlayers.length === 0 && (
-                  <tr>
-                    <td colSpan={6} className="py-8 text-center font-[family-name:var(--font-jetbrains)] text-sm text-orbital-text-dim">
-                      Nenhum dado de jogador disponivel
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </HudCard>
-      </RevealSection>
-
-      {/* ═══ TIMELINE ═══ */}
-      <RevealSection className="mb-16">
-        <SectionHeader icon={Clock} title="TIMELINE DO CAMPEONATO" />
-        <div className="relative">
-          {/* Central line */}
-          <div className="absolute left-1/2 top-0 bottom-0 w-[2px] bg-gradient-to-b from-orbital-purple/40 via-orbital-purple/20 to-orbital-purple/40 hidden sm:block" />
-          <div className="absolute left-4 top-0 bottom-0 w-[2px] bg-gradient-to-b from-orbital-purple/40 via-orbital-purple/20 to-orbital-purple/40 sm:hidden" />
-
-          <div className="space-y-6">
-            {timelineMatches.map((md, i) => {
-              const isRight = i % 2 === 1;
-              const isGrandFinal = md.bracketMatch.id === "GF";
-              const match = md.match!;
-              const mapName = md.mapStats[0]?.map_name || md.bracketMatch.map || null;
-              const startTime = match.start_time ? new Date(match.start_time) : null;
-
-              return (
-                <motion.div
-                  key={md.bracketMatch.id}
-                  initial={{ opacity: 0, x: isRight ? 30 : -30 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true, margin: "-40px" }}
-                  transition={{ duration: 0.5, delay: i * 0.05 }}
-                  className={`relative flex items-center ${isRight ? "sm:flex-row-reverse" : "sm:flex-row"}`}
-                >
-                  {/* Dot on the line */}
-                  <div className={`absolute z-10 w-4 h-4 border-2 ${
-                    isGrandFinal ? "border-yellow-400 bg-yellow-400/20" : "border-orbital-success bg-orbital-success/20"
-                  } sm:left-1/2 sm:-translate-x-1/2 left-4 -translate-x-1/2`} />
-
-                  {/* Spacer for mobile */}
-                  <div className="w-10 shrink-0 sm:hidden" />
-
-                  {/* Content card */}
-                  <div className={`flex-1 sm:w-[calc(50%-2rem)] ${isRight ? "sm:pr-8" : "sm:pl-8"}`}>
-                    <div className={`sm:${isRight ? "mr-auto" : "ml-auto"} sm:max-w-sm`}>
-                      <Link href={`/partidas/${match.id}`} className="block group">
-                        <div className={`border p-4 transition-all hover:scale-[1.02] ${
-                          isGrandFinal
-                            ? "border-yellow-500/30 bg-gradient-to-r from-yellow-500/[0.03] to-yellow-400/[0.05] hover:border-yellow-400/50"
-                            : "border-orbital-success/20 bg-orbital-card hover:border-orbital-purple/40"
-                        }`}>
-                          {/* Label */}
-                          <div className="flex items-center justify-between mb-2">
-                            <span className={`font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.15em] ${
-                              isGrandFinal ? "text-yellow-400" : "text-orbital-purple"
-                            }`}>
-                              {md.bracketMatch.label}
-                            </span>
-                            {startTime && (
-                              <span className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim">
-                                {startTime.toLocaleDateString("pt-BR", { day: "2-digit", month: "short", timeZone: "America/Sao_Paulo" })}
-                              </span>
-                            )}
-                          </div>
-
-                          {/* Score */}
-                          <div className="flex items-center justify-between gap-2">
-                            <div className="flex-1 text-right">
-                              <span className={`font-[family-name:var(--font-russo)] text-xs font-bold ${
-                                match.winner === match.team1_id ? (isGrandFinal ? "text-yellow-400" : "text-orbital-success") : "text-orbital-text-dim"
-                              }`}>
-                                {match.team1_string || getTeamName(t, md.bracketMatch.team1_id)}
-                              </span>
-                            </div>
-                            <div className="px-3 text-center shrink-0">
-                              <span className="font-[family-name:var(--font-jetbrains)] text-lg font-bold text-orbital-text">
-                                {match.team1_score}
-                              </span>
-                              <span className="text-orbital-text-dim mx-1">:</span>
-                              <span className="font-[family-name:var(--font-jetbrains)] text-lg font-bold text-orbital-text">
-                                {match.team2_score}
-                              </span>
-                            </div>
-                            <div className="flex-1">
-                              <span className={`font-[family-name:var(--font-russo)] text-xs font-bold ${
-                                match.winner === match.team2_id ? (isGrandFinal ? "text-yellow-400" : "text-orbital-success") : "text-orbital-text-dim"
-                              }`}>
-                                {match.team2_string || getTeamName(t, md.bracketMatch.team2_id)}
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* Map */}
-                          {mapName && (
-                            <div className="mt-2 text-center">
-                              <span className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-purple">
-                                {mapName.replace("de_", "").toUpperCase()}
-                              </span>
-                            </div>
-                          )}
-
-                          {/* View match link */}
-                          <div className="mt-2 text-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            <span className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-purple flex items-center justify-center gap-1">
-                              Ver detalhes <ChevronRight size={10} />
-                            </span>
-                          </div>
-                        </div>
-                      </Link>
-                    </div>
-                  </div>
-
-                  {/* Opposite side spacer (desktop) */}
-                  <div className="hidden sm:block flex-1 sm:w-[calc(50%-2rem)]" />
-                </motion.div>
-              );
-            })}
-
-            {timelineMatches.length === 0 && (
-              <div className="text-center py-12">
-                <p className="font-[family-name:var(--font-jetbrains)] text-sm text-orbital-text-dim">
-                  Nenhuma partida registrada neste campeonato
-                </p>
+          {champion && (
+            <div className="champ">
+              <div className="lbl2">🏆 Campeão 🏆</div>
+              <div className="who">
+                <span className="lg">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  {championLogo ? <img src={championLogo} alt="" /> : initial(champion.name)}
+                </span>
+                <div><div className="nm">{champion.name}</div><div className="ev">{t.name}</div></div>
               </div>
-            )}
-          </div>
-        </div>
-      </RevealSection>
+            </div>
+          )}
 
-      {/* ═══ MAP DISTRIBUTION ═══ */}
-      {mapDistribution.length > 0 && (
-        <RevealSection className="mb-16">
-          <SectionHeader icon={Crosshair} title="DISTRIBUICAO DE MAPAS" />
-          <HudCard label="MAPAS JOGADOS">
-            <div className="space-y-3 py-2">
-              {mapDistribution.map(([mapName, count], i) => (
-                <motion.div
-                  key={mapName}
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.08 }}
-                  className="flex items-center gap-4"
-                >
-                  <div className="w-24 sm:w-32 text-right shrink-0">
-                    <span className="font-[family-name:var(--font-russo)] text-[0.6rem] tracking-wider text-orbital-text">
-                      {mapName.replace("de_", "").toUpperCase()}
-                    </span>
-                  </div>
-                  <div className="flex-1 relative h-8 bg-[#0A0A0A] border border-orbital-border overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      whileInView={{ width: `${(count / maxMapCount) * 100}%` }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.8, delay: i * 0.1, ease: "easeOut" }}
-                      className="absolute inset-y-0 left-0 bg-gradient-to-r from-orbital-purple/30 to-orbital-purple/10 border-r border-orbital-purple/50"
-                    />
-                    <div className="relative h-full flex items-center px-3">
-                      <span className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text font-bold">
-                        {count}x
-                      </span>
-                    </div>
-                  </div>
-                </motion.div>
+          {mvp && (
+            <Link href={`/perfil/${mvp.steamId}`} className="rmvp" style={{ display: "block" }}>
+              <div className="lbl2">★ MVP do Campeonato ★</div>
+              <div className="nm">{mvp.name}</div>
+              <div className="st"><span>Rating <b>{(mvp.average_rating || 0).toFixed(2)}</b></span><span>{mvp.kills}K / {mvp.deaths}D</span><span>HS <b>{Math.round(mvp.hsp || 0)}%</b></span></div>
+            </Link>
+          )}
+        </section>
+
+        {/* ===== AWARDS ===== */}
+        {awards.length > 0 && (
+          <>
+            <div className="shead"><span className="ic">★</span><b>Destaques do Campeonato</b></div>
+            <div className="agrid">
+              {awards.map((a, i) => (
+                <Link key={a.id} href={`/perfil/${a.steamId}`} className={`acard ${i === 0 ? "mvp1" : ""}`}>
+                  <div className="emo">{a.emoji}</div>
+                  <div className="att">{a.title}</div>
+                  <div className="apl">{a.playerName}</div>
+                  <div className="aval">{a.value}</div>
+                  <div className="adesc">{a.description}</div>
+                </Link>
               ))}
             </div>
-          </HudCard>
-        </RevealSection>
-      )}
+          </>
+        )}
 
-      {/* ═══ BEST HIGHLIGHT ═══ */}
-      {bestHighlight && (
-        <RevealSection className="mb-16">
-          <SectionHeader icon={Zap} title="MELHOR HIGHLIGHT" />
-          <HudCard label="PLAY OF THE TOURNAMENT" glow>
-            <div className="flex flex-col sm:flex-row items-center gap-6 py-2">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2">
-                  <Star size={14} className="text-yellow-400 fill-yellow-400" />
-                  <span className="font-[family-name:var(--font-russo)] text-xs tracking-wider text-yellow-400">
-                    SCORE: {bestHighlight.score}
-                  </span>
-                </div>
-                <h3 className="font-[family-name:var(--font-russo)] text-base font-bold text-orbital-text mb-1">
-                  {bestHighlight.player_name}
-                </h3>
-                <p className="font-[family-name:var(--font-jetbrains)] text-xs text-orbital-text-dim mb-2">
-                  {bestHighlight.description || `${bestHighlight.kills_count} kills no round ${bestHighlight.round_number}`}
-                </p>
-                <div className="flex items-center gap-3 font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-orbital-text-dim">
-                  <span>{bestHighlight.team1_string} vs {bestHighlight.team2_string}</span>
-                  <span>{bestHighlight.kills_count} kills</span>
-                  <span>Round {bestHighlight.round_number}</span>
-                </div>
-                <Link
-                  href={`/partidas/${bestHighlight.match_id}`}
-                  className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 transition-all font-[family-name:var(--font-russo)] text-[0.65rem] tracking-wider text-orbital-purple"
-                >
-                  <Play size={12} /> VER PARTIDA
-                </Link>
+        {/* ===== ESTATÍSTICAS GERAIS ===== */}
+        <div className="shead"><span className="ic">◎</span><b>Estatísticas Gerais</b></div>
+        <div className="sgrid">
+          <div className="sbox"><div className="k">Partidas</div><div className="v">{finishedMatches.length}</div><div className="s">{t.matches.length} no bracket</div></div>
+          <div className="sbox"><div className="k">Total Kills</div><div className="v">{totalKills.toLocaleString("pt-BR")}</div><div className="s" /></div>
+          <div className="sbox"><div className="k">Headshots</div><div className="v">{totalHeadshots.toLocaleString("pt-BR")}</div><div className="s">{totalKills > 0 ? `${Math.round((totalHeadshots / totalKills) * 100)}% HS` : ""}</div></div>
+          <div className="sbox"><div className="k">Total Rounds</div><div className="v">{totalRoundsActual.toLocaleString("pt-BR")}</div><div className="s" /></div>
+          <div className="sbox"><div className="k">Mais Acirrada</div><div className="v">{closestMatch ? `${closestMatch.match.team1_score}-${closestMatch.match.team2_score}` : "—"}</div><div className="s">{closestMatch?.bracketMatch.label || ""}</div></div>
+          <div className="sbox"><div className="k">Maior Goleada</div><div className="v">{biggestBlowout ? `${biggestBlowout.match.team1_score}-${biggestBlowout.match.team2_score}` : "—"}</div><div className="s">{biggestBlowout?.bracketMatch.label || ""}</div></div>
+        </div>
+
+        {/* ===== TOP 5 ===== */}
+        <div className="shead"><span className="ic">⦿</span><b>Top 5 Jogadores</b></div>
+        <div className="tblwrap"><table className="tbl">
+          <thead><tr><th>#</th><th className="l">Jogador</th><th>Rating</th><th>K/D</th><th>HS%</th><th>Kills</th></tr></thead>
+          <tbody>
+            {topPlayers.length > 0 ? topPlayers.map((p, i) => (
+              <tr key={p.steamId}>
+                <td><span className={`rank ${i < 3 ? "top" : ""}`}>{i + 1}</span></td>
+                <td className="l"><Link href={`/perfil/${p.steamId}`} className="pl">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <span className="av"><img src={`/api/steam/avatar-image/${p.steamId}`} alt="" onError={onImgErr} /></span>
+                  <a>{p.name}</a></Link></td>
+                <td className={`b ${p.avgRating >= 1.2 ? "hi" : p.avgRating < 1 ? "lo" : ""}`}>{p.avgRating.toFixed(2)}</td>
+                <td>{p.kd.toFixed(2)}</td>
+                <td className="dim">{Math.round(p.hsp)}%</td>
+                <td className="dim">{p.totalKills}</td>
+              </tr>
+            )) : (
+              <tr><td colSpan={6} className="dim" style={{ textAlign: "center", padding: 24 }}>Nenhum dado de jogador disponível</td></tr>
+            )}
+          </tbody>
+        </table></div>
+
+        {/* ===== TIMELINE ===== */}
+        {timelineMatches.length > 0 && (
+          <>
+            <div className="shead"><span className="ic">◷</span><b>Timeline do Campeonato</b></div>
+            <div className="tl">
+              {timelineMatches.map((md, i) => {
+                const m = md.match!;
+                const isGF = md.bracketMatch.id === "GF";
+                const side = i % 2 === 0 ? "l" : "r";
+                const mp = md.mapStats[0]?.map_name || md.bracketMatch.map || null;
+                const date = m.start_time ? new Date(m.start_time).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", timeZone: "America/Sao_Paulo" }) : "";
+                const t1 = m.team1_string || getTeamName(t, md.bracketMatch.team1_id);
+                const t2 = m.team2_string || getTeamName(t, md.bracketMatch.team2_id);
+                const w1 = m.winner === m.team1_id, w2 = m.winner === m.team2_id;
+                return (
+                  <div key={md.bracketMatch.id} className={`tli ${side} ${isGF ? "gf" : ""}`}>
+                    <div className="dot" />
+                    <Link href={`/partidas/${m.id}`} className="tlc">
+                      <div className="top"><span className="ph">{isGF ? "🏆 " : ""}{md.bracketMatch.label}</span><span className="dt">{date}</span></div>
+                      <div className="mt">
+                        <span className={`tn tl ${w1 ? "win" : ""}`}>{t1}</span>
+                        <span className="sc">{m.team1_score}<span className="x">:</span>{m.team2_score}</span>
+                        <span className={`tn ${w2 ? "win" : ""}`}>{t2}</span>
+                      </div>
+                      {mp && <div className="map">{mapLabel(mp)}</div>}
+                    </Link>
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
+
+        {/* ===== DISTRIBUIÇÃO DE MAPAS ===== */}
+        {mapDistribution.length > 0 && (
+          <>
+            <div className="shead"><span className="ic">⌖</span><b>Distribuição de Mapas</b></div>
+            <div className="card pad" style={{ padding: "18px 20px" }}>
+              <div className="mdist">
+                {mapDistribution.map(([name, count]) => (
+                  <div className="mdrow" key={name}>
+                    <div className="mn">{mapLabel(name)}</div>
+                    <div className="mdbar"><i style={{ width: `${(count / maxMapCount) * 100}%` }} /><span className="ct">{count}x</span></div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* ===== MELHOR HIGHLIGHT ===== */}
+        {bestHighlight && (
+          <>
+            <div className="shead"><span className="ic">⚡</span><b>Melhor Highlight · Play of the Tournament</b></div>
+            <div className="bh">
+              <div className="binfo">
+                <div className="sc">★ Score: {bestHighlight.score}</div>
+                <div className="pl">{bestHighlight.player_name}</div>
+                <div className="desc">{bestHighlight.description || `${bestHighlight.kills_count} kills no round ${bestHighlight.round_number}`}</div>
+                <div className="meta"><span>{bestHighlight.team1_string} vs {bestHighlight.team2_string}</span><span>{bestHighlight.kills_count} kills</span><span>Round {bestHighlight.round_number}</span></div>
+                <Link href={`/partidas/${bestHighlight.match_id}`} className="btn sm prim" style={{ marginTop: 14 }}>▶ Ver Partida</Link>
               </div>
               {bestHighlight.thumbnail_file && (
-                <div className="w-full sm:w-48 h-28 border border-orbital-border overflow-hidden bg-[#0A0A0A] shrink-0">
-                  <img
-                    src={`/api/highlights-proxy/${bestHighlight.thumbnail_file}`}
-                    alt="Highlight thumbnail"
-                    className="w-full h-full object-cover opacity-80"
-                  />
+                <div className="thumb">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={`/api/highlights-proxy/${bestHighlight.thumbnail_file}`} alt="" />
                 </div>
               )}
             </div>
-          </HudCard>
-        </RevealSection>
-      )}
+          </>
+        )}
 
-      {/* ═══ BOTTOM CTA ═══ */}
-      <RevealSection>
-        <div className="text-center py-8">
-          <div className="flex items-center justify-center gap-4 flex-wrap">
-            <Link
-              href={`/campeonato/${t.id}`}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-orbital-purple/10 border border-orbital-purple/30 hover:border-orbital-purple/60 transition-all font-[family-name:var(--font-russo)] text-[0.6rem] tracking-wider text-orbital-purple"
-            >
-              <Swords size={14} /> VER BRACKET
-            </Link>
-            <Link
-              href="/leaderboard"
-              className="inline-flex items-center gap-2 px-6 py-3 border border-orbital-border hover:border-orbital-purple/30 transition-all font-[family-name:var(--font-russo)] text-[0.6rem] tracking-wider text-orbital-text-dim hover:text-orbital-purple"
-            >
-              <BarChart3 size={14} /> LEADERBOARD
-            </Link>
-            {highlights.length > 0 && (
-              <Link
-                href="/highlights"
-                className="inline-flex items-center gap-2 px-6 py-3 border border-orbital-border hover:border-orbital-purple/30 transition-all font-[family-name:var(--font-russo)] text-[0.6rem] tracking-wider text-orbital-text-dim hover:text-orbital-purple"
-              >
-                <Zap size={14} /> HIGHLIGHTS
-              </Link>
-            )}
-          </div>
+        {/* ===== CTA ===== */}
+        <div className="rcta">
+          <Link href={`/campeonato/${t.id}`} className="btn prim">⚔ Ver Bracket</Link>
+          <Link href="/leaderboard" className="btn ghost">📊 Leaderboard</Link>
+          {highlights.length > 0 && <Link href="/highlights" className="btn ghost">⚡ Highlights</Link>}
         </div>
-      </RevealSection>
+      </div>
     </div>
   );
 }
