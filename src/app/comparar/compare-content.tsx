@@ -27,7 +27,7 @@ const STATS: StatDef[] = [
 ];
 
 const CMP_CSS = `
-.owp .selcard{background:var(--panel);border:1px solid var(--line);border-top:2px solid var(--line-or);padding:20px;margin-bottom:28px;clip-path:polygon(0 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%)}
+.owp .selcard{position:relative;background:var(--panel);border:1px solid var(--line);border-top:2px solid var(--or);padding:20px;margin-bottom:28px}
 .owp .selgrid{display:grid;grid-template-columns:1fr auto 1fr;gap:18px;align-items:center}
 .owp .pselwrap{position:relative;width:100%}
 .owp .csel{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;height:46px;padding:0 16px;background:var(--bg2);border:1px solid var(--line);font-family:var(--cond);font-size:16px;text-transform:uppercase;letter-spacing:.02em;color:var(--tx);cursor:pointer;transition:.15s}
