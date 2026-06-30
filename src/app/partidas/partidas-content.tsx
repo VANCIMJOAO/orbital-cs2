@@ -71,7 +71,7 @@ const PARTIDAS_CSS = `
 .owp .feat .score{display:flex;align-items:center;gap:clamp(10px,1.6vw,26px);font-family:var(--disp)}
 .owp .feat .score b{font-size:clamp(2.8rem,5.6vw,4.8rem);line-height:.8;color:#fff;text-shadow:0 0 32px rgba(255,90,31,.35)}
 .owp .feat .score b.win{color:var(--ok);text-shadow:0 0 32px rgba(84,224,138,.4)}
-.owp .feat .score b.lo{color:var(--dim)}
+.owp .feat .score b.lo{color:#D8CEE6}
 .owp .feat .score .vs{font-family:var(--cond);font-size:clamp(1.6rem,3vw,2.6rem);color:var(--faint)}
 .owp .feat .score .dash{font-family:var(--cond);font-size:clamp(1.4rem,3vw,2.6rem);color:var(--faint)}
 .owp .feat .hmaps{display:flex;justify-content:center;gap:8px;margin-top:24px;flex-wrap:wrap}
@@ -81,9 +81,9 @@ const PARTIDAS_CSS = `
 
 .owp .maps{display:flex;flex-wrap:wrap;gap:6px}
 .owp .mchip{display:inline-flex;align-items:center;gap:7px;padding:2px 8px;background:rgba(255,255,255,.03);border:1px solid var(--line)}
-.owp .mchip .mn{font-family:var(--mono);font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+.owp .mchip .mn{font-family:var(--mono);font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;color:#fff;font-weight:700}
 .owp .mchip .ms{font-family:var(--mono);font-size:9.5px;font-weight:700;color:var(--tx)}
-.owp .mchip .ms .w{color:var(--ok)}.owp .mchip .ms .l{color:var(--faint)}.owp .mchip .ms .x{color:var(--faint);margin:0 1px}
+.owp .mchip .ms .w{color:var(--ok)}.owp .mchip .ms .l{color:var(--tx)}.owp .mchip .ms .x{color:var(--dim);margin:0 1px}
 .owp .mchip.livem{border-color:var(--line-or)}.owp .mchip.livem .mn{color:var(--or2)}
 
 .owp .fbar{display:flex;align-items:center;gap:11px;flex-wrap:wrap;margin:26px 0 28px}
@@ -128,11 +128,11 @@ const PARTIDAS_CSS = `
 .owp .mcard .nm{font-family:var(--cond);font-size:16px;line-height:1;text-transform:uppercase;letter-spacing:.02em;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .owp .mcard .nm.win{color:var(--ok)}
 .owp .mcard .sc{display:flex;align-items:center;gap:8px;font-family:var(--cond);font-size:23px}
-.owp .mcard .sc b{color:var(--tx)}.owp .mcard .sc b.w{color:var(--ok)}.owp .mcard .sc b.l{color:var(--dim)}
+.owp .mcard .sc b{color:var(--tx)}.owp .mcard .sc b.w{color:var(--ok)}.owp .mcard .sc b.l{color:var(--tx)}
 .owp .mcard .sc .x{font-size:14px;color:var(--faint)}
 .owp .mcard .sc .vs{font-family:var(--cond);font-size:19px;color:var(--faint)}
 .owp .mcard .ft{margin-top:auto;padding-top:13px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.owp .mcard .ft .info{margin-left:auto;font-family:var(--mono);font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint)}
+.owp .mcard .ft .info{margin-left:auto;font-family:var(--mono);font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:#E8E0F0}
 
 .owp .pag{display:flex;justify-content:center;align-items:center;gap:9px;padding:40px 0 8px}
 .owp .pag button{min-width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-family:var(--cond);font-size:15px;color:var(--dim);background:var(--panel);border:1px solid var(--line);transition:.15s;cursor:pointer;clip-path:polygon(6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%,0 6px)}
