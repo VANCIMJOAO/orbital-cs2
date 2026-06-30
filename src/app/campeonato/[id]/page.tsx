@@ -39,8 +39,10 @@ export default async function CampeonatoPage({ params }: { params: Promise<{ id:
   // Inscritos do campeonato (pra mostrar os times participantes + a line no flip
   // enquanto o bracket não foi montado — pending sem teams)
   try {
+    // Só times CONFIRMADOS (aprovado/pago) aparecem no campeonato público.
+    // Pendentes ficam só no painel admin até a aprovação.
     const [rows] = await dbPool.query(
-      "SELECT team_name, team_tag, logo_url, status, team_id, captain_name, captain_steam_id, players FROM inscricoes WHERE tournament_id = ? AND status != 'rejeitado' ORDER BY created_at ASC",
+      "SELECT team_name, team_tag, logo_url, status, team_id, captain_name, captain_steam_id, players FROM inscricoes WHERE tournament_id = ? AND status IN ('aprovado','pago') ORDER BY created_at ASC",
       [id]
     );
     inscritos = (rows as Record<string, unknown>[]).map(r => ({
@@ -63,10 +65,15 @@ export default async function CampeonatoPage({ params }: { params: Promise<{ id:
 
     initialTournament = tournaments.find(t => t.id === id) || null;
 
-    // Build teams map
+    // Build teams map (com roster ao vivo do auth_name — reflete edições do admin)
     const teams = teamsRes.teams || [];
     for (const t of teams) {
-      initialTeamsMap[t.id] = { name: t.name, logo: t.logo };
+      const players = t.auth_name ? Object.entries(t.auth_name).map(([steamId, val]) => ({
+        steamId,
+        name: typeof val === "string" ? val : val.name,
+        captain: typeof val === "string" ? 0 : (val.captain || 0),
+      })) : [];
+      initialTeamsMap[t.id] = { name: t.name, logo: t.logo, players };
     }
 
     // Fetch map scores for finished bracket matches

@@ -113,22 +113,32 @@ a.cmp-bkh:hover .nm{color:#a892ff}
 .cmp-kv .v{font-family:var(--font-russo),sans-serif;font-size:15px;margin-top:5px;color:#efedf4}
 `;
 
-function rosterOf(insc: InscritoLite): { name: string; steam_id: string; cap: boolean }[] {
+function rosterOf(insc: InscritoLite, teamsMap?: TeamsMap): { name: string; steam_id: string; cap: boolean }[] {
   const seen = new Set<string>();
   const out: { name: string; steam_id: string; cap: boolean }[] = [];
   const push = (name: string, steam_id: string, cap: boolean) => {
     if (!steam_id || seen.has(steam_id)) return;
     seen.add(steam_id); out.push({ name: name || steam_id, steam_id, cap });
   };
+  // 1) Preferir o roster AO VIVO do time (G5API auth_name) quando o time existe —
+  //    reflete correções feitas pelo admin na aba Times. Capitão primeiro.
+  const live = insc.team_id != null && teamsMap ? teamsMap[insc.team_id]?.players : null;
+  if (live && live.length) {
+    for (const p of [...live].sort((a, b) => (b.captain === 1 ? 1 : 0) - (a.captain === 1 ? 1 : 0))) {
+      push(p.name, p.steamId, p.captain === 1);
+    }
+    if (out.length) return out;
+  }
+  // 2) Fallback: snapshot da inscrição (inscrições antigas / time ainda não criado)
   if (insc.captain_steam_id) push(insc.captain_name || "Capitão", insc.captain_steam_id, true);
   for (const p of insc.players || []) push(p.name, p.steam_id, false);
   return out;
 }
 const initialOf = (s?: string) => (s || "?").trim().charAt(0).toUpperCase() || "?";
 
-function FlipSlot({ num, insc }: { num: number; insc: InscritoLite }) {
+function FlipSlot({ num, insc, teamsMap }: { num: number; insc: InscritoLite; teamsMap?: TeamsMap }) {
   const confirmed = insc.status === "aprovado" || insc.status === "pago";
-  const roster = rosterOf(insc);
+  const roster = rosterOf(insc, teamsMap);
   return (
     <div className="cmp-slot filled flip">
       <span className="cmp-num">{String(num).padStart(2, "0")}</span>
@@ -186,7 +196,7 @@ function LobbyTeams({ inscritos, teamsMap }: { inscritos: InscritoLite[]; teamsM
       <style>{LOBBY_CSS}</style>
       <div className="cmp-slotgrid">
         {slots.map((insc, i) => insc ? (
-          <FlipSlot key={i} num={i + 1} insc={insc} />
+          <FlipSlot key={i} num={i + 1} insc={insc} teamsMap={teamsMap} />
         ) : (
           <div key={i} className="cmp-slot empty">
             <span className="cmp-num">{String(i + 1).padStart(2, "0")}</span>

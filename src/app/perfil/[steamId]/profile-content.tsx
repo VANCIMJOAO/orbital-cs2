@@ -89,7 +89,7 @@ export function ProfileContent({ steamId }: { steamId: string }) {
   const [matchHistory, setMatchHistory] = useState<MatchDataPoint[]>([]);
   const [avatar, setAvatar] = useState<string | null>(null);
   const [userName, setUserName] = useState<string | null>(null);
-  const [playerTeam, setPlayerTeam] = useState<{ id: number; name: string; logo: string | null } | null>(null);
+  const [playerTeams, setPlayerTeams] = useState<{ id: number; name: string; logo: string | null }[]>([]);
   const [userRole, setUserRole] = useState<{ admin: boolean; superAdmin: boolean }>({ admin: false, superAdmin: false });
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<TabKey>("overview");
@@ -125,16 +125,18 @@ export function ProfileContent({ steamId }: { steamId: string }) {
       .then(r => r.ok ? r.json() : null)
       .then(d => {
         const teams = d?.teams || [];
+        const found: { id: number; name: string; logo: string | null }[] = [];
+        let nick: string | null = null;
         for (const t of teams) {
           if (!t.auth_name) continue;
           const entry = t.auth_name[steamId];
           if (entry) {
-            const nick = typeof entry === "string" ? entry : entry.name;
-            if (nick) setUserName(nick);
-            setPlayerTeam({ id: t.id, name: t.name, logo: t.logo || null });
-            return;
+            if (!nick) nick = typeof entry === "string" ? entry : entry.name;
+            found.push({ id: t.id, name: t.name, logo: t.logo || null });
           }
         }
+        if (nick) setUserName(nick);
+        setPlayerTeams(found);
       })
       .catch(() => {});
   }, [steamId]);
@@ -412,6 +414,7 @@ export function ProfileContent({ steamId }: { steamId: string }) {
 
   const steamProfileUrl = `https://steamcommunity.com/profiles/${steamId}`;
   const isCreator = steamId === "76561198023055702";
+  const primaryTeam = playerTeams[0] || null;
 
   // helper: extrai adversário e resultado de uma partida
   function matchView(match: Match) {
@@ -443,12 +446,12 @@ export function ProfileContent({ steamId }: { steamId: string }) {
           </div>
           <div className="owp-pinfo">
             <div className="owp-row1">
-              {playerTeam && (
-                <Link href={`/times/${playerTeam.id}`} className="owp-tag">
-                  {playerTeam.logo && <Image src={playerTeam.logo} alt={playerTeam.name} width={17} height={17} className="object-contain" unoptimized />}
-                  {playerTeam.name}
+              {playerTeams.map(t => (
+                <Link key={t.id} href={`/times/${t.id}`} className="owp-tag">
+                  {t.logo && <Image src={t.logo} alt={t.name} width={17} height={17} className="object-contain" unoptimized />}
+                  {t.name}
                 </Link>
-              )}
+              ))}
               {isCreator && <span className="owp-tag creator">★ CRIADOR</span>}
               {userRole.admin && !isCreator && <span className="owp-tag admin">ADMIN</span>}
               {stats.mvp > 0 && <span className="owp-tag mvp" style={{ cursor: "help" }} {...hintProps("Estrelas de MVP de round — o CS dá uma estrela ao destaque de cada round (não é 'melhor da partida').")}>★ {stats.mvp} {stats.mvp === 1 ? "Estrela MVP" : "Estrelas MVP"}</span>}
@@ -553,7 +556,7 @@ export function ProfileContent({ steamId }: { steamId: string }) {
                             <span className={`w ${v.isLive ? "live" : v.won ? "v" : v.lost ? "d" : ""}`} />
                             <div className="opp">
                               <span className="t">vs {v.oppName}</span>
-                              <span className="ev">{v.ext.map_name ? mapLabel("de_" + v.ext.map_name.split(",")[0].trim()) : (playerTeam ? playerTeam.name : "Partida")}</span>
+                              <span className="ev">{v.ext.map_name ? mapLabel("de_" + v.ext.map_name.split(",")[0].trim()) : (primaryTeam ? primaryTeam.name : "Partida")}</span>
                             </div>
                             <span className="sc">{v.ext.round_score || `${match.team1_score} - ${match.team2_score}`}</span>
                             <span className={`rt ${v.agg && v.agg.rating >= 1.1 ? "hi" : v.agg && v.agg.rating < 0.9 ? "lo" : ""}`}>{v.agg ? v.agg.rating.toFixed(2) : "—"}</span>
@@ -604,7 +607,7 @@ export function ProfileContent({ steamId }: { steamId: string }) {
                     return (
                       <div className="mr" key={match.id} onClick={() => window.location.href = `/partidas/${match.id}`}>
                         <span className={`w ${v.isLive ? "live" : v.won ? "v" : v.lost ? "d" : ""}`} />
-                        <div className="opp"><span className="t">vs {v.oppName}</span><span className="ev">{playerTeam ? `como ${playerTeam.name}` : (v.isLive ? "ao vivo" : v.won ? "vitória" : v.lost ? "derrota" : "—")}</span></div>
+                        <div className="opp"><span className="t">vs {v.oppName}</span><span className="ev">{primaryTeam ? `como ${primaryTeam.name}` : (v.isLive ? "ao vivo" : v.won ? "vitória" : v.lost ? "derrota" : "—")}</span></div>
                         <div className="mp"><span className="th" style={{ backgroundImage: `url('${mapImg(v.firstMap)}')` }} />{v.ext.map_name ? mapLabel("de_" + v.ext.map_name.split(",")[0].trim()) : "—"}</div>
                         <span className={`sc ${v.won ? "win" : v.lost ? "loss" : ""}`}>{v.ext.round_score || `${match.team1_score} - ${match.team2_score}`}</span>
                         <span className="kda">{v.agg ? <><b>{v.agg.kills}</b>—{v.agg.deaths}—<b>{v.agg.assists}</b></> : "—"}</span>
