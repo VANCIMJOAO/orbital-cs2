@@ -32,7 +32,8 @@ const CMP_CSS = `
 .owp .pselwrap{position:relative;width:100%}
 .owp .csel{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;height:46px;padding:0 16px;background:var(--bg2);border:1px solid var(--line);font-family:var(--cond);font-size:16px;text-transform:uppercase;letter-spacing:.02em;color:var(--tx);cursor:pointer;transition:.15s}
 .owp .csel:hover{border-color:var(--or)}
-.owp .csel.empty{color:var(--faint)}
+.owp .csel .cval{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.owp .csel .cval.dim{color:var(--faint)}
 .owp .csel .chev{color:var(--or);font-size:12px;transition:.15s}
 .owp .csel .chev.open{transform:rotate(180deg)}
 .owp .selvs{font-family:var(--disp);font-size:20px;color:var(--vio2)}
@@ -119,7 +120,7 @@ function PlayerSelect({ players, selected, onSelect, placeholder, otherSelected 
   return (
     <div className="pselwrap">
       <button className="csel" onClick={() => setOpen(o => !o)}>
-        <span className={selected ? "" : "empty"}>{selected ? selected.name : placeholder}</span>
+        <span className={`cval ${selected ? "" : "dim"}`}>{selected ? selected.name : placeholder}</span>
         <span className={`chev ${open ? "open" : ""}`}>▾</span>
       </button>
       {open && (
