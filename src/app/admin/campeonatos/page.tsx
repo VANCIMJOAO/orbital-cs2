@@ -187,6 +187,7 @@ export default function AdminCampeonatos() {
     setLocation(t.location || "");
     setPrizePool(t.prize_pool || "");
     setDescription(t.description || "");
+    setSpectatorAuth(t.spectator_auth || "");
     setMapPool(t.map_pool?.length ? t.map_pool : getDefaultMapPool());
     setShowCreate(false);
     setFinalizeId(null);
@@ -213,6 +214,7 @@ export default function AdminCampeonatos() {
         location: location || null,
         prize_pool: prizePool || null,
         description: description || null,
+        spectator_auth: spectatorAuth || null,
         map_pool: mapPool,
       };
       const res = await fetch("/api/tournaments", {
@@ -372,6 +374,7 @@ export default function AdminCampeonatos() {
                 // abre limpo (não herda valores de uma edição anterior)
                 setEditId(null); setName(""); setSeasonId(""); setStartDate(""); setEndDate("");
                 setLocation(""); setPrizePool(""); setDescription(""); setMapPool(getDefaultMapPool());
+                setSpectatorAuth("76561198806637089;ORBITAL ROXA");
               } else {
                 setEditId(null);
               }
@@ -413,6 +416,13 @@ export default function AdminCampeonatos() {
               <label className={labelClass}>NOME DO CAMPEONATO</label>
               <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Ex: ORBITAL ROXA CUP #2" className={`${inputClass} placeholder:text-orbital-text-dim/50`} />
             </div>
+            <div>
+              <label className={labelClass}>SEASON (opcional)</label>
+              <select value={seasonId} onChange={e => setSeasonId(e.target.value)} className={inputClass}>
+                <option value="">Nenhuma</option>
+                {seasons.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+              </select>
+            </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className={labelClass}>DATA INÍCIO (opcional)</label>
@@ -435,7 +445,12 @@ export default function AdminCampeonatos() {
             </div>
             <div>
               <label className={labelClass}>DESCRIÇÃO (opcional)</label>
-              <input type="text" value={description} onChange={e => setDescription(e.target.value)} className={inputClass} />
+              <textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Descrição breve do campeonato..." rows={2} className={`${inputClass} placeholder:text-orbital-text-dim/50 resize-none`} />
+            </div>
+            <div>
+              <label className={labelClass}>SPECTATOR AUTH (SteamID64;Nome)</label>
+              <input type="text" value={spectatorAuth} onChange={e => setSpectatorAuth(e.target.value)} placeholder="76561198806637089;ORBITAL ROXA" className={`${inputClass} placeholder:text-orbital-text-dim/50`} />
+              <p className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim/50 mt-1">SteamID64 da conta que fará a transmissão ao vivo</p>
             </div>
             <div>
               <label className={labelClass}>
