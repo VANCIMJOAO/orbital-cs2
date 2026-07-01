@@ -509,14 +509,19 @@ function MvpCard({ mvp }: { mvp: { steamId: string; name: string; average_rating
 /* ── estilos (escopado em .ovr) ───────────────────────────────────── */
 const CSS = `
 .ovr{
-  --ovr-bg:#0A0A0C; --ovr-bg2:#101014; --ovr-line:rgba(255,255,255,.09); --ovr-line2:rgba(255,255,255,.16);
+  --ovr-bg:#1B0F23; --ovr-bg2:#150A1D; --ovr-line:rgba(255,255,255,.09); --ovr-line2:rgba(255,255,255,.16);
   --ovr-tx:#F4F2F7; --ovr-dim:#86838F; --ovr-acc:#7C5CFF; --ovr-acc2:#A892FF; --ovr-live:#FF3B57;
   --ovr-up:#4ADE80; --ovr-down:#FB7185;
   --owp-or:#FF5A1F; --owp-or2:#FF8A3D; --owp-gold:#FFC24B; --owp-vio2:#A892FF;
   --owp-panel:#22132E; --owp-panel2:#2A1838; --owp-line-or:rgba(255,90,31,.32); --owp-faint:#6B5A7C; --owp-stroke:#241038;
   --owp-cy:#25D0E8; --owp-pk:#FF5C9D;
   --f-disp:var(--font-russo), sans-serif; --f-body:var(--font-chakra), sans-serif; --f-cond:var(--font-anton), sans-serif;
-  position:relative; margin-top:-5rem; background:var(--ovr-bg); color:var(--ovr-tx);
+  position:relative; margin-top:-5rem; color:var(--ovr-tx);
+  background:var(--ovr-bg);
+  background-image:
+    radial-gradient(120% 70% at 88% -4%, rgba(255,90,31,.14), transparent 52%),
+    radial-gradient(90% 60% at 0% 2%, rgba(124,92,255,.13), transparent 55%);
+  background-attachment:fixed;
   font-family:var(--f-body); overflow:hidden; padding:0 clamp(20px,5vw,72px);
 }
 .ovr *{ box-sizing:border-box; }
@@ -567,7 +572,7 @@ const CSS = `
   -webkit-mask-image:linear-gradient(to bottom,#000 100%,transparent 100%); mask-image:linear-gradient(to bottom,#000 100%,transparent 100%); }
 .ovr-hero-img img{ width:100%; height:100%; object-fit:cover; object-position:center 28%; filter:grayscale(1) contrast(1.1) brightness(.42); opacity:.34; animation:ovr-kenburns 24s ease-in-out infinite alternate; }
 .ovr-hero-img::after{ content:''; position:absolute; inset:0; mix-blend-mode:color; background:linear-gradient(120deg,#FFC04C 0%,#FF8A2B 48%,#F2622E 100%); opacity:.62; }
-.ovr-hero-img::before{ content:''; position:absolute; inset:0; z-index:1; background:linear-gradient(180deg, rgba(10,10,12,.55) 0%, rgba(10,10,12,.32) 45%, rgba(10,10,12,.9) 100%); }
+.ovr-hero-img::before{ content:''; position:absolute; inset:0; z-index:1; background:linear-gradient(180deg, rgba(27,15,35,.55) 0%, rgba(27,15,35,.32) 45%, rgba(27,15,35,.95) 100%); }
 @keyframes ovr-kenburns{ 0%{ transform:scale(1.02) translateY(0); } 100%{ transform:scale(1.14) translateY(-2%); } }
 .ovr-scroll{ margin-top:auto; align-self:center; padding-top:48px; pointer-events:none; display:flex; flex-direction:column; align-items:center; gap:10px; }
 .ovr-scroll span{ writing-mode:vertical-rl; font-family:var(--f-body); font-weight:600; font-size:10px; letter-spacing:.4em; text-transform:uppercase; color:var(--ovr-dim); }
