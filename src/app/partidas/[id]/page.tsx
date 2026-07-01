@@ -62,11 +62,13 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
     // Find bracket match from tournament (for veto history + map info)
     let bracketMatch: BracketMatch | null = null;
     let tournamentName: string | null = null;
+    let tournamentMapPool: string[] | null = null;
     for (const t of tournaments) {
       const bm = t.matches.find(m => m.match_id === matchId);
       if (bm) {
         bracketMatch = bm;
         tournamentName = t.name;
+        tournamentMapPool = t.map_pool?.length ? t.map_pool : null;
         break;
       }
     }
@@ -81,6 +83,7 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
         server={serverRes?.server || null}
         bracketMatch={bracketMatch}
         tournamentName={tournamentName}
+        tournamentMapPool={tournamentMapPool}
       />
     );
   } catch {

@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Loader2, Check, AlertCircle, ChevronUp, Trophy, Trash2, Eye, ArrowRight, ArrowLeft, Users, Radio, ClipboardList } from "lucide-react";
+import { Plus, Loader2, Check, AlertCircle, ChevronUp, Trophy, Trash2, Eye, ArrowRight, ArrowLeft, Users, Radio, ClipboardList, Pencil } from "lucide-react";
 import { HudCard } from "@/components/hud-card";
 import Link from "next/link";
 import { useEffect, useState, useCallback } from "react";
@@ -27,6 +27,8 @@ export default function AdminCampeonatos() {
   const [finalizeId, setFinalizeId] = useState<string | null>(null);
   const [showOpen, setShowOpen] = useState(false);
   const [openSubmitting, setOpenSubmitting] = useState(false);
+  // Edição de campeonato existente (infos + map pool, SEM tocar em times/bracket)
+  const [editId, setEditId] = useState<string | null>(null);
 
   // Wizard state
   const [showCreate, setShowCreate] = useState(false);
@@ -122,7 +124,7 @@ export default function AdminCampeonatos() {
         mode: "presencial",
         teams: [],
         matches: [],
-        map_pool: getDefaultMapPool(),
+        map_pool: mapPool.length >= 7 ? mapPool : getDefaultMapPool(),
         players_per_team: 5,
         created_at: new Date().toISOString(),
         status: "pending",
@@ -173,6 +175,65 @@ export default function AdminCampeonatos() {
     setFeedback(null);
     setShowCreate(true);
     setWizardStep(1); // pula direto pra seleção de times
+  };
+
+  // Edita infos + map pool de um campeonato existente SEM tocar em times/bracket/status.
+  const startEdit = (t: Tournament) => {
+    setEditId(t.id);
+    setName(t.name);
+    setSeasonId(t.season_id ? String(t.season_id) : "");
+    setStartDate(t.start_date || "");
+    setEndDate(t.end_date || "");
+    setLocation(t.location || "");
+    setPrizePool(t.prize_pool || "");
+    setDescription(t.description || "");
+    setMapPool(t.map_pool?.length ? t.map_pool : getDefaultMapPool());
+    setShowCreate(false);
+    setFinalizeId(null);
+    setFeedback(null);
+    setShowOpen(true);
+    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleEditSave = async () => {
+    const existing = tournaments.find(t => t.id === editId);
+    if (!existing) return;
+    if (!name.trim()) { setFeedback({ type: "error", msg: "Dê um nome ao campeonato." }); return; }
+    if (mapPool.length < 7) { setFeedback({ type: "error", msg: "Map pool precisa de pelo menos 7 mapas (veto BO1/BO3)." }); return; }
+    setOpenSubmitting(true);
+    setFeedback(null);
+    try {
+      // Merge: só infos + map pool. Times, bracket, status, formato etc. ficam intactos.
+      const updated: Tournament = {
+        ...existing,
+        name: name.trim(),
+        season_id: seasonId ? parseInt(seasonId) : null,
+        start_date: startDate || null,
+        end_date: endDate || null,
+        location: location || null,
+        prize_pool: prizePool || null,
+        description: description || null,
+        map_pool: mapPool,
+      };
+      const res = await fetch("/api/tournaments", {
+        method: "PUT",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updated),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        setFeedback({ type: "error", msg: err.error || `Erro ao salvar (${res.status})` });
+        setOpenSubmitting(false);
+        return;
+      }
+      setFeedback({ type: "success", msg: `"${updated.name}" atualizado!` });
+      await fetchData();
+      setTimeout(() => { setShowOpen(false); setEditId(null); }, 1200);
+    } catch (err) {
+      setFeedback({ type: "error", msg: err instanceof Error ? err.message : "Erro ao salvar" });
+    }
+    setOpenSubmitting(false);
   };
 
   const handleCreate = async () => {
@@ -305,7 +366,17 @@ export default function AdminCampeonatos() {
         </h2>
         <div className="flex items-center gap-2">
           <button
-            onClick={() => { setShowOpen(o => !o); setShowCreate(false); setFinalizeId(null); setFeedback(null); }}
+            onClick={() => {
+              const next = !showOpen;
+              if (next) {
+                // abre limpo (não herda valores de uma edição anterior)
+                setEditId(null); setName(""); setSeasonId(""); setStartDate(""); setEndDate("");
+                setLocation(""); setPrizePool(""); setDescription(""); setMapPool(getDefaultMapPool());
+              } else {
+                setEditId(null);
+              }
+              setShowOpen(next); setShowCreate(false); setFinalizeId(null); setFeedback(null);
+            }}
             className="flex items-center gap-2 px-4 py-2 bg-orbital-success/10 border border-orbital-success/30 hover:border-orbital-success/60 transition-all font-[family-name:var(--font-russo)] text-[0.6rem] tracking-wider text-orbital-success"
           >
             {showOpen ? <ChevronUp size={14} /> : <ClipboardList size={14} />}
@@ -326,13 +397,17 @@ export default function AdminCampeonatos() {
         </div>
       </div>
 
-      {/* Abrir inscrições — cria campeonato pending sem bracket */}
+      {/* Abrir inscrições (novo) / Editar campeonato existente */}
       {showOpen && (
-        <HudCard label="ABRIR INSCRIÇÕES" className="mb-6">
+        <HudCard label={editId ? `EDITAR — ${tournaments.find(t => t.id === editId)?.name ?? ""}` : "ABRIR INSCRIÇÕES"} className="mb-6">
           <div className="space-y-4 py-2">
             <p className="font-[family-name:var(--font-jetbrains)] text-[0.65rem] text-orbital-text-dim/70">
-              Cria o campeonato já aberto pra receber inscrições em <span className="text-orbital-purple">/inscricao</span>, sem os times.
-              Depois você monta o bracket com os confirmados clicando em <span className="text-orbital-success">MONTAR BRACKET</span>.
+              {editId ? (
+                <>Edita infos e map pool. <span className="text-orbital-warning">Times, bracket e status não são alterados.</span></>
+              ) : (
+                <>Cria o campeonato já aberto pra receber inscrições em <span className="text-orbital-purple">/inscricao</span>, sem os times.
+                Depois você monta o bracket com os confirmados clicando em <span className="text-orbital-success">MONTAR BRACKET</span>.</>
+              )}
             </p>
             <div>
               <label className={labelClass}>NOME DO CAMPEONATO</label>
@@ -348,6 +423,39 @@ export default function AdminCampeonatos() {
                 <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className={inputClass} />
               </div>
             </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className={labelClass}>LOCAL (opcional)</label>
+                <input type="text" value={location} onChange={e => setLocation(e.target.value)} placeholder="Ex: Ribeirão Preto - SP" className={`${inputClass} placeholder:text-orbital-text-dim/50`} />
+              </div>
+              <div>
+                <label className={labelClass}>PREMIAÇÃO (opcional)</label>
+                <input type="text" value={prizePool} onChange={e => setPrizePool(e.target.value)} placeholder="Ex: R$ 2.000" className={`${inputClass} placeholder:text-orbital-text-dim/50`} />
+              </div>
+            </div>
+            <div>
+              <label className={labelClass}>DESCRIÇÃO (opcional)</label>
+              <input type="text" value={description} onChange={e => setDescription(e.target.value)} className={inputClass} />
+            </div>
+            <div>
+              <label className={labelClass}>
+                MAP POOL <span className="text-orbital-purple">({mapPool.length}/{allMaps.length})</span> — mínimo 7
+              </label>
+              <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                {allMaps.map(map => (
+                  <button
+                    key={map} type="button" onClick={() => toggleMap(map)}
+                    className={`px-3 py-2.5 border font-[family-name:var(--font-jetbrains)] text-xs transition-all ${
+                      mapPool.includes(map)
+                        ? "bg-orbital-purple/20 border-orbital-purple/50 text-orbital-purple"
+                        : "bg-orbital-bg border-orbital-border text-orbital-text-dim hover:border-orbital-purple/30"
+                    }`}
+                  >
+                    {map.replace("de_", "").toUpperCase()}
+                  </button>
+                ))}
+              </div>
+            </div>
             {feedback && (
               <div className={`flex items-center gap-2 px-4 py-3 border font-[family-name:var(--font-jetbrains)] text-xs ${
                 feedback.type === "success" ? "bg-orbital-success/10 border-orbital-success/30 text-orbital-success" : "bg-orbital-danger/10 border-orbital-danger/30 text-orbital-danger"
@@ -357,12 +465,12 @@ export default function AdminCampeonatos() {
               </div>
             )}
             <button
-              onClick={openInscricoes}
-              disabled={openSubmitting || !name.trim()}
+              onClick={editId ? handleEditSave : openInscricoes}
+              disabled={openSubmitting || !name.trim() || mapPool.length < 7}
               className="flex items-center gap-2 px-6 py-2.5 bg-orbital-success/15 border border-orbital-success/40 hover:border-orbital-success transition-all font-[family-name:var(--font-russo)] text-[0.6rem] tracking-wider text-orbital-success disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              {openSubmitting ? <Loader2 size={14} className="animate-spin" /> : <ClipboardList size={14} />}
-              {openSubmitting ? "ABRINDO..." : "ABRIR INSCRIÇÕES"}
+              {openSubmitting ? <Loader2 size={14} className="animate-spin" /> : editId ? <Check size={14} /> : <ClipboardList size={14} />}
+              {openSubmitting ? "SALVANDO..." : editId ? "SALVAR ALTERAÇÕES" : "ABRIR INSCRIÇÕES"}
             </button>
           </div>
         </HudCard>
@@ -730,6 +838,13 @@ export default function AdminCampeonatos() {
                       <Trophy size={12} /> MONTAR BRACKET
                     </button>
                   )}
+                  <button
+                    onClick={() => startEdit(t)}
+                    className="p-2 text-orbital-text-dim hover:text-orbital-purple transition-colors"
+                    title="Editar infos e map pool"
+                  >
+                    <Pencil size={14} />
+                  </button>
                   <Link
                     href={`/admin/campeonato/${t.id}`}
                     className="p-2 text-orbital-text-dim hover:text-orbital-purple transition-colors"

@@ -26,9 +26,10 @@ interface Props {
   server: Server | null;
   bracketMatch?: BracketMatch | null;
   tournamentName?: string | null;
+  tournamentMapPool?: string[] | null;
 }
 
-export function MatchDetailContent({ match: initialMatch, playerStats: initialStats, mapStats: initialMapStats, team1, team2, server, bracketMatch, tournamentName }: Props) {
+export function MatchDetailContent({ match: initialMatch, playerStats: initialStats, mapStats: initialMapStats, team1, team2, server, bracketMatch, tournamentName, tournamentMapPool }: Props) {
   const [match, setMatch] = useState(initialMatch);
   const [playerStats, setPlayerStats] = useState(initialStats || []);
   const [mapStats, setMapStats] = useState(initialMapStats || []);
@@ -824,8 +825,11 @@ export function MatchDetailContent({ match: initialMatch, playerStats: initialSt
         // Find leftover maps: maps in pool not mentioned in veto list
         // BO1: 6 bans → 1 leftover; BO3: 4 bans + 2 picks → 1 leftover (decider)
         const vetoMaps = new Set(vetoList.map(v => v.map));
-        const CS2_MAP_POOL = ["de_ancient", "de_anubis", "de_dust2", "de_inferno", "de_mirage", "de_nuke", "de_overpass"];
-        const leftoverMaps = CS2_MAP_POOL.filter(m => !vetoMaps.has(m));
+        // Pool do TORNEIO da partida (ex.: Cup #2 tem de_cache); fallback pro active duty
+        const vetoPool = tournamentMapPool?.length
+          ? tournamentMapPool
+          : ["de_ancient", "de_anubis", "de_dust2", "de_inferno", "de_mirage", "de_nuke", "de_overpass"];
+        const leftoverMaps = vetoPool.filter(m => !vetoMaps.has(m));
         // Fallback for BO1 with bracketMatch.map
         const leftoverMap = leftoverMaps.length === 0 && bracketMatch?.map && !vetoMaps.has(bracketMatch.map)
           ? bracketMatch.map
