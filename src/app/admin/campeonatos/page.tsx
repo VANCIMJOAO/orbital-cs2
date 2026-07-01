@@ -14,6 +14,7 @@ import {
   getDefaultMapPool,
 } from "@/lib/tournament";
 import { getTargetTournament, buildConfirmedTeams, isTeamConfirmed, type InscricaoLite } from "@/lib/confirmados";
+import { MAP_IMAGES } from "@/lib/maps";
 
 export default function AdminCampeonatos() {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
@@ -276,7 +277,9 @@ export default function AdminCampeonatos() {
   const inputClass = "w-full bg-[#0A0A0A] border border-orbital-border text-orbital-text font-[family-name:var(--font-jetbrains)] text-sm px-3 py-2.5 focus:border-orbital-purple/50 focus:outline-none transition-colors";
   const labelClass = "block font-[family-name:var(--font-russo)] text-[0.6rem] tracking-[0.15em] text-orbital-text-dim mb-2";
 
-  const allMaps = getDefaultMapPool();
+  // Todos os mapas com imagem ficam selecionáveis no wizard (inclui Cache,
+  // Overpass, Train — não só o active duty do getDefaultMapPool)
+  const allMaps = Object.keys(MAP_IMAGES).sort();
 
   const wizardSteps = [
     { label: "INFO", num: 1 },
