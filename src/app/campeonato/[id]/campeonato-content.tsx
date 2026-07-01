@@ -145,8 +145,10 @@ const CAMP_CSS = `
 .cpv > *{position:relative;z-index:1}
 /* título lâmina (contorno) */
 .cpv h1{ -webkit-text-stroke:2px #241038; paint-order:stroke fill; }
-/* cantos chanfrados nos cards — linguagem angular Overworld */
-.cpv .bg-orbital-card{ clip-path:polygon(0 0,100% 0,100% calc(100% - 11px),calc(100% - 11px) 100%,0 100%); }
+/* cantos chanfrados nos cards — linguagem angular Overworld.
+   O polígono começa em -20px pra NÃO cortar o label do HudCard (absolute -top-3,
+   flutua acima da borda do card). */
+.cpv .bg-orbital-card{ clip-path:polygon(0 -20px,100% -20px,100% calc(100% - 11px),calc(100% - 11px) 100%,0 100%); }
 @media(prefers-reduced-motion:reduce){ .cpv::before{ animation:none; } }
 `;
 
