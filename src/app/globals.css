@@ -1,6 +1,9 @@
 @import "tailwindcss";
 
-@theme inline {
+/* Cores em @theme (NÃO inline) → utilities usam var(--color-orbital-*) e podem
+   ser sobrescritas por escopo (ex.: .cpv na página de campeonato). Valores
+   idênticos aos de antes — nenhuma página muda visualmente. */
+@theme {
   /* ── Paleta editorial ORBITAL ROXA (Exaggerated Minimalism) ── */
   --color-orbital-purple: #7C5CFF;
   --color-orbital-purple-dim: #6A4BE0;
@@ -16,6 +19,9 @@
   --color-orbital-warning: #F5C542;
   --color-orbital-live: #FF3B57;
   --color-orbital-gold: #F5C542;
+}
+/* Fontes ficam inline (referenciam vars runtime do next/font). */
+@theme inline {
   --font-heading: var(--font-russo);
   --font-mono: var(--font-jetbrains);
   --font-body: var(--font-chakra);
