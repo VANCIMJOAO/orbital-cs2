@@ -60,11 +60,11 @@ interface CampeonatoContentProps {
 const LOBBY_CSS = `
 .cmp-slotgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
 @media(max-width:900px){.cmp-slotgrid{grid-template-columns:repeat(2,1fr)}}
-.cmp-slot{height:232px;border:1px solid var(--orbital-border,#1f1f27);background:#0d0d12;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;position:relative}
-.cmp-slot.filled{border-color:rgba(124,92,255,.4);background:linear-gradient(180deg,rgba(124,92,255,.08),#0d0d12)}
+.cmp-slot{height:232px;border:1px solid var(--orbital-border,#2E2038);background:#150A1D;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;position:relative;clip-path:polygon(0 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%)}
+.cmp-slot.filled{border-color:rgba(124,92,255,.4);background:linear-gradient(180deg,rgba(124,92,255,.08),#150A1D)}
 .cmp-num{position:absolute;top:9px;left:12px;font-family:var(--font-jetbrains),monospace;font-size:10px;color:#7e7b88;z-index:3}
-.cmp-logo{width:54px;height:54px;border:1px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-family:var(--font-russo),sans-serif;font-size:19px;color:#a892ff;overflow:hidden;position:relative}
-.cmp-slot.filled .cmp-logo{border-color:#7c5cff}
+.cmp-logo{width:54px;height:54px;border:1px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-family:var(--font-russo),sans-serif;font-size:19px;color:#FF8A3D;overflow:hidden;position:relative}
+.cmp-slot.filled .cmp-logo{border-color:#FF5A1F}
 .cmp-logo img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:6px}
 .cmp-nm{font-family:var(--font-russo),sans-serif;font-size:14px;text-transform:uppercase;letter-spacing:.02em;text-align:center;padding:0 8px}
 .cmp-st{font-family:var(--font-jetbrains),monospace;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;display:flex;align-items:center;gap:6px}
@@ -78,14 +78,14 @@ const LOBBY_CSS = `
 .cmp-slot.flip:hover .cmp-flip-inner{transform:rotateY(180deg)}
 .cmp-face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;display:flex;flex-direction:column}
 .cmp-face.front{align-items:center;justify-content:center;gap:12px}
-.cmp-face.back{transform:rotateY(180deg);padding:12px;justify-content:flex-start;background:linear-gradient(180deg,rgba(124,92,255,.1),#0d0d12);overflow:hidden auto}
+.cmp-face.back{transform:rotateY(180deg);padding:12px;justify-content:flex-start;background:linear-gradient(180deg,rgba(124,92,255,.1),#150A1D);overflow:hidden auto}
 .cmp-face.back::-webkit-scrollbar{width:4px}
 .cmp-face.back::-webkit-scrollbar-thumb{background:rgba(124,92,255,.4)}
 .cmp-face a{text-decoration:none;color:inherit;cursor:pointer}
 .cmp-hint{position:absolute;bottom:10px;right:12px;font-family:var(--font-jetbrains),monospace;font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:#7e7b88;opacity:.5}
 .cmp-bkh{display:flex;align-items:center;gap:8px;padding-bottom:8px;margin-bottom:8px;border-bottom:1px solid rgba(255,255,255,.08);color:inherit}
-a.cmp-bkh:hover .nm{color:#a892ff}
-.cmp-bkh .lg{width:22px;height:22px;border:1px solid #7c5cff;display:flex;align-items:center;justify-content:center;font-family:var(--font-russo),sans-serif;font-size:9px;color:#a892ff;flex:0 0 auto;overflow:hidden;position:relative}
+a.cmp-bkh:hover .nm{color:#FF8A3D}
+.cmp-bkh .lg{width:22px;height:22px;border:1px solid #FF5A1F;display:flex;align-items:center;justify-content:center;font-family:var(--font-russo),sans-serif;font-size:9px;color:#FF8A3D;flex:0 0 auto;overflow:hidden;position:relative}
 .cmp-bkh .lg img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
 .cmp-bkh .nm{font-family:var(--font-russo),sans-serif;font-size:12px;text-transform:uppercase;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cmp-bkh .cnt{margin-left:auto;font-family:var(--font-jetbrains),monospace;font-size:9.5px;color:#7e7b88;flex:0 0 auto}
@@ -94,7 +94,7 @@ a.cmp-bkh:hover .nm{color:#a892ff}
 .cmp-roster a:hover{background:rgba(124,92,255,.12)}
 .cmp-roster a.cap-row{border-left-color:#f5c542;background:rgba(245,197,66,.06)}
 .cmp-roster a.cap-row:hover{background:rgba(245,197,66,.12)}
-.cmp-roster .av{width:23px;height:23px;border-radius:50%;background:linear-gradient(135deg,#7c5cff,#4a37a6);display:flex;align-items:center;justify-content:center;font-family:var(--font-russo),sans-serif;font-size:10px;color:#fff;flex:0 0 auto;text-transform:uppercase;overflow:hidden;position:relative}
+.cmp-roster .av{width:23px;height:23px;border-radius:50%;background:linear-gradient(135deg,#FF5A1F,#C24A1A);display:flex;align-items:center;justify-content:center;font-family:var(--font-russo),sans-serif;font-size:10px;color:#fff;flex:0 0 auto;text-transform:uppercase;overflow:hidden;position:relative}
 .cmp-roster a.cap-row .av{background:linear-gradient(135deg,#f5c542,#c79a1f);color:#1a1400}
 .cmp-roster .av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .cmp-roster .pn{flex:1;font-family:var(--font-jetbrains),monospace;font-size:12px;color:#efedf4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -102,15 +102,52 @@ a.cmp-bkh:hover .nm{color:#a892ff}
 /* map pool cards */
 .cmp-mapgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
 @media(max-width:900px){.cmp-mapgrid{grid-template-columns:repeat(2,1fr)}}
-.cmp-mp{aspect-ratio:16/10;position:relative;border:1px solid rgba(255,255,255,.08);overflow:hidden;display:flex;align-items:flex-end}
+.cmp-mp{aspect-ratio:16/10;position:relative;border:1px solid rgba(255,255,255,.08);overflow:hidden;display:flex;align-items:flex-end;clip-path:polygon(0 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%)}
 .cmp-mp img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.5;filter:grayscale(.35) contrast(1.05);transition:.3s}
 .cmp-mp:hover img{opacity:.78;transform:scale(1.04)}
-.cmp-mp::after{content:'';position:absolute;inset:0;background:linear-gradient(0deg,rgba(10,10,12,.95),transparent 62%)}
+.cmp-mp::after{content:'';position:absolute;inset:0;background:linear-gradient(0deg,rgba(27,15,35,.95),transparent 62%)}
 .cmp-mp span{position:relative;z-index:1;font-family:var(--font-russo),sans-serif;font-size:12px;letter-spacing:.05em;text-transform:uppercase;padding:9px 11px;color:#fff}
 /* evento compacto */
 .cmp-kv{display:flex;flex-direction:column;gap:15px}
 .cmp-kv .k{font-family:var(--font-jetbrains),monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#7e7b88}
 .cmp-kv .v{font-family:var(--font-russo),sans-serif;font-size:15px;margin-top:5px;color:#efedf4}
+`;
+
+/* ═══════════ Overworld skin — escopado em .cpv (não afeta admin/globais) ═══════════
+   Remapeia os tokens Tailwind --color-orbital-* dentro da página + fundo roxo,
+   aura viva, título lâmina e cantos chanfrados nos cards. Toda a lógica preservada. */
+const CAMP_CSS = `
+.cpv{
+  --color-orbital-bg:#1B0F23;
+  --color-orbital-card:#22132E;
+  --color-orbital-border:#2E2038;
+  --color-orbital-border-light:#3C2A4E;
+  --color-orbital-purple:#FF5A1F;
+  --color-orbital-purple-dim:#C24A1A;
+  --color-orbital-purple-bright:#FF8A3D;
+  --color-orbital-text:#F3ECF7;
+  --color-orbital-text-dim:#9C8AAE;
+  --color-orbital-success:#54E08A;
+  --color-orbital-danger:#FF3B57;
+  --color-orbital-live:#FF3B57;
+  --color-orbital-gold:#FFC24B;
+  --color-orbital-warning:#FFC24B;
+  position:relative;
+  background:#1B0F23;
+  background-image:
+    radial-gradient(120% 60% at 88% -2%, rgba(255,90,31,.13), transparent 52%),
+    radial-gradient(90% 55% at 0% 1%, rgba(124,92,255,.12), transparent 55%);
+}
+.cpv::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(40% 44% at 16% 14%,rgba(255,90,31,.10),transparent 62%),radial-gradient(36% 40% at 88% 6%,rgba(124,92,255,.10),transparent 66%);
+  animation:cpvaura 22s ease-in-out infinite alternate}
+@keyframes cpvaura{0%{transform:translate3d(-2%,-1%,0) scale(1)}100%{transform:translate3d(3%,2%,0) scale(1.12)}}
+.cpv > *{position:relative;z-index:1}
+/* título lâmina (contorno) */
+.cpv h1{ -webkit-text-stroke:2px #241038; paint-order:stroke fill; }
+/* cantos chanfrados nos cards — linguagem angular Overworld */
+.cpv .bg-orbital-card{ clip-path:polygon(0 0,100% 0,100% calc(100% - 11px),calc(100% - 11px) 100%,0 100%); }
+@media(prefers-reduced-motion:reduce){ .cpv::before{ animation:none; } }
 `;
 
 function rosterOf(insc: InscritoLite, teamsMap?: TeamsMap): { name: string; steam_id: string; cap: boolean }[] {
@@ -674,13 +711,14 @@ export function CampeonatoContent({ id, initialTournament, initialTeamsMap, init
   const statusLabel = tournament.status === "active" ? "AO VIVO" : tournament.status === "finished" ? "FINALIZADO" : "PENDENTE";
 
   return (
-    <div className="min-h-screen pb-20">
+    <div className="cpv min-h-screen pb-20">
+      <style>{CAMP_CSS}</style>
       {/* ════════════════ HERO BANNER ════════════════ */}
       <div className="relative overflow-hidden">
         {/* Background image */}
         <div className="absolute inset-0">
           <img src="https://i.imgur.com/0irj00x.jpeg" alt="" className="w-full h-full object-cover opacity-15" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0A0A0A] via-[#0A0A0A]/80 to-[#0A0A0A]" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#1B0F23] via-[#1B0F23]/80 to-[#1B0F23]" />
         </div>
         <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-orbital-purple/40 to-transparent" />
 
@@ -773,7 +811,7 @@ export function CampeonatoContent({ id, initialTournament, initialTeamsMap, init
       </div>
 
       {/* ════════════════ TAB NAVIGATION ════════════════ */}
-      <div className="sticky top-0 z-30 bg-[#0A0A0A]/95 backdrop-blur-sm border-b border-orbital-border">
+      <div className="sticky top-0 z-30 bg-orbital-bg/95 backdrop-blur-sm border-b border-orbital-border">
         <div className="w-full px-4 sm:px-6 lg:px-10 xl:px-16">
           <div className="flex gap-0 overflow-x-auto scrollbar-none" role="tablist" aria-label="Seções do campeonato">
             {TABS.map(tab => (
@@ -1104,7 +1142,7 @@ export function CampeonatoContent({ id, initialTournament, initialTeamsMap, init
                           <Link
                             key={award.id}
                             href={`/perfil/${award.steamId}`}
-                            className="bg-[#0A0A0A] border border-orbital-border hover:border-orbital-purple/40 p-3 text-center transition-colors group"
+                            className="bg-orbital-bg border border-orbital-border hover:border-orbital-purple/40 p-3 text-center transition-colors group"
                           >
                             <div className="text-2xl mb-1">{award.emoji}</div>
                             <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.15em] text-orbital-purple mb-1">
@@ -1782,7 +1820,7 @@ function VetoModal({
         role="dialog"
         aria-modal="true"
         aria-label="Veto de mapas"
-        className="bg-[#0D0D0D] border border-orbital-purple/30 w-full max-w-lg max-h-[90vh] overflow-y-auto"
+        className="bg-orbital-bg border border-orbital-purple/30 w-full max-w-lg max-h-[90vh] overflow-y-auto"
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-orbital-border">
@@ -1870,8 +1908,8 @@ function VetoModal({
                     onClick={() => onBan(map)}
                     className={`px-3 py-2.5 border font-[family-name:var(--font-jetbrains)] text-xs transition-all ${
                       currentAction === "ban"
-                        ? "bg-[#0A0A0A] border-orbital-border hover:border-orbital-danger/50 hover:bg-orbital-danger/10 hover:text-orbital-danger text-orbital-text"
-                        : "bg-[#0A0A0A] border-orbital-border hover:border-orbital-success/50 hover:bg-orbital-success/10 hover:text-orbital-success text-orbital-text"
+                        ? "bg-orbital-bg border-orbital-border hover:border-orbital-danger/50 hover:bg-orbital-danger/10 hover:text-orbital-danger text-orbital-text"
+                        : "bg-orbital-bg border-orbital-border hover:border-orbital-success/50 hover:bg-orbital-success/10 hover:text-orbital-success text-orbital-text"
                     }`}
                   >
                     {map.replace("de_", "").toUpperCase()}
@@ -1911,7 +1949,7 @@ function VetoModal({
                 <select
                   value={selectedServer}
                   onChange={e => onSelectServer(e.target.value)}
-                  className="w-full bg-[#0A0A0A] border border-orbital-border text-orbital-text font-[family-name:var(--font-jetbrains)] text-sm px-3 py-2.5 focus:border-orbital-purple/50 focus:outline-none"
+                  className="w-full bg-orbital-bg border border-orbital-border text-orbital-text font-[family-name:var(--font-jetbrains)] text-sm px-3 py-2.5 focus:border-orbital-purple/50 focus:outline-none"
                 >
                   <option value="">Selecionar servidor...</option>
                   {servers.map(s => (

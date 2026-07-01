@@ -34,7 +34,7 @@ function BracketTeamRow({ name, teamId, isWinner, isLoser, score, isLive, logo }
   const isTBD = !teamId || name === "TBD" || name === "A definir";
   return (
     <div className={`flex items-center gap-2 px-2.5 py-1.5 transition-colors ${
-      isWinner ? "bg-orbital-success/10 border-l-2 border-orbital-success" : isLoser ? "bg-[#0A0A0A] opacity-40" : "bg-[#0A0A0A]"
+      isWinner ? "bg-orbital-success/10 border-l-2 border-orbital-success" : isLoser ? "bg-orbital-bg opacity-40" : "bg-orbital-bg"
     }`}>
       <div className="w-4 h-4 flex items-center justify-center shrink-0">
         {isTBD ? (
