@@ -30,7 +30,6 @@ import {
   VetoAction,
   getSwissStandings,
 } from "@/lib/tournament";
-import { autoAdvanceTournament } from "@/lib/tournament-utils";
 
 // ── Types ──
 type TabId = "overview" | "partidas" | "ranking" | "highlights";
@@ -442,29 +441,33 @@ export function CampeonatoContent({ id, initialTournament, initialTeamsMap, init
   const hasLiveMatches = tournament?.status !== "finished" && tournament?.matches.some(m => m.status === "live" && m.match_id);
 
   useEffect(() => {
-    // Only admins should auto-advance brackets (requires auth to save)
-    if (!hasLiveMatches || !isAdmin) return;
-
-    const clientFetcher = async (matchId: number) => {
-      const res = await fetch(`/api/matches/${matchId}`);
-      const data = await res.json();
-      return data.match || null;
-    };
+    // Auto-advance "movido pela torcida" (como no Cup #1), mas seguro: qualquer
+    // visitante com a página aberta só APERTA A CAMPAINHA — quem confere o
+    // placar no G5API e salva o bracket é o SERVIDOR (/api/tournaments/advance),
+    // sem aceitar dado nenhum do cliente. Não exige admin nem aba do admin aberta.
+    if (!hasLiveMatches) return;
 
     const checkAutoAdvance = async () => {
       if (document.visibilityState === "hidden") return;
       const t = tournamentRef.current;
       if (!t || t.status === "finished") return;
-      const result = await autoAdvanceTournament(t, clientFetcher);
-      if (result.changed) {
-        await saveTournament(result.tournament);
-      }
+      try {
+        const res = await fetch("/api/tournaments/advance", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tournamentId: t.id }),
+        });
+        const data = await res.json();
+        if (Array.isArray(data.advanced) && data.advanced.length > 0) {
+          await fetchTournament(); // bracket mudou no servidor → recarrega
+        }
+      } catch { /* rede oscilou; tenta no próximo tick */ }
     };
 
     const interval = setInterval(checkAutoAdvance, 10000);
     checkAutoAdvance();
     return () => clearInterval(interval);
-  }, [hasLiveMatches, isAdmin]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [hasLiveMatches]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (isAdmin) {
