@@ -152,25 +152,38 @@ const CAMP_CSS = `
 @media(prefers-reduced-motion:reduce){ .cpv::before{ animation:none; } }
 `;
 
+// Modelo "FACEIT": o time no G5API é o CLUBE (todos os membros, histórico);
+// a INSCRIÇÃO é o roster do campeonato (só quem joga ESTA edição).
+// A inscrição manda na LISTA (quem/quantos aparecem); o time ao vivo só
+// CORRIGE os dados — nick corrigido casa por steamid, steamid corrigido
+// casa por nome (caso LANGO). Nunca adiciona gente além dos inscritos.
 function rosterOf(insc: InscritoLite, teamsMap?: TeamsMap): { name: string; steam_id: string; cap: boolean }[] {
   const seen = new Set<string>();
   const out: { name: string; steam_id: string; cap: boolean }[] = [];
-  const push = (name: string, steam_id: string, cap: boolean) => {
-    if (!steam_id || seen.has(steam_id)) return;
-    seen.add(steam_id); out.push({ name: name || steam_id, steam_id, cap });
-  };
-  // 1) Preferir o roster AO VIVO do time (G5API auth_name) quando o time existe —
-  //    reflete correções feitas pelo admin na aba Times. Capitão primeiro.
+  const norm = (s: string) => (s || "").trim().toLowerCase().replace(/\s+/g, " ");
   const live = insc.team_id != null && teamsMap ? teamsMap[insc.team_id]?.players : null;
-  if (live && live.length) {
-    for (const p of [...live].sort((a, b) => (b.captain === 1 ? 1 : 0) - (a.captain === 1 ? 1 : 0))) {
-      push(p.name, p.steamId, p.captain === 1);
-    }
-    if (out.length) return out;
-  }
-  // 2) Fallback: snapshot da inscrição (inscrições antigas / time ainda não criado)
+
+  const push = (name: string, steam_id: string, cap: boolean) => {
+    // enriquece com o dado ao vivo: por steamid (nick corrigido) ou por nome (steamid corrigido)
+    const fixed = live?.find(p => p.steamId === steam_id) || live?.find(p => norm(p.name) === norm(name));
+    const finalId = fixed?.steamId || steam_id;
+    const finalName = fixed?.name || name;
+    if (!finalId || seen.has(finalId)) return;
+    seen.add(finalId); out.push({ name: finalName || finalId, steam_id: finalId, cap });
+  };
+
+  // 1) Roster da inscrição (capitão primeiro)
   if (insc.captain_steam_id) push(insc.captain_name || "Capitão", insc.captain_steam_id, true);
   for (const p of insc.players || []) push(p.name, p.steam_id, false);
+  if (out.length) return out;
+
+  // 2) Fallback: inscrição sem players (dado antigo) → roster ao vivo do time
+  if (live && live.length) {
+    for (const p of [...live].sort((a, b) => (b.captain === 1 ? 1 : 0) - (a.captain === 1 ? 1 : 0))) {
+      if (!p.steamId || seen.has(p.steamId)) continue;
+      seen.add(p.steamId); out.push({ name: p.name || p.steamId, steam_id: p.steamId, cap: p.captain === 1 });
+    }
+  }
   return out;
 }
 const initialOf = (s?: string) => (s || "?").trim().charAt(0).toUpperCase() || "?";
@@ -885,11 +898,18 @@ export function CampeonatoContent({ id, initialTournament, initialTeamsMap, init
                         <div>
                           <div className="font-[family-name:var(--font-russo)] text-[0.65rem] tracking-[0.3em] text-amber-500/80 mb-1">CAMPEAO</div>
                           <div className="font-[family-name:var(--font-russo)] text-xl font-bold tracking-wider text-amber-400">{champion}</div>
-                          {grandFinal?.winner_id && teamsMap[grandFinal.winner_id]?.players && (
-                            <div className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-amber-500/60 mt-1">
-                              {teamsMap[grandFinal.winner_id].players!.map(p => p.name).join(" • ")}
-                            </div>
-                          )}
+                          {grandFinal?.winner_id && (() => {
+                            // roster da EDIÇÃO (inscrição) quando existe; senão o clube (Cup #1, pré-inscrições)
+                            const winInsc = inscritos.find(i => i.team_id === grandFinal.winner_id);
+                            const names = winInsc
+                              ? rosterOf(winInsc, teamsMap).map(p => p.name)
+                              : (teamsMap[grandFinal.winner_id]?.players || []).map(p => p.name);
+                            return names.length > 0 ? (
+                              <div className="font-[family-name:var(--font-jetbrains)] text-[0.6rem] text-amber-500/60 mt-1">
+                                {names.join(" • ")}
+                              </div>
+                            ) : null;
+                          })()}
                         </div>
                         <Trophy size={32} className="ml-auto text-amber-500/30" />
                       </div>
